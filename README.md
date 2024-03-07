@@ -1,1 +1,1 @@
-# gaia-node
+# gaianet-node
