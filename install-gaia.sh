@@ -4,11 +4,14 @@
 target=$(uname -m)
 
 qc_zip_file=""
+model_url=""
 
 function print_usage {
     printf "Usage:\n"
     printf "  ./install-gaia.sh [--qdrant-collection]\n\n"
     printf "  --qdrant-collection: Qdrant collection zip file\n"
+    printf "  --model-url: Url of GGUF model\n"
+    printf "  --help: Print usage\n"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -16,6 +19,11 @@ while [[ $# -gt 0 ]]; do
     case $key in
         --qdrant-collection)
             qc_zip_file="$2"
+            shift
+            shift
+            ;;
+        --model-url)
+            model_url="$2"
             shift
             shift
             ;;
@@ -32,7 +40,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 # obtain the absolute path of the qc_zip_file
-abs_path_qc_zip_file=$(realpath $qc_zip_file)
+if [ ! -z "$qc_zip_file" ]; then
+    abs_path_qc_zip_file=$(realpath $qc_zip_file)
+fi
+
+# check if the model url is specified or not
+if [ -z "$model_url" ]; then
+    printf "Please specify a model url using '--model-url' option\n"
+    exit 1
+fi
 
 printf "\n"
 
@@ -105,12 +121,12 @@ fi
 base_dir="$HOME/gaia"
 
 # 4. Download Mistral 7B GGUF file to $HOME/gaia
-model="Mistral-7B-Instruct-v0.2-Q5_K_M.gguf"
+model=$(basename $model_url)
 if [ -f "$base_dir/$model" ]; then
     printf "[+] Using the cached Mistral-7B-Instruct-v0.2 model file\n"
 else
     printf "[+] Downloading $model ...\n"
-    curl -L https://huggingface.co/second-state/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/$model -o $base_dir/$model
+    curl -L $model_url -o $base_dir/$model
 fi
 printf "\n"
 
