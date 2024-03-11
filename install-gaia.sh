@@ -3,6 +3,38 @@
 # target name
 target=$(uname -m)
 
+qc_zip_file=""
+
+function print_usage {
+    printf "Usage:\n"
+    printf "  ./install-gaia.sh [--qdrant-collection]\n\n"
+    printf "  --qdrant-collection: Qdrant collection zip file\n"
+}
+
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        --qdrant-collection)
+            qc_zip_file="$2"
+            shift
+            shift
+            ;;
+        --help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $key"
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+
+# obtain the absolute path of the qc_zip_file
+abs_path_qc_zip_file=$(realpath $qc_zip_file)
+
+printf "\n"
 
 # 1. Install WasmEdge with wasi-nn_ggml plugin for local user
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin for local user...\n\n"
@@ -96,7 +128,6 @@ else
     fi
     tar xzf chatbot-ui.tar.gz
     rm chatbot-ui.tar.gz
-    cd -
 fi
 printf "\n"
 
@@ -104,27 +135,76 @@ printf "\n"
 printf "[+] Downloading the latest llama-api-server.wasm ...\n"
 cd $base_dir
 curl -LO https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm
-cd -
 printf "\n"
 
 # 7. Download create_embeddings.wasm
 printf "[+] Downloading the latest create_embeddings.wasm ...\n"
 cd $base_dir
 curl -LO https://github.com/YuanTony/chemistry-assistant/raw/main/rag-embeddings/create_embeddings.wasm
-cd -
 printf "\n"
 
-# 8. Download a vector collection into qdrant/storage
-printf "[+] Downloading a vector collection into qdrant/storage ...\n"
-if [ ! -d "$base_dir/qdrant" ]; then
-    mkdir -p $base_dir/qdrant
+# 8. Unzip a vector collection into qdrant/storage
+if [ ! -z "$qc_zip_file" ]; then
+
+    filename=$(basename "$abs_path_qc_zip_file")
+    stem=$(echo "$filename" | cut -f 1 -d '.')
+
+    printf "[+] Deploying $stem collection into qdrant/storage/collections ...\n"
+
+    if [ ! -d "$base_dir/qdrant" ]; then
+        mkdir -p $base_dir/qdrant && cd $base_dir/qdrant
+
+        curl -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
+        # unzip to `qdrant-1.8.1` directory
+        tar -xzf v1.8.1.tar.gz
+        rm v1.8.1.tar.gz
+
+        # copy the config directory to `qdrant` directory
+        cp -r qdrant-1.8.1/config $base_dir/qdrant
+
+        mkdir -p $base_dir/qdrant/static
+        STATIC_DIR=$base_dir/qdrant/static
+        OPENAPI_FILE=$base_dir/qdrant/qdrant-1.8.1/docs/redoc/master/openapi.json
+
+        # Download `dist.zip` from the latest release of https://github.com/qdrant/qdrant-web-ui and unzip given folder
+
+        # Get latest dist.zip, assume jq is installed
+        DOWNLOAD_LINK=$(curl --silent "https://api.github.com/repos/qdrant/qdrant-web-ui/releases/latest" | jq -r '.assets[] | select(.name=="dist-qdrant.zip") | .browser_download_url')
+
+        wget -q -O dist-qdrant.zip $DOWNLOAD_LINK
+
+        rm -rf "${STATIC_DIR}/"*
+        unzip -q -o dist-qdrant.zip -d "${STATIC_DIR}"
+        rm dist-qdrant.zip
+        cp -r "${STATIC_DIR}/dist/"* "${STATIC_DIR}"
+        rm -rf "${STATIC_DIR}/dist"
+
+        cp "${OPENAPI_FILE}" "${STATIC_DIR}/openapi.json"
+
+        # remove the `qdrant-1.8.1` directory
+        rm -rf qdrant-1.8.1
+    fi
+
+    # start qdrant to create the storage directory structure if it does not exist
+    cd $base_dir/qdrant
+    nohup qdrant > /dev/null 2>&1 &
+    sleep 2
+    qdrant_pid=$!
+    kill $qdrant_pid
+
+    if [ ! -d "$base_dir/qdrant/storage/collections" ]; then
+        printf "Failed to start qdrant to create the storage directory structure.\n\n"
+        exit 1
+    fi
+
+    # Check if the directory exists
+    if [ -d "$stem" ]; then
+        printf "Found the same collection '$stem' in s%." "$base_dir/qdrant/storage/collections"
+        exit 1
+    fi
+
+    # unzip the collection zip file
+    unzip -q "$abs_path_qc_zip_file" -d "$base_dir/qdrant/storage/collections"
 fi
-if [ ! -d "$base_dir/qdrant/storage" ]; then
-    mkdir -p $base_dir/qdrant/storage
-fi
-cd $base_dir/qdrant/storage
-curl -L "https://www.dropbox.com/scl/fi/2k00qjbr3rhq9c89kh2ha/qdrant_storage.zip?rlkey=1ybvyb9ubl49va7ig2e5jhb4t&e=2&dl=0" -o qdrant_storage.zip
-unzip -q qdrant_storage.zip
-rm qdrant_storage.zip
-cd -
-printf "\n"
+
+
