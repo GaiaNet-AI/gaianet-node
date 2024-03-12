@@ -3,13 +3,15 @@
 # target name
 target=$(uname -m)
 
-qc_zip_file=""
+snapshot=""
+collection_name=""
 model_url=""
 
 function print_usage {
     printf "Usage:\n"
-    printf "  ./install-gaia.sh [--qdrant-collection]\n\n"
-    printf "  --qdrant-collection: Qdrant collection zip file\n"
+    printf "  ./install-gaia.sh\n\n"
+    printf "  --snapshot: Url or local path of Qdrant collection snapshot\n"
+    printf "  --collection-name: Name for the recovered collection\n"
     printf "  --model-url: Url of GGUF model\n"
     printf "  --help: Print usage\n"
 }
@@ -17,8 +19,13 @@ function print_usage {
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --qdrant-collection)
-            qc_zip_file="$2"
+        --snapshot)
+            snapshot="$2"
+            shift
+            shift
+            ;;
+        --collection-name)
+            collection_name="$2"
             shift
             shift
             ;;
@@ -39,14 +46,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# obtain the absolute path of the qc_zip_file
-if [ ! -z "$qc_zip_file" ]; then
-    abs_path_qc_zip_file=$(realpath $qc_zip_file)
-fi
-
 # check if the model url is specified or not
 if [ -z "$model_url" ]; then
     printf "Please specify a model url using '--model-url' option\n"
+    exit 1
+fi
+
+if [ -n "$snapshot" ] && [ -z "$collection_name" ]; then
+    printf "Please specify a collection name using '--collection-name' option when snapshot is provided\n"
     exit 1
 fi
 
@@ -159,47 +166,39 @@ cd $base_dir
 curl -LO https://github.com/YuanTony/chemistry-assistant/raw/main/rag-embeddings/create_embeddings.wasm
 printf "\n"
 
-# 8. Unzip a vector collection into qdrant/storage
-if [ ! -z "$qc_zip_file" ]; then
 
-    filename=$(basename "$abs_path_qc_zip_file")
-    stem=$(echo "$filename" | cut -f 1 -d '.')
+# 8. prepare qdrant
+if [ ! -d "$base_dir/qdrant" ]; then
+    mkdir -p $base_dir/qdrant && cd $base_dir/qdrant
 
-    printf "[+] Deploying $stem collection into qdrant/storage/collections ...\n"
+    curl -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
+    # unzip to `qdrant-1.8.1` directory
+    tar -xzf v1.8.1.tar.gz
+    rm v1.8.1.tar.gz
 
-    if [ ! -d "$base_dir/qdrant" ]; then
-        mkdir -p $base_dir/qdrant && cd $base_dir/qdrant
+    # copy the config directory to `qdrant` directory
+    cp -r qdrant-1.8.1/config $base_dir/qdrant
 
-        curl -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
-        # unzip to `qdrant-1.8.1` directory
-        tar -xzf v1.8.1.tar.gz
-        rm v1.8.1.tar.gz
+    mkdir -p $base_dir/qdrant/static
+    STATIC_DIR=$base_dir/qdrant/static
+    OPENAPI_FILE=$base_dir/qdrant/qdrant-1.8.1/docs/redoc/master/openapi.json
 
-        # copy the config directory to `qdrant` directory
-        cp -r qdrant-1.8.1/config $base_dir/qdrant
+    # Get latest dist.zip, assume jq is installed
+    DOWNLOAD_LINK=$(curl --silent "https://api.github.com/repos/qdrant/qdrant-web-ui/releases/latest" | jq -r '.assets[] | select(.name=="dist-qdrant.zip") | .browser_download_url')
 
-        mkdir -p $base_dir/qdrant/static
-        STATIC_DIR=$base_dir/qdrant/static
-        OPENAPI_FILE=$base_dir/qdrant/qdrant-1.8.1/docs/redoc/master/openapi.json
+    wget -q -O dist-qdrant.zip $DOWNLOAD_LINK
 
-        # Download `dist.zip` from the latest release of https://github.com/qdrant/qdrant-web-ui and unzip given folder
+    rm -rf "${STATIC_DIR}/"*
+    unzip -q -o dist-qdrant.zip -d "${STATIC_DIR}"
+    rm dist-qdrant.zip
+    cp -r "${STATIC_DIR}/dist/"* "${STATIC_DIR}"
+    rm -rf "${STATIC_DIR}/dist"
 
-        # Get latest dist.zip, assume jq is installed
-        DOWNLOAD_LINK=$(curl --silent "https://api.github.com/repos/qdrant/qdrant-web-ui/releases/latest" | jq -r '.assets[] | select(.name=="dist-qdrant.zip") | .browser_download_url')
+    cp "${OPENAPI_FILE}" "${STATIC_DIR}/openapi.json"
 
-        wget -q -O dist-qdrant.zip $DOWNLOAD_LINK
+    # remove the `qdrant-1.8.1` directory
+    rm -rf qdrant-1.8.1
 
-        rm -rf "${STATIC_DIR}/"*
-        unzip -q -o dist-qdrant.zip -d "${STATIC_DIR}"
-        rm dist-qdrant.zip
-        cp -r "${STATIC_DIR}/dist/"* "${STATIC_DIR}"
-        rm -rf "${STATIC_DIR}/dist"
-
-        cp "${OPENAPI_FILE}" "${STATIC_DIR}/openapi.json"
-
-        # remove the `qdrant-1.8.1` directory
-        rm -rf qdrant-1.8.1
-    fi
 
     # start qdrant to create the storage directory structure if it does not exist
     cd $base_dir/qdrant
@@ -208,19 +207,32 @@ if [ ! -z "$qc_zip_file" ]; then
     qdrant_pid=$!
     kill $qdrant_pid
 
-    if [ ! -d "$base_dir/qdrant/storage/collections" ]; then
-        printf "Failed to start qdrant to create the storage directory structure.\n\n"
-        exit 1
-    fi
-
-    # Check if the directory exists
-    if [ -d "$stem" ]; then
-        printf "Found the same collection '$stem' in s%." "$base_dir/qdrant/storage/collections"
-        exit 1
-    fi
-
-    # unzip the collection zip file
-    unzip -q "$abs_path_qc_zip_file" -d "$base_dir/qdrant/storage/collections"
+    printf "\n"
 fi
 
+# 9. recover from the given qdrant collection snapshot
+if [ ! -z "$snapshot" ]; then
 
+    cd $base_dir/qdrant
+
+    # start qdrant
+    nohup qdrant > /dev/null 2>&1 &
+    sleep 2
+    qdrant_pid=$!
+
+    response=$(curl -X PUT http://localhost:6333/collections/$collection_name/snapshots/recover \
+        -H "Content-Type: application/json" \
+        -d "{\"location\":\"$snapshot\", \"priority\": null, \"checksum\": null}")
+    sleep 5
+
+    printf "\n"
+
+    if echo "$response" | grep -q '"status":"ok"'; then
+        printf "Recovery from the collection snapshot is done.\n\n"
+    else
+        printf "Failed to recover from the collection snapshot.\n\n"
+    fi
+
+    # stop qdrant
+    kill $qdrant_pid
+fi
