@@ -18,5 +18,6 @@ Example: Install the node and recover a collection from a given collection snaps
 
   ```bash
   curl -sSf https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install-gaia.sh | bash -s -- --model-url https://huggingface.co/second-state/Qwen1.5-0.5B-Chat-GGUF/resolve/main/Qwen1.5-0.5B-Chat-Q5_K_M.gguf --collection-name paris-france --snapshot file:////Users/sam/workspace/demo/gaia/paris-5345043712122094-2024-03-12-14-02-37.snapshot
+  ```
 
 Note that replace the snapshot file path with your own path before running the example command above.
