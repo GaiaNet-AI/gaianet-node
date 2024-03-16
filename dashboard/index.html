@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <div class="row input-group mb-3 mt-3">
+		<button class="btn btn-outline-secondary" type="button" id="createBtn">Create</button>
+	</div>
+    <div class="row input-group mb-3">
+		<label for="nameInput" class="form-label">Node address </label>
+        <input type="text" class="form-control" id="inputField" placeholder="Enter address...">
+    </div>
+	<div class="row input-group mb-3">
+        <button class="btn btn-outline-secondary" type="button" id="queryBtn">Query</button>
+    </div>
+
+    <div id="dynamicForm" class="d-none">
+        <div class="mb-3">
+            <label for="nameInput" class="form-label">Name</label>
+            <input type="text" class="form-control" id="nameInput">
+        </div>
+        <div class="mb-3">
+            <label for="descriptionInput" class="form-label">Description</label>
+            <input type="text" class="form-control" id="descriptionInput">
+        </div>
+        <div class="mb-3">
+            <label for="urlInput" class="form-label">Public URL to access the API server</label>
+            <input type="text" class="form-control" id="urlInput">
+        </div>
+        <div class="mb-3">
+            <label for="availabilityInput" class="form-label">Availability</label>
+            <input type="text" class="form-control" id="availabilityInput">
+        </div>
+        <button class="btn btn-primary" id="updateBtn">Update or create</button>
+        <button class="btn btn-secondary" id="backBtn">Back</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+        type="application/javascript"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<script src="./js/config.js"></script>
+<script src="./js/connect.js"></script>
+<script src="./js/interact.js"></script>
+</body>
+</html>
