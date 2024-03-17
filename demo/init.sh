@@ -9,17 +9,17 @@ cwd=$(pwd)
 
 printf "\n"
 
-# 1. Check if "gaianet" directory exists in $HOME
+# Check if "gaianet" directory exists in $HOME
 if [ ! -d "$HOME/gaianet" ]; then
-    # If not, create it
-    mkdir -p $HOME/gaianet
+    printf "Not found $HOME/gaianet\n"
+    exit 1
 fi
-# Set "base_dir" to $HOME/gaianet
-base_dir="$HOME/gaianet"
+# Set "gaianet_base_dir" to $HOME/gaianet
+gaianet_base_dir="$HOME/gaianet"
 
 # check if config.json exists or not
-if [ ! -f "$base_dir/config.json" ]; then
-    printf "config.json file not found in $base_dir\n"
+if [ ! -f "$gaianet_base_dir/config.json" ]; then
+    printf "config.json file not found in $gaianet_base_dir\n"
     exit 1
 fi
 
@@ -38,40 +38,40 @@ printf "\n"
 
 # 3. Install Qdrant at $HOME/gaianet/bin
 printf "[+] Installing Qdrant...\n\n"
-# Check if "$base_dir/bin" directory exists
-if [ ! -d "$base_dir/bin" ]; then
+# Check if "$gaianet_base_dir/bin" directory exists
+if [ ! -d "$gaianet_base_dir/bin" ]; then
     # If not, create it
-    mkdir -p $base_dir/bin
+    mkdir -p $gaianet_base_dir/bin
 fi
 qdrant_version="v1.8.1"
 if [ "$(uname)" == "Darwin" ]; then
     # download qdrant binary
     if [ "$target" = "x86_64" ]; then
         curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz
-        tar -xzf qdrant-x86_64-apple-darwin.tar.gz -C $base_dir/bin
+        tar -xzf qdrant-x86_64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
         rm qdrant-x86_64-apple-darwin.tar.gz
     elif [ "$target" = "arm64" ]; then
         curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz
-        tar -xzf qdrant-aarch64-apple-darwin.tar.gz -C $base_dir/bin
+        tar -xzf qdrant-aarch64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
         rm qdrant-aarch64-apple-darwin.tar.gz
     fi
     if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
-        echo 'export PATH=$PATH:'$base_dir'/bin' >> $HOME/.bashrc
+        echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
     fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # download qdrant statically linked binary
     if [ "$target" = "x86_64" ]; then
         curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz
-        tar -xzf qdrant-x86_64-unknown-linux-musl.tar.gz -C $base_dir/bin
+        tar -xzf qdrant-x86_64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
         rm qdrant-x86_64-unknown-linux-musl.tar.gz
     elif [ "$target" = "aarch64" ]; then
         curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz
-        tar -xzf qdrant-aarch64-unknown-linux-musl.tar.gz -C $base_dir/bin
+        tar -xzf qdrant-aarch64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
         rm qdrant-aarch64-unknown-linux-musl.tar.gz
     fi
     if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
-        echo 'export PATH=$PATH:'$base_dir'/bin' >> $HOME/.bashrc
+        echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
     fi
 
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -83,17 +83,16 @@ else
 fi
 printf "\n"
 
-
 # 4. Download GGUF chat model to $HOME/gaianet
-url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
+url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
 if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]]; then
     chat_model=$(basename $url_chat_model)
 
-    if [ -f "$base_dir/$chat_model" ]; then
+    if [ -f "$gaianet_base_dir/$chat_model" ]; then
         printf "[+] Using the cached chat model: $chat_model\n"
     else
         printf "[+] Downloading $chat_model ...\n\n"
-        curl -L $url_chat_model -o $base_dir/$chat_model
+        curl -L $url_chat_model -o $gaianet_base_dir/$chat_model
     fi
     printf "\n"
 else
@@ -102,15 +101,15 @@ else
 fi
 
 # 5. Download GGUF embedding model to $HOME/gaianet
-url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
 if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
     embedding_model=$(basename $url_embedding_model)
 
-    if [ -f "$base_dir/$embedding_model" ]; then
+    if [ -f "$gaianet_base_dir/$embedding_model" ]; then
         printf "[+] Using the cached embedding model: $embedding_model\n"
     else
         printf "[+] Downloading $embedding_model ...\n\n"
-        curl -L $url_embedding_model -o $base_dir/$embedding_model
+        curl -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
     fi
     printf "\n"
 else
@@ -120,30 +119,30 @@ fi
 
 # 6. Download llama-api-server.wasm
 printf "[+] Downloading the llama-api-server.wasm ...\n\n"
-cd $base_dir
+cd $gaianet_base_dir
 curl -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-server-multi-models/api-server/llama-api-server.wasm
 printf "\n"
 
 # 7. Download dashboard to $HOME/gaianet
-if [ -d "$base_dir/dashboard" ]; then
+if [ -d "$gaianet_base_dir/dashboard" ]; then
     printf "[+] Using cached dashboard ...\n"
 else
     printf "[+] Downloading dashboard ...\n"
-    if [ -d "$base_dir/gaianet-node" ]; then
-        rm -rf $base_dir/gaianet-node
+    if [ -d "$gaianet_base_dir/gaianet-node" ]; then
+        rm -rf $gaianet_base_dir/gaianet-node
     fi
-    cd $base_dir
+    cd $gaianet_base_dir
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.zip
     unzip -q dashboard.zip
 
-    rm -rf $base_dir/dashboard.zip
+    rm -rf $gaianet_base_dir/dashboard.zip
 fi
 printf "\n"
 
 # 8. prepare qdrant dir if it does not exist
-if [ ! -d "$base_dir/qdrant" ]; then
+if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "[+] Preparing Qdrant directory ...\n"
-    mkdir -p $base_dir/qdrant && cd $base_dir/qdrant
+    mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
     # download qdrant binary
     curl -s -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
@@ -152,19 +151,20 @@ if [ ! -d "$base_dir/qdrant" ]; then
     rm v1.8.1.tar.gz
 
     # copy the config directory to `qdrant` directory
-    cp -r qdrant-1.8.1/config $base_dir/qdrant
+    cp -r qdrant-1.8.1/config .
 
     # remove the `qdrant-1.8.1` directory
     rm -rf qdrant-1.8.1
 
     # config snapshots directory
-    if ! grep -q "QDRANT__STORAGE__SNAPSHOTS_PATH" $HOME/.bashrc; then
-        echo 'export QDRANT__STORAGE__SNAPSHOTS_PATH='$base_dir'/qdrant/snapshots' >> $HOME/.bashrc
-    fi
+    # if ! grep -q "QDRANT__STORAGE__SNAPSHOTS_PATH" $HOME/.bashrc; then
+    #     echo 'export QDRANT__STORAGE__SNAPSHOTS_PATH='$gaianet_base_dir'/qdrant/snapshots' >> $HOME/.bashrc
+    # fi
+
+
 
     # start qdrant to create the storage directory structure if it does not exist
-    cd $base_dir/qdrant
-    nohup $base_dir/bin/qdrant > /dev/null 2>&1 &
+    nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
     sleep 2
     qdrant_pid=$!
     kill $qdrant_pid
@@ -174,13 +174,12 @@ fi
 
 # 9. recover from the given qdrant collection snapshot
 printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
-cd $cwd
+cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 collection_name=$(basename $url_snapshot)
 
 # start qdrant
-cd $base_dir/qdrant
-nohup $base_dir/bin/qdrant > /dev/null 2>&1 &
+nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
 sleep 2
 qdrant_pid=$!
 

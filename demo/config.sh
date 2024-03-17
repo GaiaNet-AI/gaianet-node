@@ -88,4 +88,6 @@ else
     printf "[+] Using the provided Qdrant collection snapshot: $snapshot\n\n"
 fi
 
+rm -f config.json.bak
+
 exit 0

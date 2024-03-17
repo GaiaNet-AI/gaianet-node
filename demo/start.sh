@@ -1,14 +1,22 @@
 # !/bin/bash
 
 
-# check if config.json exists or not
-if [ ! -f "config.json" ]; then
-    printf "config.json file not found\n"
+# represents the directory where the script is located
+script_dir=$(pwd)
+
+# Check if "gaianet" directory exists in $HOME
+if [ ! -d "$HOME/gaianet" ]; then
+    printf "Not found $HOME/gaianet\n"
     exit 1
 fi
-# represents the directory where the script is located
-cwd=$(pwd)
-base_dir="$HOME/gaianet"
+# Set "gaianet_base_dir" to $HOME/gaianet
+gaianet_base_dir="$HOME/gaianet"
+
+# check if config.json exists or not
+if [ ! -f "$gaianet_base_dir/config.json" ]; then
+    printf "config.json file not found in $gaianet_base_dir\n"
+    exit 1
+fi
 
 # 1. start a Qdrant instance
 printf "[+] Starting Qdrant instance ...\n"
@@ -33,13 +41,13 @@ else
     exit 1
 fi
 
-qdrant_executable="$base_dir/bin/qdrant"
+qdrant_executable="$gaianet_base_dir/bin/qdrant"
 if [ -f "$qdrant_executable" ]; then
-    cd $base_dir
+    cd $gaianet_base_dir/qdrant
     nohup $qdrant_executable > /dev/null 2>&1 &
     sleep 2
     qdrant_pid=$!
-    echo $qdrant_pid > $cwd/qdrant.pid
+    echo $qdrant_pid > $script_dir/qdrant.pid
     printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
 else
     printf "Qdrant binary not found at $qdrant_executable\n"
@@ -71,7 +79,7 @@ else
 fi
 
 # parse cli options for chat model
-cd $cwd
+cd $gaianet_base_dir
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
 
 if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]]; then
@@ -111,7 +119,7 @@ else
 fi
 
 # parse cli options for embedding model
-cd $cwd
+cd $gaianet_base_dir
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
 if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
     # gguf filename
@@ -139,15 +147,15 @@ else
     exit 1
 fi
 
-cd $base_dir
-llamaedge_wasm="$base_dir/llama-api-server.wasm"
+cd $gaianet_base_dir
+llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
 if [ ! -f "$llamaedge_wasm" ]; then
     printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
     exit 1
 fi
 
 # Start the LlamaEdge API Server
-cd $base_dir
+cd $gaianet_base_dir
 model_names="${chat_model_stem},${embedding_model_stem}"
 cmd="wasmedge --dir .:. --nn-preload default:GGML:AUTO:$chat_model_name --nn-preload embedding:GGML:AUTO:$embedding_model_name llama-api-server.wasm --model-name ${model_names} --model-alias default,embedding --prompt-template ${prompt_type} --ctx-size 4096,$embedding_ctx_size"
 
@@ -171,7 +179,7 @@ printf "    %s\n\n" "$cmd"
 nohup $cmd > /dev/null 2>&1 &
 sleep 2
 llamaedge_pid=$!
-echo $llamaedge_pid > $cwd/llamaedge.pid
+echo $llamaedge_pid > $script_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
 
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
