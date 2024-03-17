@@ -183,11 +183,11 @@ cmd="$cmd --log-prompts --log-stat"
 printf "    Run the following command to start the LlamaEdge API Server:\n\n"
 printf "    %s\n\n" "$cmd"
 
-eval $cmd
+# eval $cmd
 
-# nohup $cmd > /dev/null 2>&1 &
-# sleep 2
-# llamaedge_pid=$!
+nohup $cmd > /dev/null 2>&1 &
+sleep 2
+llamaedge_pid=$!
 echo $llamaedge_pid > $script_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
 
