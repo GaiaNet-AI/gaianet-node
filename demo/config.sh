@@ -46,14 +46,23 @@ done
 
 printf "\n"
 
+# Check if "gaianet" directory exists in $HOME
+if [ ! -d "$HOME/gaianet" ]; then
+    printf "[+] Creating gaianet directory in $HOME ...\n\n"
+    # If not, create it
+    mkdir -p $HOME/gaianet
+fi
+# Set "base_dir" to $HOME/gaianet
+gaianet_base_dir="$HOME/gaianet"
+
+cd $gaianet_base_dir
 # check if config.json exists or not
-if [ ! -f "config.json" ]; then
-    printf "config.json file not found\n"
-    exit 1
+if [ ! -f "$gaianet_base_dir/config.json" ]; then
+    printf "[+] Downloading config.json ...\n\n"
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/demo/config.json
 fi
 
 if [ -z "$model_url" ]; then
-    # model_url=$(jq -r '.chat' config.json)
     model_url=$(awk -F'"' '/"chat":/ {print $4}' config.json)
     printf "[+] Using the cached chat model: $model_url\n\n"
 
@@ -78,8 +87,5 @@ else
     sed -i.bak "s|\(\"snapshot\":\s*\).*|\1\"$snapshot\"|" config.json
     printf "[+] Using the provided Qdrant collection snapshot: $snapshot\n\n"
 fi
-
-# snapshot=$(jq -r '.snapshot' config.json)
-# echo "$snapshot"
 
 exit 0

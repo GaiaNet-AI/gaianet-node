@@ -54,7 +54,9 @@ if [ "$(uname)" == "Darwin" ]; then
         tar -xzf qdrant-aarch64-apple-darwin.tar.gz -C $base_dir/bin
         rm qdrant-aarch64-apple-darwin.tar.gz
     fi
-    echo 'export PATH=$PATH:'$base_dir'/bin' >> $HOME/.bashrc
+    if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
+        echo 'export PATH=$PATH:'$base_dir'/bin' >> $HOME/.bashrc
+    fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # download qdrant statically linked binary
@@ -67,7 +69,9 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         tar -xzf qdrant-aarch64-unknown-linux-musl.tar.gz -C $base_dir/bin
         rm qdrant-aarch64-unknown-linux-musl.tar.gz
     fi
-    echo 'export PATH=$PATH:'$base_dir'/bin' >> $HOME/.bashrc
+    if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
+        echo 'export PATH=$PATH:'$base_dir'/bin' >> $HOME/.bashrc
+    fi
 
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     printf "For Windows users, please run this script in WSL.\n"
@@ -170,9 +174,9 @@ if [ ! -d "$base_dir/qdrant" ]; then
     rm -rf qdrant-1.8.1
 
     # config snapshots directory
-    export QDRANT__STORAGE__SNAPSHOTS_PATH=$base_dir/qdrant/snapshots
-
-    echo 'export QDRANT__STORAGE__SNAPSHOTS_PATH='$base_dir'/qdrant/snapshots' >> $HOME/.bashrc
+    if ! grep -q "QDRANT__STORAGE__SNAPSHOTS_PATH" $HOME/.bashrc; then
+        echo 'export QDRANT__STORAGE__SNAPSHOTS_PATH='$base_dir'/qdrant/snapshots' >> $HOME/.bashrc
+    fi
 
     # start qdrant to create the storage directory structure if it does not exist
     cd $base_dir/qdrant
