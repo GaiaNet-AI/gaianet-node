@@ -19,8 +19,9 @@ base_dir="$HOME/gaianet"
 
 # check if config.json exists or not
 if [ ! -f "$base_dir/config.json" ]; then
-    printf "config.json file not found in $base_dir\n"
-    exit 1
+    printf "[+] Downloading config.json ...\n\n"
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/demo/config.json
+    mv config.json $base_dir/
 fi
 
 # 2. Install WasmEdge with wasi-nn_ggml plugin for local user
