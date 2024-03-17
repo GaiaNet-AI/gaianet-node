@@ -160,9 +160,8 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     # config snapshots directory
     # if ! grep -q "QDRANT__STORAGE__SNAPSHOTS_PATH" $HOME/.bashrc; then
     #     echo 'export QDRANT__STORAGE__SNAPSHOTS_PATH='$gaianet_base_dir'/qdrant/snapshots' >> $HOME/.bashrc
+    #     source $HOME/.bashrc
     # fi
-
-
 
     # start qdrant to create the storage directory structure if it does not exist
     nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
@@ -180,6 +179,7 @@ url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 collection_name=$(basename $url_snapshot)
 
 # start qdrant
+cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
 sleep 2
 qdrant_pid=$!
