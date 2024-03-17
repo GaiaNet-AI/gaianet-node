@@ -177,6 +177,7 @@ printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
 cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 collection_name=$(basename $url_snapshot)
+collection_stem=$(basename "$collection_name" .snapshot)
 
 # start qdrant
 cd $gaianet_base_dir/qdrant
@@ -184,7 +185,7 @@ nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
 sleep 2
 qdrant_pid=$!
 
-response=$(curl -X PUT http://localhost:6333/collections/$collection_name/snapshots/recover \
+response=$(curl -X PUT http://localhost:6333/collections/paris/snapshots/recover \
     -H "Content-Type: application/json" \
     -d "{\"location\":\"$url_snapshot\", \"priority\": null, \"checksum\": null}")
 sleep 5

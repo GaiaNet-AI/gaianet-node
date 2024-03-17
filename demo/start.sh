@@ -156,29 +156,24 @@ fi
 
 # parse collection name
 cd $gaianet_base_dir
-url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
-collection_name=$(basename $url_snapshot)
-# stem part of the filename
-collection_stem=$(basename "$collection_name" .snapshot)
-
-# Start the LlamaEdge API Server
-cd $gaianet_base_dir
-model_names="${chat_model_stem},${embedding_model_stem}"
-cmd="wasmedge --dir .:. --nn-preload default:GGML:AUTO:$chat_model_name --nn-preload embedding:GGML:AUTO:$embedding_model_name llama-api-server.wasm --model-name ${model_names} --model-alias default,embedding --prompt-template ${prompt_type} --ctx-size 4096,$embedding_ctx_size"
+cmd="wasmedge --dir .:. \
+  --nn-preload default:GGML:AUTO:$chat_model_name \
+  --nn-preload embedding:GGML:AUTO:$embedding_model_name \
+  llama-api-server.wasm -p $prompt_type \
+  --model-name $chat_model_stem,$embedding_model_stem \
+  --ctx-size 4096,$embedding_ctx_size \
+  --qdrant-url http://127.0.0.1:6333 \
+  --qdrant-collection-name "paris" \
+  --qdrant-limit 3 \
+  --qdrant-score-threshold 0.4 \
+  --web-ui ./dashboard \
+  --log-prompts"
 
 # Add reverse prompt if it exists
 if [ -n "$reverse_prompt" ]; then
     cmd="$cmd --reverse-prompt \"${reverse_prompt}\""
 fi
 
-# Add Qdrant options
-cmd="$cmd --qdrant-url http://127.0.0.1:6333 --qdrant-collection-name $collection_stem --qdrant-limit 3"
-
-# Add web-ui option
-cmd="$cmd --web-ui ./dashboard"
-
-# Add log options
-cmd="$cmd --log-prompts --log-stat"
 
 printf "    Run the following command to start the LlamaEdge API Server:\n\n"
 printf "    %s\n\n" "$cmd"
