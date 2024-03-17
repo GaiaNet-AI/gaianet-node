@@ -40,8 +40,13 @@ Task list of `start.sh`:
 - Start LlamaEdge API Server at `http://0.0.0.0:8080`
   - The gaianet branded chatbot-ui at `http://0.0.0.0:8080/index.html`
 
-## ,stop.sh
+## stop.sh
 
 ```bash
 ./stop.sh
 ```
+
+Task list of `stop.sh`:
+
+- Stop Qdrant instance
+- Stop LlamaEdge API Server
