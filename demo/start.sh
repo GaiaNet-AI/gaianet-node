@@ -8,7 +8,7 @@ if [ ! -f "config.json" ]; then
 fi
 # represents the directory where the script is located
 cwd=$(pwd)
-
+base_dir="$HOME/gaianet"
 
 # 1. start a Qdrant instance
 printf "[+] Starting Qdrant instance ...\n"
@@ -33,12 +33,13 @@ else
     exit 1
 fi
 
-qdrant_executable="$HOME/bin/qdrant"
+qdrant_executable="$base_dir/bin/qdrant"
 if [ -f "$qdrant_executable" ]; then
-    cd $HOME/gaia
+    cd $base_dir
     nohup $qdrant_executable > /dev/null 2>&1 &
     sleep 2
     qdrant_pid=$!
+    echo $qdrant_pid > $cwd/qdrant.pid
     printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
 else
     printf "Qdrant binary not found at $qdrant_executable\n"
@@ -110,6 +111,7 @@ else
 fi
 
 # parse cli options for embedding model
+cd $cwd
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
 if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
     # gguf filename
@@ -137,16 +139,17 @@ else
     exit 1
 fi
 
-cd $HOME/gaia
-llamaedge_wasm="$HOME/gaia/llama-api-server.wasm"
+cd $base_dir
+llamaedge_wasm="$base_dir/llama-api-server.wasm"
 if [ ! -f "$llamaedge_wasm" ]; then
     printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
     exit 1
 fi
 
 # Start the LlamaEdge API Server
-cd $HOME/gaia
-cmd="wasmedge --dir .:. --nn-preload default:GGML:AUTO:$chat_model_name --nn-preload embedding:GGML:AUTO:$embedding_model_name llama-api-server.wasm --model-name $chat_model_stem,$embdding_model_stem --model-alias default,embedding --prompt-template ${prompt_type} --ctx-size 4096,$embedding_ctx_size"
+cd $base_dir
+model_names="${chat_model_stem},${embedding_model_stem}"
+cmd="wasmedge --dir .:. --nn-preload default:GGML:AUTO:$chat_model_name --nn-preload embedding:GGML:AUTO:$embedding_model_name llama-api-server.wasm --model-name ${model_names} --model-alias default,embedding --prompt-template ${prompt_type} --ctx-size 4096,$embedding_ctx_size"
 
 # Add reverse prompt if it exists
 if [ -n "$reverse_prompt" ]; then
@@ -168,6 +171,9 @@ printf "    %s\n\n" "$cmd"
 nohup $cmd > /dev/null 2>&1 &
 sleep 2
 llamaedge_pid=$!
+echo $llamaedge_pid > $cwd/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
+
+printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
 exit 0

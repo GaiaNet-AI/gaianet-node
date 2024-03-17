@@ -13,6 +13,8 @@
 
 ```bash
 ./init.sh
+
+# run `source $HOME/.bashrc` to update the environment variables after running `init.sh`
 ```
 
 Task list of `init.sh`:
@@ -37,3 +39,9 @@ Task list of `start.sh`:
 - Start Qdrant instance at `http://0.0.0.0:6333` (REST API)
 - Start LlamaEdge API Server at `http://0.0.0.0:8080`
   - The gaianet branded chatbot-ui at `http://0.0.0.0:8080/index.html`
+
+## ,stop.sh
+
+```bash
+./stop.sh
+```
