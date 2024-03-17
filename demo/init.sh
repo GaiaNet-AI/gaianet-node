@@ -11,8 +11,9 @@ printf "\n"
 
 # Check if "gaianet" directory exists in $HOME
 if [ ! -d "$HOME/gaianet" ]; then
-    printf "Not found $HOME/gaianet\n"
-    exit 1
+    # printf "Not found $HOME/gaianet\n"
+    # exit 1
+    mkdir $HOME/gaianet
 fi
 # Set "gaianet_base_dir" to $HOME/gaianet
 gaianet_base_dir="$HOME/gaianet"
