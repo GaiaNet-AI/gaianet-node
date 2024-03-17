@@ -164,7 +164,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     # fi
 
     # start qdrant to create the storage directory structure if it does not exist
-    nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
+    nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
     sleep 2
     qdrant_pid=$!
     kill $qdrant_pid
@@ -181,7 +181,7 @@ collection_stem=$(basename "$collection_name" .snapshot)
 
 # start qdrant
 cd $gaianet_base_dir/qdrant
-nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
+nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
 sleep 2
 qdrant_pid=$!
 
