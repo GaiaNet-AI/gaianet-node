@@ -7,9 +7,20 @@
 </head>
 <body>
 
-<div class="container">
+<section class="jumbotron text-center">
+        <div class="container">
+          <h1 class="jumbotron-heading">GaiaNet node dashboard</h1>
+          <p class="lead text-muted">Manage your own GaiaNet node.</p>
+          <p>
+            <a href="#" id="connectBtn" class="btn btn-primary">Connect to Metamask</a>
+            <a href="chatbot-ui/index.html" class="btn btn-secondary">Chat with this node</a>
+          </p>
+        </div>
+</section>
+
+<div id="nodeInfo" class="container d-none">
     <div class="row input-group mb-3 mt-3">
-		<button class="btn btn-outline-secondary" type="button" id="createBtn">Create</button>
+		<button class="btn btn-outline-secondary" type="button" id="createBtn">Register</button>
 	</div>
     <div class="row input-group mb-3">
 		<label for="nameInput" class="form-label">Node address </label>
@@ -46,6 +57,6 @@
 <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 <script src="./js/config.js"></script>
 <script src="./js/connect.js"></script>
-<script src="./js/interact.js"></script>
+<script src="./js/main.js"></script>
 </body>
 </html>

@@ -97,7 +97,7 @@ async function updateNode(nodeAddress, name, description, url, availability){
   });
 }
 
-var contract = null;
-var signer = null;
-checkMetaMask()
-checkContract()
+// var contract = null;
+// var signer = null;
+// checkMetaMask()
+// checkContract()

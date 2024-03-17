@@ -1,3 +1,11 @@
+document.getElementById('connectBtn').addEventListener('click',async function() {
+  document.getElementById('nodeInfo').classList.remove('d-none');
+  var contract = null;
+  var signer = null;
+  checkMetaMask()
+  checkContract()
+}
+
 document.getElementById('queryBtn').addEventListener('click',async function() {
   console.log("Query")
   const address = document.getElementById('inputField').value;
