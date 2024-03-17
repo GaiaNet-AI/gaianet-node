@@ -4,7 +4,7 @@ document.getElementById('connectBtn').addEventListener('click',async function() 
   var signer = null;
   checkMetaMask()
   checkContract()
-}
+});
 
 document.getElementById('queryBtn').addEventListener('click',async function() {
   console.log("Query")
