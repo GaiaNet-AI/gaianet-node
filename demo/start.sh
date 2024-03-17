@@ -167,7 +167,8 @@ cmd="wasmedge --dir .:. \
   --qdrant-limit 3 \
   --qdrant-score-threshold 0.4 \
   --web-ui ./dashboard \
-  --log-prompts"
+  --log-prompts \
+  --log-stat"
 
 # Add reverse prompt if it exists
 if [ -n "$reverse_prompt" ]; then
