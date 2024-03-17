@@ -44,7 +44,7 @@ fi
 qdrant_executable="$gaianet_base_dir/bin/qdrant"
 if [ -f "$qdrant_executable" ]; then
     cd $gaianet_base_dir/qdrant
-    nohup $qdrant_executable > /dev/null 2>&1 &
+    nohup $qdrant_executable > start-log.txt 2>&1 &
     sleep 2
     qdrant_pid=$!
     echo $qdrant_pid > $script_dir/qdrant.pid
@@ -181,7 +181,7 @@ printf "    %s\n\n" "$cmd"
 
 # eval $cmd
 
-nohup $cmd > /dev/null 2>&1 &
+nohup $cmd > start-log.txt 2>&1 &
 sleep 2
 llamaedge_pid=$!
 echo $llamaedge_pid > $script_dir/llamaedge.pid
