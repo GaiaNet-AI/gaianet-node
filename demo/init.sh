@@ -4,11 +4,6 @@
 target=$(uname -m)
 
 
-# check if config.json exists or not
-if [ ! -f "config.json" ]; then
-    printf "config.json file not found\n"
-    exit 1
-fi
 # represents the directory where the script is located
 cwd=$(pwd)
 
@@ -21,6 +16,12 @@ if [ ! -d "$HOME/gaianet" ]; then
 fi
 # Set "base_dir" to $HOME/gaianet
 base_dir="$HOME/gaianet"
+
+# check if config.json exists or not
+if [ ! -f "$base_dir/config.json" ]; then
+    printf "config.json file not found in $base_dir\n"
+    exit 1
+fi
 
 # 2. Install WasmEdge with wasi-nn_ggml plugin for local user
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n\n"
@@ -152,23 +153,6 @@ if [ ! -d "$base_dir/qdrant" ]; then
 
     # copy the config directory to `qdrant` directory
     cp -r qdrant-1.8.1/config $base_dir/qdrant
-
-    # mkdir -p $base_dir/qdrant/static
-    # STATIC_DIR=$base_dir/qdrant/static
-    # OPENAPI_FILE=$base_dir/qdrant/qdrant-1.8.1/docs/redoc/master/openapi.json
-
-    # # Get latest dist.zip, assume jq is installed
-    # DOWNLOAD_LINK=$(curl --silent "https://api.github.com/repos/qdrant/qdrant-web-ui/releases/latest" | jq -r '.assets[] | select(.name=="dist-qdrant.zip") | .browser_download_url')
-
-    # wget -q -O dist-qdrant.zip $DOWNLOAD_LINK
-
-    # rm -rf "${STATIC_DIR}/"*
-    # unzip -q -o dist-qdrant.zip -d "${STATIC_DIR}"
-    # rm dist-qdrant.zip
-    # cp -r "${STATIC_DIR}/dist/"* "${STATIC_DIR}"
-    # rm -rf "${STATIC_DIR}/dist"
-
-    # cp "${OPENAPI_FILE}" "${STATIC_DIR}/openapi.json"
 
     # remove the `qdrant-1.8.1` directory
     rm -rf qdrant-1.8.1
