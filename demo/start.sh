@@ -154,6 +154,13 @@ if [ ! -f "$llamaedge_wasm" ]; then
     exit 1
 fi
 
+# parse collection name
+cd $gaianet_base_dir
+url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
+collection_name=$(basename $url_snapshot)
+# stem part of the filename
+collection_stem=$(basename "$collection_name" .snapshot)
+
 # Start the LlamaEdge API Server
 cd $gaianet_base_dir
 model_names="${chat_model_stem},${embedding_model_stem}"
@@ -165,7 +172,7 @@ if [ -n "$reverse_prompt" ]; then
 fi
 
 # Add Qdrant options
-cmd="$cmd --qdrant-url http://127.0.0.1:6333 --qdrant-collection-name paris --qdrant-limit 3"
+cmd="$cmd --qdrant-url http://127.0.0.1:6333 --qdrant-collection-name $collection_stem --qdrant-limit 3"
 
 # Add web-ui option
 cmd="$cmd --web-ui ./dashboard"
@@ -176,9 +183,11 @@ cmd="$cmd --log-prompts --log-stat"
 printf "    Run the following command to start the LlamaEdge API Server:\n\n"
 printf "    %s\n\n" "$cmd"
 
-nohup $cmd > /dev/null 2>&1 &
-sleep 2
-llamaedge_pid=$!
+eval $cmd
+
+# nohup $cmd > /dev/null 2>&1 &
+# sleep 2
+# llamaedge_pid=$!
 echo $llamaedge_pid > $script_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
 
