@@ -1,0 +1,10 @@
+serverAddr = "52.77.216.244"
+serverPort = 7000
+
+[[proxies]]
+name = "gaianet"
+type = "http"
+#localIP = "127.0.0.1"
+localPort = 8080
+#remotePort = 80
+subdomain = "demo"
