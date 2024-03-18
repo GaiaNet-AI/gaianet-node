@@ -9,7 +9,7 @@ async function checkMetaMask() {
   }
 
   let err = false;
-  await window.ethereum.request({ method: "eth_requestAccounts"})
+  const accounts = await window.ethereum.request({ method: "eth_requestAccounts"})
   .catch((e) => {
       if (e.code === 4001) {
           console.log('Please connect to MetaMask!');
@@ -29,6 +29,8 @@ async function checkMetaMask() {
       err = true;
   })
   if (err) return false;
+
+  document.getElementById('inputField').value = accounts[0] || '';
   return true;
 }
 
