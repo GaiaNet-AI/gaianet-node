@@ -237,11 +237,6 @@ cp $gaianet_base_dir/frp/frpc $gaianet_base_dir/bin/
 # 11. Download frpc.toml
 curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/frp/frpc.toml
 
-# start frpc
-cd $gaianet_base_dir
-nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/frp/frpc.toml > init-log.txt 2>&1 &
-sleep 2
-
 # start qdrant
 cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &

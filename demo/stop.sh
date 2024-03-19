@@ -13,3 +13,10 @@ if [ -f "llamaedge.pid" ]; then
     kill -9 $(cat llamaedge.pid)
     rm llamaedge.pid
 fi
+
+# stop frpc
+if [ -f "frpc.pid" ]; then
+    printf "[+] Stopping frpc ...\n"
+    kill -9 $(cat frpc.pid)
+    rm frpc.pid
+fi

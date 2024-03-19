@@ -187,6 +187,13 @@ llamaedge_pid=$!
 echo $llamaedge_pid > $script_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
 
+# start frpc
+printf "[+] Starting frpc ...\n"
+nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/frp/frpc.toml > init-log.txt 2>&1 &
+sleep 2
+frpc_pid=$!
+echo $frpc_pid > $script_dir/frpc.pid
+
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
 exit 0
