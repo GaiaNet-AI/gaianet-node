@@ -179,6 +179,69 @@ url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 collection_name=$(basename $url_snapshot)
 collection_stem=$(basename "$collection_name" .snapshot)
 
+# Check if the directory exists, if not, create it
+if [ ! -d "$gaianet_base_dir/frp" ]; then
+    mkdir -p $gaianet_base_dir/frp
+fi
+
+# 10. Install frpc at $HOME/gaianet/bin
+printf "[+] Installing frp...\n\n"
+# Check if the directory exists, if not, create it
+if [ ! -d "$gaianet_base_dir/frp" ]; then
+    mkdir -p $gaianet_base_dir/frp
+fi
+
+frp_version="v0.1.0-alpha.1"
+if [ "$(uname)" == "Darwin" ]; then
+    # download frp binary
+    if [ "$target" = "x86_64" ]; then
+        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_darwin_amd64.tar.gz
+        tar -xzf frp_${frp_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
+        rm frp_${frp_version}_darwin_amd64.tar.gz
+    elif [ "$target" = "arm64" ]; then
+        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_darwin_arm64.tar.gz
+        tar -xzf frp_${frp_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
+        rm frp_${frp_version}_darwin_arm64.tar.gz
+    fi
+    if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
+        echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    # download qdrant statically linked binary
+    if [ "$target" = "x86_64" ]; then
+        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_linux_amd64.tar.gz
+        tar -xzf frp_${frp_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
+        rm frp_${frp_version}_linux_amd64.tar.gz
+    elif [ "$target" = "arm64" ]; then
+        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_linux_arm64.tar.gz
+        tar -xzf frp_${frp_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
+        rm frp_${frp_version}_linux_arm64.tar.gz
+    fi
+    if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
+        echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    printf "For Windows users, please run this script in WSL.\n"
+    exit 1
+else
+    printf "Only support Linux, MacOS and Windows.\n"
+    exit 1
+fi
+printf "\n"
+
+# Copy frpc from $gaianet_base_dir/frp to $gaianet_base_dir/bin
+cp $gaianet_base_dir/frp/frpc $gaianet_base_dir/bin/
+
+# 11. Download frpc.toml
+curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/frp/frpc.toml
+
+# start frpc
+cd $gaianet_base_dir
+nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/frp/frpc.toml > init-log.txt 2>&1 &
+sleep 2
+
 # start qdrant
 cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
