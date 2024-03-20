@@ -234,8 +234,17 @@ printf "\n"
 # Copy frpc from $gaianet_base_dir/frp to $gaianet_base_dir/bin
 cp $gaianet_base_dir/frp/frpc $gaianet_base_dir/bin/
 
-# 11. Download frpc.toml
+# 11. Download frpc.toml, generate a subdomain and print it
 curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/frp/frpc.toml
+# Generate a random subdomain
+subdomain=$(openssl rand -hex 4)
+# Check if the subdomain was generated correctly
+if [ -z "$subdomain" ]; then
+    echo "Failed to generate a subdomain."
+    exit 1
+fi
+sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/frp/frpc.toml
+printf "The subdomain for frpc is: http://$subdomain.gaianet.xyz\n"
 
 # start qdrant
 cd $gaianet_base_dir/qdrant

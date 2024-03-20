@@ -194,6 +194,10 @@ sleep 2
 frpc_pid=$!
 echo $frpc_pid > $script_dir/frpc.pid
 
+# Extract the subdomain from frpc.toml
+subdomain=$(grep "subdomain" $gaianet_base_dir/frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+printf "The subdomain for frpc is: http://$subdomain.gaianet.xyz\n"
+
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
 exit 0
