@@ -226,12 +226,36 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "\n"
 fi
 
-# 9. recover from the given qdrant collection snapshot
+
+# 9. recover from the given qdrant collection snapshot =======================
 printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
 cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 collection_name=$(basename $url_snapshot)
 collection_stem=$(basename "$collection_name" .snapshot)
+
+# start qdrant
+cd $gaianet_base_dir/qdrant
+nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
+sleep 2
+qdrant_pid=$!
+
+response=$(curl -X PUT http://localhost:6333/collections/paris/snapshots/recover \
+    -H "Content-Type: application/json" \
+    -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
+sleep 5
+
+# stop qdrant
+kill $qdrant_pid
+
+printf "\n"
+
+if echo "$response" | grep -q '"status":"ok"'; then
+    printf "    Recovery is done.\n\n"
+else
+    printf "    Failed to recover from the collection snapshot. $response \n\n"
+fi
+# ======================================================================================
 
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/frp" ]; then
@@ -290,28 +314,6 @@ cp $gaianet_base_dir/frp/frpc $gaianet_base_dir/bin/
 
 # 11. Download frpc.toml
 curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/frp/frpc.toml
-
-# start qdrant
-cd $gaianet_base_dir/qdrant
-nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
-sleep 2
-qdrant_pid=$!
-
-response=$(curl -X PUT http://localhost:6333/collections/paris/snapshots/recover \
-    -H "Content-Type: application/json" \
-    -d "{\"location\":\"$url_snapshot\", \"priority\": null, \"checksum\": null}")
-sleep 5
-
-# stop qdrant
-kill $qdrant_pid
-
-printf "\n"
-
-if echo "$response" | grep -q '"status":"ok"'; then
-    printf "Recovery from the collection snapshot is done.\n\n"
-else
-    printf "Failed to recover from the collection snapshot. $response \n\n"
-fi
 
 printf "\n>>> Run 'source $HOME/.bashrc' to get the gaia environment ready. To start the gaia services, run the command: ./start.sh <<<\n"
 

@@ -193,6 +193,7 @@ nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/frp/frpc.toml > init-log.t
 sleep 2
 frpc_pid=$!
 echo $frpc_pid > $script_dir/frpc.pid
+printf "\n    frpc started with pid: $frpc_pid\n"
 
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
