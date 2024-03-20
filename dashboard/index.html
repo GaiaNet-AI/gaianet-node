@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Registry</title>
+    <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -12,51 +12,57 @@
           <h1 class="jumbotron-heading">GaiaNet node dashboard</h1>
           <p class="lead text-muted">Manage your own GaiaNet node.</p>
           <p>
-            <a href="#" id="connectBtn" class="btn btn-primary">Connect to Metamask</a>
-            <a href="chatbot-ui/index.html" class="btn btn-secondary">Chat with this node</a>
+            <a href="chatbot-ui/index.html" class="btn btn-primary">Chat with this node</a>
           </p>
         </div>
 </section>
 
-<div id="nodeInfo" class="container d-none">
-    <div class="row input-group mb-3 mt-3">
-		<button class="btn btn-outline-secondary" type="button" id="createBtn">Register</button>
-	</div>
-    <div class="row input-group mb-3">
-		<label for="nameInput" class="form-label">Node address </label>
-        <input type="text" class="form-control" id="inputField" placeholder="Enter address...">
-    </div>
-	<div class="row input-group mb-3">
-        <button class="btn btn-outline-secondary" type="button" id="queryBtn">Query</button>
-    </div>
-
-    <div id="dynamicForm" class="d-none">
-        <div class="mb-3">
-            <label for="nameInput" class="form-label">Name</label>
-            <input type="text" class="form-control" id="nameInput">
-        </div>
-        <div class="mb-3">
-            <label for="descriptionInput" class="form-label">Description</label>
-            <input type="text" class="form-control" id="descriptionInput">
-        </div>
-        <div class="mb-3">
-            <label for="urlInput" class="form-label">Public URL to access the API server</label>
-            <input type="text" class="form-control" id="urlInput">
-        </div>
-        <div class="mb-3">
-            <label for="availabilityInput" class="form-label">Availability</label>
-            <input type="text" class="form-control" id="availabilityInput">
-        </div>
-        <button class="btn btn-primary" id="updateBtn">Update or create</button>
-        <button class="btn btn-secondary" id="backBtn">Back</button>
-    </div>
+<div id="nodeInfo" class="container">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Node address</td>
+	  <td>0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5</td>
+	</tr>
+        <tr>
+          <td>Cohort</td>
+	  <td>gaianet.berkeley.edu</td>
+	</tr>
+        <tr>
+          <td>API endpoint</td>
+	  <td>https://0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5.gaianet.berkeley.edu/</td>
+	</tr>
+        <tr>
+          <td>Price</td>
+	  <td>USD $3.14 per million language tokens</td>
+	</tr>
+        <tr>
+          <td>Prepay credits</td>
+	  <td>0xAE3FaDD231C8Fb2B2c756987ecb582963405D018</td>
+	</tr>
+        <tr>
+          <td>Description</td>
+	  <td>A fine-tuned TA model for CS 101 course. Optimized for students with no programming background.</td>
+	</tr>
+        <tr>
+          <td>LLM model name</td>
+	  <td>Llama-2-7b-chat-hf-Q5_K_M</td>
+	</tr>
+        <tr>
+          <td>Embedding model name</td>
+	  <td>all-MiniLM-L6-v2-ggml-model-f16</td>
+	</tr>
+      </tbody>
+    </table>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
-        type="application/javascript"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-<script src="./js/config.js"></script>
-<script src="./js/connect.js"></script>
-<script src="./js/main.js"></script>
 </body>
 </html>
