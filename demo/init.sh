@@ -177,7 +177,7 @@ cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the llama-api-server.wasm ...\n\n"
 
-    curl -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-server-multi-models/api-server/llama-api-server.wasm
+    curl -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-files-endpoint/api-server/llama-api-server.wasm
 
 else
     printf "[+] Using the cached llama-api-server.wasm ...\n"
