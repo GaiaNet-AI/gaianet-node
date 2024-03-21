@@ -1,5 +1,6 @@
 # !/bin/bash
 
+
 # target name
 target=$(uname -m)
 
@@ -79,7 +80,6 @@ fi
 printf "\n"
 
 # 3. Install Qdrant at $HOME/gaianet/bin
-
 # Check if "$gaianet_base_dir/bin" directory exists
 if [ ! -d "$gaianet_base_dir/bin" ]; then
     # If not, create it
@@ -226,35 +226,259 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "\n"
 fi
 
-
 # 9. recover from the given qdrant collection snapshot =======================
-printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
 cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
-collection_name=$(basename $url_snapshot)
-collection_stem=$(basename "$collection_name" .snapshot)
+url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
-# start qdrant
-cd $gaianet_base_dir/qdrant
-nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
-sleep 2
-qdrant_pid=$!
+if [ -n "$url_snapshot" ]; then
+    printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
+    collection_name=$(basename $url_snapshot)
+    collection_stem=$(basename "$collection_name" .snapshot)
 
-response=$(curl -X PUT http://localhost:6333/collections/paris/snapshots/recover \
-    -H "Content-Type: application/json" \
-    -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
-sleep 5
+    # start qdrant
+    cd $gaianet_base_dir/qdrant
+    nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
+    sleep 2
+    qdrant_pid=$!
 
-# stop qdrant
-kill $qdrant_pid
+    response=$(curl -X PUT http://localhost:6333/collections/paris/snapshots/recover \
+        -H "Content-Type: application/json" \
+        -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
+    sleep 5
 
+    # stop qdrant
+    kill $qdrant_pid
+
+    printf "\n"
+
+    if echo "$response" | grep -q '"status":"ok"'; then
+        printf "    Recovery is done.\n"
+    else
+        printf "    Failed to recover from the collection snapshot. $response \n"
+    fi
+
+elif [ -n "$url_document" ]; then
+    printf "[+] Creating a Qdrant collection from the given document ...\n\n"
+
+    # 9.1. start a Qdrant instance to remove the 'paris' collection if it exists
+    printf "    * Remove 'paris' collection if it exists ...\n\n"
+    if [ "$(uname)" == "Darwin" ]; then
+        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+            pid=$(lsof -t -i:6333)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if netstat -tuln | grep -q ':6333'; then
+            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+            pid=$(fuser -n tcp 6333 2> /dev/null)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+        exit 1
+    fi
+
+    qdrant_executable="$gaianet_base_dir/bin/qdrant"
+    if [ -f "$qdrant_executable" ]; then
+        cd $gaianet_base_dir/qdrant
+        nohup $qdrant_executable > start-log.txt 2>&1 &
+        sleep 2
+        qdrant_pid=$!
+        echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
+
+        # remove the 'paris' collection if it exists
+        del_response=$(curl -X DELETE http://localhost:6333/collections/paris \
+            -H "Content-Type: application/json")
+        status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+        if [ "$status" != "ok" ]; then
+            printf "    Failed to remove the 'paris' collection. $del_response\n\n"
+            exit 1
+        fi
+    else
+        printf "Qdrant binary not found at $qdrant_executable\n"
+        exit 1
+    fi
+    printf "\n"
+
+    # 9.2. start a Qdrant instance to create the 'paris' collection from the given document
+    printf "    * Starting LlamaEdge API Server ...\n\n"
+    if [ "$(uname)" == "Darwin" ]; then
+        if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
+            printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
+            pid=$(lsof -t -i:8080)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if netstat -tuln | grep -q ':8080'; then
+            printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
+            pid=$(fuser -n tcp 8080 2> /dev/null)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+        exit 1
+    fi
+
+    # parse cli options for chat model
+    cd $gaianet_base_dir
+    url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
+
+    if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_chat_model =~ ^https://huggingface\.co/gaianet ]]; then
+        # gguf filename
+        chat_model_name=$(basename $url_chat_model)
+        # stem part of the filename
+        chat_model_stem=$(basename "$chat_model_name" .gguf)
+        # repo url
+        repo_chat_model=$(echo "$url_chat_model" | awk -F'/' '{print $1"//"$3"/"$4"/"$5}')
+
+        # README.md url
+        readme_url="$repo_chat_model/resolve/main/README.md"
+
+        # Download the README.md file
+        curl -s $readme_url -o README.md
+
+        # Extract the "Prompt type: xxxx" line
+        prompt_type_line=$(grep -i "Prompt type:" README.md)
+
+        # Extract the xxxx part
+        prompt_type=$(echo $prompt_type_line | cut -d'`' -f2 | xargs)
+
+        # Check if "Reverse prompt" exists
+        if grep -q "Reverse prompt:" README.md; then
+            # Extract the "Reverse prompt: xxxx" line
+            reverse_prompt_line=$(grep -i "Reverse prompt:" README.md)
+
+            # Extract the xxxx part
+            reverse_prompt=$(echo $reverse_prompt_line | cut -d'`' -f2 | xargs)
+        fi
+
+        # Clean up
+        rm README.md
+    else
+        printf "Error: the chat model is not from https://huggingface.co/second-state or https://huggingface.co/gaianet\n"
+        exit 1
+    fi
+
+    # parse cli options for embedding model
+    cd $gaianet_base_dir
+    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+    if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_embedding_model =~ ^https://huggingface\.co/gaianet ]]; then
+        # gguf filename
+        embedding_model_name=$(basename $url_embedding_model)
+        # stem part of the filename
+        embedding_model_stem=$(basename "$embedding_model_name" .gguf)
+        # repo url
+        repo_chat_model=$(echo "$url_embedding_model" | awk -F'/' '{print $1"//"$3"/"$4"/"$5}')
+        # README.md url
+        readme_url="$repo_chat_model/resolve/main/README.md"
+
+        # Download the README.md file
+        curl -s $readme_url -o README.md
+
+        # Extract the "Prompt type: xxxx" line
+        context_size_line=$(grep -i "Context size:" README.md)
+
+        # Extract the xxxx part
+        embedding_ctx_size=$(echo $context_size_line | cut -d'`' -f2 | xargs)
+
+        # Clean up
+        rm README.md
+    else
+        printf "Error: the embedding model is not from https://huggingface.co/second-state\n or https://huggingface.co/gaianet\n"
+        exit 1
+    fi
+
+    cd $gaianet_base_dir
+    llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+    if [ ! -f "$llamaedge_wasm" ]; then
+        printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
+        exit 1
+    fi
+
+    # parse collection name
+    cd $gaianet_base_dir
+    cmd="wasmedge --dir .:. \
+    --nn-preload default:GGML:AUTO:$chat_model_name \
+    --nn-preload embedding:GGML:AUTO:$embedding_model_name \
+    llama-api-server.wasm -p $prompt_type \
+    --model-name $chat_model_stem,$embedding_model_stem \
+    --ctx-size 4096,$embedding_ctx_size \
+    --qdrant-url http://127.0.0.1:6333 \
+    --qdrant-collection-name "paris" \
+    --qdrant-limit 3 \
+    --qdrant-score-threshold 0.4 \
+    --web-ui ./dashboard \
+    --log-prompts \
+    --log-stat"
+
+    # Add reverse prompt if it exists
+    if [ -n "$reverse_prompt" ]; then
+        cmd="$cmd --reverse-prompt \"${reverse_prompt}\""
+    fi
+
+    # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
+    # printf "    %s\n\n" "$cmd"
+
+    nohup $cmd > start-log.txt 2>&1 &
+    sleep 2
+    llamaedge_pid=$!
+    echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+
+    # (1) download the document
+    printf "    * Downloading the document ...\n\n"
+    cd $gaianet_base_dir
+    curl -s -LO $url_document
+
+    # (2) upload the document to api-server via the `/v1/files` endpoint
+    printf "    * Uploading the document to LlamaEdge API Server ...\n\n"
+    doc_response=$(curl -X POST http://127.0.0.1:8080/v1/files -F "file=@paris.txt")
+    id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    printf "\n"
+
+    # (3) chunk the document
+    printf "    * Chunking the document ...\n\n"
+    chunk_response=$(curl -X POST http://127.0.0.1:8080/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
+    chunks=$(echo "$chunk_response" | jq -c '.chunks')
+
+    printf "\n"
+
+    # (4) compute the embeddings for the chunks and upload them to the Qdrant instance
+    printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n\n"
+
+    data=$(jq -n --arg model "all-MiniLM-L6-v2-ggml-model-f16" --argjson input "$chunks" '{"model": $model, "input": $input}')
+    embedding_response=$(curl -X POST http://127.0.0.1:8080/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
+
+    printf "\n"
+
+    # stop the Qdrant instance
+    if [ -f "$gaianet_base_dir/qdrant.pid" ]; then
+        # printf "[+] Stopping Qdrant instance ...\n"
+        kill $(cat $gaianet_base_dir/qdrant.pid)
+        rm $gaianet_base_dir/qdrant.pid
+    fi
+
+    # stop the api-server
+    if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
+        # printf "[+] Stopping API server ...\n"
+        kill $(cat $gaianet_base_dir/llamaedge.pid)
+        rm $gaianet_base_dir/llamaedge.pid
+    fi
+
+
+else
+    echo "Please set 'snapshot' or 'document' field in config.json"
+fi
 printf "\n"
 
-if echo "$response" | grep -q '"status":"ok"'; then
-    printf "    Recovery is done.\n\n"
-else
-    printf "    Failed to recover from the collection snapshot. $response \n\n"
-fi
 # ======================================================================================
 
 # Check if the directory exists, if not, create it
