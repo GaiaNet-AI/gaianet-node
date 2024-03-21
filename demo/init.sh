@@ -244,7 +244,7 @@ if [ -z "$subdomain" ]; then
     exit 1
 fi
 sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/frp/frpc.toml
-printf "The subdomain for frpc is: http://$subdomain.gaianet.xyz\n"
+printf "The subdomain for frpc is: http://$subdomain.gaianet.xyz:8080\n"
 
 # start qdrant
 cd $gaianet_base_dir/qdrant
