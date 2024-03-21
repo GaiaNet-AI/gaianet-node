@@ -140,7 +140,7 @@ printf "\n"
 
 # 4. Download GGUF chat model to $HOME/gaianet
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
-if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]]; then
+if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_chat_model =~ ^https://huggingface\.co/gaianet ]]; then
     chat_model=$(basename $url_chat_model)
 
     if [ -f "$gaianet_base_dir/$chat_model" ]; then
@@ -151,13 +151,13 @@ if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]]; then
     fi
     printf "\n"
 else
-    printf "Error: the chat model is not from https://huggingface.co/second-state\n"
+    printf "Error: the chat model is not from https://huggingface.co/second-state or or https://huggingface.co/gaianet\n"
     exit 1
 fi
 
 # 5. Download GGUF embedding model to $HOME/gaianet
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
-if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
+if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_embedding_model =~ ^https://huggingface\.co/gaianet ]]; then
     embedding_model=$(basename $url_embedding_model)
 
     if [ -f "$gaianet_base_dir/$embedding_model" ]; then
@@ -168,7 +168,7 @@ if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
     fi
     printf "\n"
 else
-    printf "Error: the embedding model is not from https://huggingface.co/second-state\n"
+    printf "Error: the embedding model is not from https://huggingface.co/second-state\n or or https://huggingface.co/gaianet\n"
     exit 1
 fi
 
