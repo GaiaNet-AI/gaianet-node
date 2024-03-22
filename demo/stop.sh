@@ -15,8 +15,8 @@ if [ -f "llamaedge.pid" ]; then
 fi
 
 # stop frpc
-if [ -f "frpc.pid" ]; then
-    printf "[+] Stopping frpc ...\n"
-    kill -9 $(cat frpc.pid)
-    rm frpc.pid
+if [ -f "gaianet-domain.pid" ]; then
+    printf "[+] Stopping gaianet-domain ...\n"
+    kill -9 $(cat gaianet-domain.pid)
+    rm gaianet-domain.pid
 fi

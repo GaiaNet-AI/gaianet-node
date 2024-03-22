@@ -188,15 +188,15 @@ echo $llamaedge_pid > $script_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
 
 # start frpc
-printf "[+] Starting frpc ...\n"
-nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/frp/frpc.toml > init-log.txt 2>&1 &
+printf "[+] Starting gaianet-domain ...\n"
+nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > init-log.txt 2>&1 &
 sleep 2
-frpc_pid=$!
-echo $frpc_pid > $script_dir/frpc.pid
+gaianet_domain_pid=$!
+echo $gaianet_domain_pid > $script_dir/gaianet-domain.pid
 
 # Extract the subdomain from frpc.toml
-subdomain=$(grep "subdomain" $gaianet_base_dir/frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-printf "The subdomain for frpc is: http://$subdomain.gaianet.xyz:8080\n"
+subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+printf "The subdomain for gaianet-domain is: http://$subdomain.gaianet.xyz:8080\n"
 
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 

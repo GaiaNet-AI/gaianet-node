@@ -184,39 +184,39 @@ if [ ! -d "$gaianet_base_dir/frp" ]; then
     mkdir -p $gaianet_base_dir/frp
 fi
 
-# 10. Install frpc at $HOME/gaianet/bin
-printf "[+] Installing frp...\n\n"
+# 10. Install gaianet-domain at $HOME/gaianet/bin
+printf "[+] Installing gaianet-domain...\n\n"
 # Check if the directory exists, if not, create it
-if [ ! -d "$gaianet_base_dir/frp" ]; then
-    mkdir -p $gaianet_base_dir/frp
+if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
+    mkdir -p $gaianet_base_dir/gaianet-domain
 fi
 
-frp_version="v0.1.0-alpha.1"
+gaianet_domain_version="v0.1.0-alpha.1"
 if [ "$(uname)" == "Darwin" ]; then
-    # download frp binary
+    # download gaianet-domain binary
     if [ "$target" = "x86_64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_darwin_amd64.tar.gz
-        tar -xzf frp_${frp_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
-        rm frp_${frp_version}_darwin_amd64.tar.gz
+        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_darwin_arm64.tar.gz
-        tar -xzf frp_${frp_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
-        rm frp_${frp_version}_darwin_arm64.tar.gz
+        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
     fi
     if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
         echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
     fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    # download qdrant statically linked binary
+    # download gaianet-domain statically linked binary
     if [ "$target" = "x86_64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_linux_amd64.tar.gz
-        tar -xzf frp_${frp_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
-        rm frp_${frp_version}_linux_amd64.tar.gz
+        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        tar -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm frp_${gaianet_domain_version}_linux_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/frp/releases/download/$frp_version/frp_${frp_version}_linux_arm64.tar.gz
-        tar -xzf frp_${frp_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/frp
-        rm frp_${frp_version}_linux_arm64.tar.gz
+        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        tar -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm frp_${gaianet_domain_version}_linux_arm64.tar.gz
     fi
     if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
         echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
@@ -231,11 +231,12 @@ else
 fi
 printf "\n"
 
-# Copy frpc from $gaianet_base_dir/frp to $gaianet_base_dir/bin
-cp $gaianet_base_dir/frp/frpc $gaianet_base_dir/bin/
+# Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
+cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 
 # 11. Download frpc.toml, generate a subdomain and print it
-curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/frp/frpc.toml
+curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
+
 # Generate a random subdomain
 subdomain=$(openssl rand -hex 4)
 # Check if the subdomain was generated correctly
@@ -243,8 +244,28 @@ if [ -z "$subdomain" ]; then
     echo "Failed to generate a subdomain."
     exit 1
 fi
-sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/frp/frpc.toml
-printf "The subdomain for frpc is: http://$subdomain.gaianet.xyz:8080\n"
+
+sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+
+# Read domain from config.json
+gaianet_domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+
+# Resolve the IP address of the domain
+ip_address=$(dig +short a.$gaianet_domain | tr -d '\n')
+
+# Check if the IP address was resolved correctly
+if [ -z "$ip_address" ]; then
+    echo "Failed to resolve the IP address of the domain."
+    exit 1
+fi
+
+# Replace the serverAddr in frpc.toml
+sed -i '' "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+
+# Copy frpc.toml to dashboard/
+cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/dashboard/
+
+printf "The subdomain for frpc is: http://$subdomain.$gaianet_domain:8080\n"
 
 # start qdrant
 cd $gaianet_base_dir/qdrant
