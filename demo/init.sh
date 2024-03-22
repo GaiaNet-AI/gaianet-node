@@ -464,6 +464,7 @@ elif [ -n "$url_document" ]; then
     doc_response=$(curl -X POST http://127.0.0.1:8080/v1/files -F "file=@$doc_filename")
     id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    rm $doc_filename
     printf "\n"
 
     # (3) chunk the document
