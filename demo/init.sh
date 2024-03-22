@@ -217,6 +217,27 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     # remove the `qdrant-1.8.1` directory
     rm -rf qdrant-1.8.1
 
+    # check 6333 port is in use or not
+    if [ "$(uname)" == "Darwin" ]; then
+        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+            pid=$(lsof -t -i:6333)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if netstat -tuln | grep -q ':6333'; then
+            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+            pid=$(fuser -n tcp 6333 2> /dev/null)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+        exit 1
+    fi
+
     # start qdrant to create the storage directory structure if it does not exist
     nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
     sleep 2
@@ -235,6 +256,27 @@ if [ -n "$url_snapshot" ]; then
     printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
     collection_name=$(basename $url_snapshot)
     collection_stem=$(basename "$collection_name" .snapshot)
+
+    # check 6333 port is in use or not
+    if [ "$(uname)" == "Darwin" ]; then
+        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+            pid=$(lsof -t -i:6333)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if netstat -tuln | grep -q ':6333'; then
+            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+            pid=$(fuser -n tcp 6333 2> /dev/null)
+            kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+        exit 1
+    fi
 
     # start qdrant
     cd $gaianet_base_dir/qdrant
