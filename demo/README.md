@@ -62,5 +62,5 @@ Note that using default `config.json` to start the services, the following comma
 curl -s -X POST http://localhost:8080/v1/chat/completions \
     -H 'accept:application/json' \
     -H 'Content-Type: application/json' \
-    -d '{"messages":[{"role":"user","content":"What is the location of Paris, France on the Seine River?\n"}],"model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M","stream":false}'
+    -d '{"messages":[{"role":"user","content":"What is the location of Paris, France on the Seine River?\n"}],"model":"Llama-2-7b-chat-hf-Q5_K_M","stream":false}'
 ```

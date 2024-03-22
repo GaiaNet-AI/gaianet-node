@@ -82,7 +82,7 @@ fi
 cd $gaianet_base_dir
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
 
-if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]]; then
+if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_chat_model =~ ^https://huggingface\.co/gaianet ]]; then
     # gguf filename
     chat_model_name=$(basename $url_chat_model)
     # stem part of the filename
@@ -114,14 +114,14 @@ if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]]; then
     # Clean up
     rm README.md
 else
-    printf "Error: the chat model is not from https://huggingface.co/second-state\n"
+    printf "Error: the chat model is not from https://huggingface.co/second-state or https://huggingface.co/gaianet\n"
     exit 1
 fi
 
 # parse cli options for embedding model
 cd $gaianet_base_dir
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
-if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
+if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_embedding_model =~ ^https://huggingface\.co/gaianet ]]; then
     # gguf filename
     embedding_model_name=$(basename $url_embedding_model)
     # stem part of the filename
@@ -143,7 +143,7 @@ if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]]; then
     # Clean up
     rm README.md
 else
-    printf "Error: the embedding model is not from https://huggingface.co/second-state\n"
+    printf "Error: the embedding model is not from https://huggingface.co/second-state\n or https://huggingface.co/gaianet\n"
     exit 1
 fi
 
@@ -185,7 +185,7 @@ nohup $cmd > start-log.txt 2>&1 &
 sleep 2
 llamaedge_pid=$!
 echo $llamaedge_pid > $script_dir/llamaedge.pid
-printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n"
+printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
 
 # start gaianet-domain
 printf "[+] Starting gaianet-domain ...\n"
