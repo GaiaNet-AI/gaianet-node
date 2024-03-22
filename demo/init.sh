@@ -435,10 +435,10 @@ elif [ -n "$url_document" ]; then
     # (1) download the document
     printf "    * Downloading the document ...\n\n"
     cd $gaianet_base_dir
-    filename=$(basename $url_document)
-    curl -s $url_document -o $filename
+    doc_filename=$(basename $url_document)
+    curl -s $url_document -o $doc_filename
 
-    if [[ $filename != *.txt ]]; then
+    if [[ $doc_filename != *.txt ]]; then
         printf "Error: the document to upload should be a '*.txt' file\n"
 
         # stop the Qdrant instance
@@ -461,7 +461,7 @@ elif [ -n "$url_document" ]; then
 
     # (2) upload the document to api-server via the `/v1/files` endpoint
     printf "    * Uploading the document to LlamaEdge API Server ...\n\n"
-    doc_response=$(curl -X POST http://127.0.0.1:8080/v1/files -F "file=@paris.txt")
+    doc_response=$(curl -X POST http://127.0.0.1:8080/v1/files -F "file=@$doc_filename")
     id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     printf "\n"
