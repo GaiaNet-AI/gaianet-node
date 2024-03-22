@@ -438,8 +438,8 @@ elif [ -n "$url_document" ]; then
     doc_filename=$(basename $url_document)
     curl -s $url_document -o $doc_filename
 
-    if [[ $doc_filename != *.txt ]]; then
-        printf "Error: the document to upload should be a '*.txt' file\n"
+    if [[ $doc_filename != *.txt ]] && [[ $doc_filename != *.md ]]; then
+        printf "Error: the document to upload should be a file with 'txt' or 'md' extension.\n"
 
         # stop the Qdrant instance
         if [ -f "$gaianet_base_dir/qdrant.pid" ]; then
