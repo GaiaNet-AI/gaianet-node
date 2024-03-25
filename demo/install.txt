@@ -1,0 +1,19 @@
+
+This chapter will discuss ways to install and uninstall the WasmEdge Runtime on various OSes and platforms. We will cover how to install plug-ins to WasmEdge. Docker Desktop 4.15+ already has WasmEdge bundled in its distribution binary. If you use Docker Desktop, you will not need to install WasmEdge separately. Check out docker_wasm.md to see how to run WasmEdge apps in Docker Desktop.
+
+You can install the WasmEdge Runtime on any generic Linux and MacOS platforms. If you use Windows 10 or Fedora / Red Hat Linux systems, you can install with their default package managers.
+
+For generic Linux and MacOS, the easiest way to install WasmEdge is to run the command: `curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash`. Your system should have `git` and `curl` as prerequisites.
+
+
+Run the command `source $HOME/.wasmedge/env` to make the installed binary available in the current session.
+
+To install WasmEdge for all users, WasmEdge is installed in the `$HOME/.wasmedge` directory by default. You can install it into a system directory, such as `/usr/local` to make it available to all users. To specify an install directory, run the `install.sh` script with the `-p` flag. You will need to run the command `curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- -p /usr/local` as the `root` user or `sudo` since they are written write into system directories.
+
+The WasmEdge installer script will install the latest official release by default. You could install a specific version of WasmEdge, including pre-releases or old releases by passing the `-v` argument to the installer script. Here is an example:
+
+```bash
+VERSION={{ wasmedge_version }}
+curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- -v $VERSION
+```
+
