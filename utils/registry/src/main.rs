@@ -47,7 +47,7 @@ async fn main() {
         )
         // .arg_required_else_help(true)
         .get_matches();
-    
+
     // Configuration
     let path = "./config.json";
     let chain_id = 18;
@@ -76,7 +76,7 @@ async fn main() {
             Token::String(config["address"].to_string().trim_matches('"').to_string()),
             Token::String(config["description"].to_string().trim_matches('"').to_string()),
             Token::String(config["public_url"].to_string().trim_matches('"').to_string()), 
-            Token::Bool(status)
+            Token::Bool(status)Create a Rust program to update the registration smart contractCreate a Rust program to update the registration smart contract
         ]).unwrap();
         let params = json!([wrap_transaction(&rpc_node_url, chain_id, wallet, H160::from_str(&contract_address).unwrap().into(), data, U256::from(0)).await.unwrap().as_str()]);
         let resp =json_rpc(&rpc_node_url, "eth_sendRawTransaction", params).await.expect("Failed to send raw transaction.");
