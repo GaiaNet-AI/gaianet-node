@@ -546,11 +546,6 @@ printf "\n"
 
 # ======================================================================================
 
-# Check if the directory exists, if not, create it
-if [ ! -d "$gaianet_base_dir/frp" ]; then
-    mkdir -p $gaianet_base_dir/frp
-fi
-
 # 10. Install gaianet-domain at $HOME/gaianet/bin
 printf "[+] Installing gaianet-domain...\n\n"
 # Check if the directory exists, if not, create it
@@ -579,11 +574,11 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if [ "$target" = "x86_64" ]; then
         curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
         tar -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm frp_${gaianet_domain_version}_linux_amd64.tar.gz
+        rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
         curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
         tar -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm frp_${gaianet_domain_version}_linux_arm64.tar.gz
+        rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
     fi
     if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
         echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
