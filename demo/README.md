@@ -27,7 +27,7 @@ Task list of `init.sh`:
 - Download `dashboard` to `$HOME/gaianet`
 - Create `qdrant` directory in `$HOME/gaianet` as the default data directory of Qdrant
 - Recover the snapshot (in `config.json`) to Qdrant
-- Download `frpc` to `$HOME/gaianet`
+- Download `gaianet-domain` to `$HOME/gaianet`
 
 ## start.sh
 
@@ -40,7 +40,7 @@ Task list of `start.sh`:
 - Start Qdrant instance at `http://0.0.0.0:6333` (REST API)
 - Start LlamaEdge API Server at `http://0.0.0.0:8080`
   - The gaianet branded chatbot-ui at `http://0.0.0.0:8080/index.html`
-- Start frpc at `http://yoursubdomain.gaianet.xyz:8080`
+- Start gaianet-domain at `http://<your_subdomain>.gaianet.xyz:8080`
 
 ## stop.sh
 
@@ -52,7 +52,7 @@ Task list of `stop.sh`:
 
 - Stop Qdrant instance
 - Stop LlamaEdge API Server
-- Stop frpc
+- Stop gaianet-domain
 
 ## Test
 

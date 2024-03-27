@@ -185,6 +185,12 @@ fi
 printf "\n"
 
 # 7. Download dashboard to $HOME/gaianet
+if ! command -v unzip &> /dev/null
+then
+    echo "unzip could not be found, please install it."
+    exit
+fi
+
 if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading dashboard ...\n"
     if [ -d "$gaianet_base_dir/gaianet-node" ]; then
@@ -607,8 +613,6 @@ if [ -z "$subdomain" ]; then
     exit 1
 fi
 
-sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-
 # Read domain from config.json
 gaianet_domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
 
@@ -621,8 +625,18 @@ if [ -z "$ip_address" ]; then
     exit 1
 fi
 
-# Replace the serverAddr in frpc.toml
-sed -i '' "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+# Replace the serverAddr & subdain in frpc.toml
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    sed_i_cmd="sed -i"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    sed_i_cmd="sed -i ''"
+else
+    echo "Unsupported OS"
+    exit 1
+fi
+
+$sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # Copy frpc.toml to dashboard/
 cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/dashboard/
