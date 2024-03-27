@@ -328,7 +328,7 @@ elif [ -n "$url_document" ]; then
     qdrant_executable="$gaianet_base_dir/bin/qdrant"
     if [ -f "$qdrant_executable" ]; then
         cd $gaianet_base_dir/qdrant
-        nohup $qdrant_executable > start-log.txt 2>&1 &
+        nohup $qdrant_executable > init-log.txt 2>&1 &
         sleep 2
         qdrant_pid=$!
         echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
@@ -469,7 +469,7 @@ elif [ -n "$url_document" ]; then
     # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
     # printf "    %s\n\n" "$cmd"
 
-    nohup $cmd > start-log.txt 2>&1 &
+    nohup $cmd > init-log.txt 2>&1 &
     sleep 2
     llamaedge_pid=$!
     echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
