@@ -625,7 +625,7 @@ if [ -z "$ip_address" ]; then
     exit 1
 fi
 
-# Replace the serverAddr & subdain in frpc.toml
+# Replace the serverAddr & subdomain in frpc.toml
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sed_i_cmd="sed -i"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
