@@ -607,7 +607,7 @@ $sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_ba
 # Copy frpc.toml to dashboard/
 cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/dashboard/
 
-printf "The subdomain for frpc is: http://$subdomain.$gaianet_domain:8080\n"
+printf "The subdomain for frpc is: https://$subdomain.$gaianet_domain\n"
 
 printf "\n>>> Run 'source $HOME/.bashrc' to get the gaia environment ready. To start the gaia services, run the command: ./start.sh <<<\n"
 
