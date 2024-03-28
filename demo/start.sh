@@ -155,7 +155,7 @@ printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n\n"
 
 # Extract the subdomain from frpc.toml
 subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-printf "    The subdomain for gaianet-domain is: http://$subdomain.gaianet.xyz:8080\n"
+printf "    The subdomain for gaianet-domain is: https://$subdomain.gaianet.xyz\n"
 
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
