@@ -81,71 +81,28 @@ fi
 # parse cli options for chat model
 cd $gaianet_base_dir
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
-
-if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_chat_model =~ ^https://huggingface\.co/gaianet ]]; then
-    # gguf filename
-    chat_model_name=$(basename $url_chat_model)
-    # stem part of the filename
-    chat_model_stem=$(basename "$chat_model_name" .gguf)
-    # repo url
-    repo_chat_model=$(echo "$url_chat_model" | awk -F'/' '{print $1"//"$3"/"$4"/"$5}')
-
-    # README.md url
-    readme_url="$repo_chat_model/resolve/main/README.md"
-
-    # Download the README.md file
-    curl -s $readme_url -o README.md
-
-    # Extract the "Prompt type: xxxx" line
-    prompt_type_line=$(grep -i "Prompt type:" README.md)
-
-    # Extract the xxxx part
-    prompt_type=$(echo $prompt_type_line | cut -d'`' -f2 | xargs)
-
-    # Check if "Reverse prompt" exists
-    if grep -q "Reverse prompt:" README.md; then
-        # Extract the "Reverse prompt: xxxx" line
-        reverse_prompt_line=$(grep -i "Reverse prompt:" README.md)
-
-        # Extract the xxxx part
-        reverse_prompt=$(echo $reverse_prompt_line | cut -d'`' -f2 | xargs)
-    fi
-
-    # Clean up
-    rm README.md
-else
-    printf "Error: the chat model is not from https://huggingface.co/second-state or https://huggingface.co/gaianet\n"
-    exit 1
-fi
+# gguf filename
+chat_model_name=$(basename $url_chat_model)
+# stem part of the filename
+chat_model_stem=$(basename "$chat_model_name" .gguf)
+# parse context size for chat model
+chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
+# parse prompt type for chat model
+prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
+# parse reverse prompt for chat model
+reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
 
 # parse cli options for embedding model
-cd $gaianet_base_dir
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
-if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_embedding_model =~ ^https://huggingface\.co/gaianet ]]; then
-    # gguf filename
-    embedding_model_name=$(basename $url_embedding_model)
-    # stem part of the filename
-    embedding_model_stem=$(basename "$embedding_model_name" .gguf)
-    # repo url
-    repo_chat_model=$(echo "$url_embedding_model" | awk -F'/' '{print $1"//"$3"/"$4"/"$5}')
-    # README.md url
-    readme_url="$repo_chat_model/resolve/main/README.md"
+# gguf filename
+embedding_model_name=$(basename $url_embedding_model)
+# stem part of the filename
+embedding_model_stem=$(basename "$embedding_model_name" .gguf)
+# parse context size for embedding model
+embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
 
-    # Download the README.md file
-    curl -s $readme_url -o README.md
-
-    # Extract the "Prompt type: xxxx" line
-    context_size_line=$(grep -i "Context size:" README.md)
-
-    # Extract the xxxx part
-    embedding_ctx_size=$(echo $context_size_line | cut -d'`' -f2 | xargs)
-
-    # Clean up
-    rm README.md
-else
-    printf "Error: the embedding model is not from https://huggingface.co/second-state\n or https://huggingface.co/gaianet\n"
-    exit 1
-fi
+# parse port for LlamaEdge API Server
+llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
 
 cd $gaianet_base_dir
 llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
@@ -154,19 +111,20 @@ if [ ! -f "$llamaedge_wasm" ]; then
     exit 1
 fi
 
-# parse collection name
+# command to start LlamaEdge API Server
 cd $gaianet_base_dir
 cmd="wasmedge --dir .:. \
   --nn-preload default:GGML:AUTO:$chat_model_name \
   --nn-preload embedding:GGML:AUTO:$embedding_model_name \
   llama-api-server.wasm -p $prompt_type \
   --model-name $chat_model_stem,$embedding_model_stem \
-  --ctx-size 4096,$embedding_ctx_size \
+  --ctx-size $chat_ctx_size,$embedding_ctx_size \
   --qdrant-url http://127.0.0.1:6333 \
   --qdrant-collection-name "paris" \
   --qdrant-limit 3 \
   --qdrant-score-threshold 0.4 \
   --web-ui ./dashboard \
+  --socket-addr 0.0.0.0:$llamaedge_port \
   --log-prompts \
   --log-stat"
 
