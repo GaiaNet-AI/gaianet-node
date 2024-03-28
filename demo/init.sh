@@ -503,6 +503,13 @@ elif [ -n "$url_document" ]; then
             rm $gaianet_base_dir/llamaedge.pid
         fi
 
+        # stop gaianet-domain
+        if [ -f "$gaianet_base_dir/gaianet-domain.pid" ]; then
+            # printf "[+] Stopping gaianet-domain ...\n"
+            kill $(cat $gaianet_base_dir/gaianet-domain.pid)
+            rm $gaianet_base_dir/gaianet-domain.pid
+        fi
+
         exit 1
     fi
 
@@ -579,11 +586,11 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # download gaianet-domain statically linked binary
     if [ "$target" = "x86_64" ]; then
         curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
-        tar -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
         curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
-        tar -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
     fi
     if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
@@ -637,6 +644,7 @@ fi
 
 $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # Copy frpc.toml to dashboard/
 cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/dashboard/
