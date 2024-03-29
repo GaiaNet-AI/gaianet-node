@@ -206,6 +206,17 @@ else
 fi
 printf "\n"
 
+# 7.5 Generate node ID and copy config to dashboard
+if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
+    printf "[+] Downloading the registry.wasm ...\n\n"
+    curl -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+else 
+    printf "[+] Using cached registry ...\n"
+fi
+printf "[+] Generating node ID ...\n"
+wasmedge --dir .:. registry.wasm
+printf "\n"
+
 # 8. prepare qdrant dir if it does not exist
 if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "[+] Preparing Qdrant directory ...\n"
