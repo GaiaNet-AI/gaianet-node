@@ -113,7 +113,7 @@ fi
 
 # command to start LlamaEdge API Server
 cd $gaianet_base_dir
-cmd="wasmedge --dir .:. \
+cmd="wasmedge --dir .:./dashboard \
   --nn-preload default:GGML:AUTO:$chat_model_name \
   --nn-preload embedding:GGML:AUTO:$embedding_model_name \
   llama-api-server.wasm -p $prompt_type \
@@ -123,7 +123,7 @@ cmd="wasmedge --dir .:. \
   --qdrant-collection-name "paris" \
   --qdrant-limit 3 \
   --qdrant-score-threshold 0.4 \
-  --web-ui ./dashboard \
+  --web-ui ./ \
   --socket-addr 0.0.0.0:$llamaedge_port \
   --log-prompts \
   --log-stat"
