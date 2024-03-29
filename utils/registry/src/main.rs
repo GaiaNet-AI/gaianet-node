@@ -68,6 +68,7 @@ async fn main() {
 
     // Configuration
     let path = "./config.json";
+    let path_web = "./dashboard/config_pub.json";
     let chain_id = 18;
     let rpc_node_url = "https://mainnet.cybermiles.io";
     let contract_address = "0x44Ed2acE4a5D7f939efbe283966ffE10f57A8040";
@@ -170,5 +171,9 @@ async fn main() {
         } else {
             println!("You already have a private key.")
         }
+
+        // Save a public copy for the web site
+        let _ = config.remove("password");
+        save_config(path_web, serde_json::to_string_pretty(&config).unwrap());
     }
 }
