@@ -123,7 +123,7 @@ cmd="wasmedge --dir .:./dashboard \
   --model-name $chat_model_stem,$embedding_model_stem \
   --ctx-size $chat_ctx_size,$embedding_ctx_size \
   --qdrant-url http://127.0.0.1:6333 \
-  --qdrant-collection-name "paris" \
+  --qdrant-collection-name "default" \
   --qdrant-limit 3 \
   --qdrant-score-threshold 0.4 \
   --web-ui ./ \
