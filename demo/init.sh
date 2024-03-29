@@ -416,7 +416,7 @@ elif [ -n "$url_document" ]; then
     --model-name $chat_model_stem,$embedding_model_stem \
     --ctx-size $chat_ctx_size,$embedding_ctx_size \
     --qdrant-url http://127.0.0.1:6333 \
-    --qdrant-collection-name "paris" \
+    --qdrant-collection-name "default" \
     --qdrant-limit 3 \
     --qdrant-score-threshold 0.4 \
     --web-ui ./dashboard \
@@ -482,14 +482,16 @@ elif [ -n "$url_document" ]; then
     # (3) chunk the document
     printf "    * Chunking the document ...\n\n"
     chunk_response=$(curl -s -X POST http://127.0.0.1:8080/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
-    chunks=$(echo "$chunk_response" | jq -c '.chunks')
+
+    chunks=$(echo $chunk_response | grep -o '"chunks":\[[^]]*\]' | sed 's/"chunks"://')
 
     printf "\n"
 
     # (4) compute the embeddings for the chunks and upload them to the Qdrant instance
     printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n\n"
 
-    data=$(jq -n --arg model "all-MiniLM-L6-v2-ggml-model-f16" --argjson input "$chunks" '{"model": $model, "input": $input}')
+    data={\"model\":\"$embedding_model_stem\",\"input\":"$chunks"}
+
     embedding_response=$(curl -s -X POST http://127.0.0.1:8080/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
 
     printf "\n"
