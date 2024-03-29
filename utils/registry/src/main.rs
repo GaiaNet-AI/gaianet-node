@@ -77,7 +77,11 @@ async fn main() {
 
     let mut config = parse_config(path);
     if let Some(status) = matches.get_one::<String>("status") {
-        let keystore = matches.get_one::<String>("keystore").unwrap();
+        let keystore = if config.contains_key("keystore") {
+            config["keystore"].to_string().trim_matches('"').to_string()
+        } else {
+            "keystore.def".to_string()
+        };
         let password = if config.contains_key("password") {
             config["password"].to_string().trim_matches('"').to_string()
         } else {
@@ -166,6 +170,10 @@ async fn main() {
                 "address".to_string(),
                 Value::from(address.encode_hex_with_prefix()),
             );
+            config.insert(
+                "keystore".to_string(),
+                Value::from(name.clone()),
+            );
             save_config(path, serde_json::to_string_pretty(&config).unwrap());
             println!("Generate new key storing in {:?}.", dir.join(name));
         } else {
@@ -174,6 +182,7 @@ async fn main() {
 
         // Save a public copy for the web site
         let _ = config.remove("password");
+        let _ = config.remove("keystore");
         save_config(path_web, serde_json::to_string_pretty(&config).unwrap());
     }
 }
