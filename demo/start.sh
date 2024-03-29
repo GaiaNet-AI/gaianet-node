@@ -59,27 +59,7 @@ printf "\n"
 printf "[+] Starting LlamaEdge API Server ...\n\n"
 
 # We will make sure that the path is setup in case the user runs start.sh immediately after init.sh
-source $HOME/.wasmedge/env 
-
-if [ "$(uname)" == "Darwin" ]; then
-    if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
-        printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
-        pid=$(lsof -t -i:8080)
-        kill -9 $pid
-    fi
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    if netstat -tuln | grep -q ':8080'; then
-        printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
-        pid=$(fuser -n tcp 8080 2> /dev/null)
-        kill -9 $pid
-    fi
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    printf "For Windows users, please run this script in WSL.\n"
-    exit 1
-else
-    printf "Only support Linux, MacOS and Windows.\n"
-    exit 1
-fi
+source $HOME/.wasmedge/env
 
 # parse cli options for chat model
 cd $gaianet_base_dir
@@ -94,7 +74,6 @@ chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
 prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
 # parse reverse prompt for chat model
 reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-
 # parse cli options for embedding model
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
 # gguf filename
@@ -103,9 +82,28 @@ embedding_model_name=$(basename $url_embedding_model)
 embedding_model_stem=$(basename "$embedding_model_name" .gguf)
 # parse context size for embedding model
 embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
-
 # parse port for LlamaEdge API Server
 llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
+
+if [ "$(uname)" == "Darwin" ]; then
+    if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+        printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
+        pid=$(lsof -t -i:$llamaedge_port)
+        kill $pid
+    fi
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    if netstat -tuln | grep -q ":$llamaedge_port"; then
+        printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
+        pid=$(fuser -n tcp $llamaedge_port 2> /dev/null)
+        kill $pid
+    fi
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    printf "For Windows users, please run this script in WSL.\n"
+    exit 1
+else
+    printf "Only support Linux, MacOS and Windows.\n"
+    exit 1
+fi
 
 cd $gaianet_base_dir
 llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
