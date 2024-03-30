@@ -58,6 +58,9 @@ printf "\n"
 # 2. start a LlamaEdge instance
 printf "[+] Starting LlamaEdge API Server ...\n\n"
 
+# We will make sure that the path is setup in case the user runs start.sh immediately after init.sh
+source $HOME/.wasmedge/env 
+
 if [ "$(uname)" == "Darwin" ]; then
     if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
         printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
