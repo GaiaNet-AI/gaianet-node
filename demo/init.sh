@@ -92,37 +92,25 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
     if [ "$(uname)" == "Darwin" ]; then
         # download qdrant binary
         if [ "$target" = "x86_64" ]; then
-            curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz
+            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz
             tar -xzf qdrant-x86_64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-x86_64-apple-darwin.tar.gz
         elif [ "$target" = "arm64" ]; then
-            curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz
+            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz
             tar -xzf qdrant-aarch64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-aarch64-apple-darwin.tar.gz
-        fi
-
-        # Check if the path is not in $PATH
-        path_to_check="$HOME/gaianet/bin"
-        if [[ ":$PATH:" != *":$path_to_check:"* ]]; then
-            echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
         fi
 
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         # download qdrant statically linked binary
         if [ "$target" = "x86_64" ]; then
-            curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz
+            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz
             tar -xzf qdrant-x86_64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-x86_64-unknown-linux-musl.tar.gz
         elif [ "$target" = "aarch64" ]; then
-            curl -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz
+            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz
             tar -xzf qdrant-aarch64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-aarch64-unknown-linux-musl.tar.gz
-        fi
-
-        # Check if the path is not in $PATH
-        path_to_check="$HOME/gaianet/bin"
-        if [[ ":$PATH:" != *":$path_to_check:"* ]]; then
-            echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
         fi
 
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -147,7 +135,7 @@ if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_cha
         printf "[+] Using the cached chat model: $chat_model\n"
     else
         printf "[+] Downloading $chat_model ...\n\n"
-        curl -L $url_chat_model -o $gaianet_base_dir/$chat_model
+        curl --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
     fi
     printf "\n"
 else
@@ -164,7 +152,7 @@ if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $ur
         printf "[+] Using the cached embedding model: $embedding_model\n"
     else
         printf "[+] Downloading $embedding_model ...\n\n"
-        curl -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
+        curl --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
     fi
     printf "\n"
 else
@@ -177,7 +165,7 @@ cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the llama-api-server.wasm ...\n\n"
 
-    curl -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-files-endpoint/api-server/llama-api-server.wasm
+    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-files-endpoint/api-server/llama-api-server.wasm
 
 else
     printf "[+] Using the cached llama-api-server.wasm ...\n"
@@ -197,7 +185,7 @@ if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
         rm -rf $gaianet_base_dir/gaianet-node
     fi
     cd $gaianet_base_dir
-    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.zip
+    curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.zip
     unzip -q dashboard.zip
 
     rm -rf $gaianet_base_dir/dashboard.zip
@@ -209,7 +197,7 @@ printf "\n"
 # 7.5 Generate node ID and copy config to dashboard
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the registry.wasm ...\n\n"
-    curl -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+    curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
 else 
     printf "[+] Using cached registry ...\n"
 fi
@@ -223,7 +211,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
     # download qdrant binary
-    curl -s -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
+    curl --progress-bar -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
     # unzip to `qdrant-1.8.1` directory
     tar -xzf v1.8.1.tar.gz
     rm v1.8.1.tar.gz
@@ -539,31 +527,25 @@ gaianet_domain_version="v0.1.0-alpha.1"
 if [ "$(uname)" == "Darwin" ]; then
     # download gaianet-domain binary
     if [ "$target" = "x86_64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
         tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
         tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
-    fi
-    if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
-        echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
     fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # download gaianet-domain statically linked binary
     if [ "$target" = "x86_64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
         tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
-        curl -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
         tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
-    fi
-    if ! echo $PATH | grep -q "$HOME/gaianet/bin"; then
-        echo 'export PATH=$PATH:'$gaianet_base_dir'/bin' >> $HOME/.bashrc
     fi
 
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -579,7 +561,7 @@ printf "\n"
 cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 
 # 11. Download frpc.toml, generate a subdomain and print it
-curl -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
+curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # Generate a random subdomain
 subdomain=$(openssl rand -hex 4)
@@ -620,6 +602,8 @@ find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc
 
 printf "The subdomain for frpc is: https://$subdomain.$gaianet_domain\n"
 
-printf "\n>>> Run 'source $HOME/.bashrc' to get the gaia environment ready. To start the gaia services, run the command: ./start.sh <<<\n"
+printf "Your node ID is $subdomain Please register it in your portal account to receive awards!\n"
+
+printf "\n>>> Run 'source $HOME/.wasmedge/env' to get the GaiaNet environment ready for the current terminal. <<<\n"
 
 exit 0
