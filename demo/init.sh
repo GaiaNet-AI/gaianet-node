@@ -197,7 +197,7 @@ printf "\n"
 # 7.5 Generate node ID and copy config to dashboard
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the registry.wasm ...\n\n"
-    curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
 else 
     printf "[+] Using cached registry ...\n"
 fi
@@ -289,7 +289,7 @@ if [ -n "$url_snapshot" ]; then
     sleep 2
     qdrant_pid=$!
 
-    response=$(curl -X PUT http://localhost:6333/collections/paris/snapshots/recover \
+    response=$(curl -s -X PUT http://localhost:6333/collections/paris/snapshots/recover \
         -H "Content-Type: application/json" \
         -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
     sleep 5
@@ -339,7 +339,7 @@ elif [ -n "$url_document" ]; then
         echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
 
         # remove the 'paris' collection if it exists
-        del_response=$(curl -X DELETE http://localhost:6333/collections/paris \
+        del_response=$(curl -s -X DELETE http://localhost:6333/collections/paris \
             -H "Content-Type: application/json")
         status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
         if [ "$status" != "ok" ]; then
@@ -473,7 +473,7 @@ elif [ -n "$url_document" ]; then
 
     # (2) upload the document to api-server via the `/v1/files` endpoint
     printf "    * Uploading the document to LlamaEdge API Server ...\n\n"
-    doc_response=$(curl -X POST http://127.0.0.1:8080/v1/files -F "file=@$doc_filename")
+    doc_response=$(curl -s -X POST http://127.0.0.1:8080/v1/files -F "file=@$doc_filename")
     id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     rm $doc_filename
@@ -481,7 +481,7 @@ elif [ -n "$url_document" ]; then
 
     # (3) chunk the document
     printf "    * Chunking the document ...\n\n"
-    chunk_response=$(curl -X POST http://127.0.0.1:8080/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
+    chunk_response=$(curl -s -X POST http://127.0.0.1:8080/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
     chunks=$(echo "$chunk_response" | jq -c '.chunks')
 
     printf "\n"
@@ -490,7 +490,7 @@ elif [ -n "$url_document" ]; then
     printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n\n"
 
     data=$(jq -n --arg model "all-MiniLM-L6-v2-ggml-model-f16" --argjson input "$chunks" '{"model": $model, "input": $input}')
-    embedding_response=$(curl -X POST http://127.0.0.1:8080/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
+    embedding_response=$(curl -s -X POST http://127.0.0.1:8080/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
 
     printf "\n"
 
