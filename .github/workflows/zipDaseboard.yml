@@ -23,8 +23,8 @@ jobs:
 
       - name: Commit changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "juyichen0413@foxmail.com"
+          git config --local user.name "JYC0413"
           git add .
           git commit -m "Automatically package dashboard changes"
         
