@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'dashboard/**'
-      - '.github/workflows/zipDaseboard.yml'
+      - '.github/workflows/zipDashboard.yml'
 
 jobs:
   package_dashboard:
