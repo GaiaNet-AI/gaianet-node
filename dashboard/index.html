@@ -46,6 +46,7 @@ function addToTable(k, v) {
     row.appendChild(keyCell);
     row.appendChild(valueCell);
 
+    const tableBody = document.getElementById('jsonTable').querySelector('tbody');
     tableBody.appendChild(row);
 }
 
@@ -54,7 +55,6 @@ fetch('config_pub.json')
     .then(response => response.json())
     .then(data => {
         console.log(data)
-        const tableBody = document.getElementById('jsonTable').querySelector('tbody');
 		    
         var key = "Node ID or address";
         var val = data["address"];
