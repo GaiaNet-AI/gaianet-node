@@ -11,6 +11,7 @@ use ethers_core::abi::Token;
 use ethers_core::rand;
 use ethers_core::types::{H160, U256};
 use ethers_signers::{LocalWallet, Signer};
+use passwords::PasswordGenerator;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -74,14 +75,28 @@ async fn main() {
     let contract_address = "0x44Ed2acE4a5D7f939efbe283966ffE10f57A8040";
     let dir = Path::new("");
     let mut rng = rand::thread_rng();
+    let pg = PasswordGenerator {
+        length: 30,
+        numbers: true,
+        lowercase_letters: true,
+        uppercase_letters: true,
+        symbols: false,
+        spaces: false,
+        exclude_similar_characters: false,
+        strict: true,
+    };
 
     let mut config = parse_config(path);
     if let Some(status) = matches.get_one::<String>("status") {
-        let keystore = matches.get_one::<String>("keystore").unwrap();
+        let keystore = if config.contains_key("keystore") {
+            config["keystore"].to_string().trim_matches('"').to_string()
+        } else {
+            "keystore.def".to_string()
+        };
         let password = if config.contains_key("password") {
             config["password"].to_string().trim_matches('"').to_string()
         } else {
-            "".to_string()
+            panic!("You need provide password.");
         };
         let private_key;
         match eth_keystore::decrypt_key(dir.join(keystore), password.as_bytes()) {
@@ -151,8 +166,9 @@ async fn main() {
             let password = if config.contains_key("password") {
                 config["password"].to_string().trim_matches('"').to_string()
             } else {
-                config.insert("password".to_string(), Value::from(""));
-                "".to_string()
+                let password = pg.generate_one().unwrap();
+                config.insert("password".to_string(), Value::from(password.clone()));
+                password
             };
             let name = eth_keystore::encrypt_key(
                 &dir,
@@ -166,6 +182,10 @@ async fn main() {
                 "address".to_string(),
                 Value::from(address.encode_hex_with_prefix()),
             );
+            config.insert(
+                "keystore".to_string(),
+                Value::from(name.clone()),
+            );
             save_config(path, serde_json::to_string_pretty(&config).unwrap());
             println!("Generate new key storing in {:?}.", dir.join(name));
         } else {
@@ -174,6 +194,7 @@ async fn main() {
 
         // Save a public copy for the web site
         let _ = config.remove("password");
+        let _ = config.remove("keystore");
         save_config(path_web, serde_json::to_string_pretty(&config).unwrap());
     }
 }

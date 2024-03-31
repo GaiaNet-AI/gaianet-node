@@ -1,5 +1,5 @@
 {
-    "description": "The default GaiaNet node config with a TinyLLama 1.1B model with a Paris tour guide RAG",
+    "description": "The default GaiaNet node config with a Llama2-7b-chat model and a Paris tour guide knowledge base.",
     "public_url": "",
     "chat": "https://huggingface.co/second-state/Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf",
     "prompt_template": "llama-2-chat",
