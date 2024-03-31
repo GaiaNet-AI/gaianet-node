@@ -32,34 +32,59 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 <script>
-    // Fetch the JSON file
-    fetch('config_pub.json')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            const tableBody = document.getElementById('jsonTable').querySelector('tbody');
+function addToTable(k, v) {
+    const row = document.createElement('tr');
 
-            for (const key in data) {
-                if (data.hasOwnProperty(key)) {
-                    const row = document.createElement('tr');
+    const keyCell = document.createElement('td');
+    const valueCell = document.createElement('td');
 
-                    const keyCell = document.createElement('td');
-                    const valueCell = document.createElement('td');
+    keyCell.textContent = k;
+    valueCell.textContent = v;
 
-                    keyCell.textContent = key;
-                    valueCell.textContent = data[key];
+    row.appendChild(keyCell);
+    row.appendChild(valueCell);
 
-                    row.appendChild(keyCell);
-                    row.appendChild(valueCell);
+    tableBody.appendChild(row);
+}
 
-                    tableBody.appendChild(row);
-                }
-            }
-        })
-        .catch(error => console.error('Error fetching JSON:', error));
+// Fetch the JSON file
+fetch('config_pub.json')
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        const tableBody = document.getElementById('jsonTable').querySelector('tbody');
+		    
+        var key = "Node ID or address";
+        var val = data["address"];
+        addToTable (key, val);
+
+        key = "GaiaNet domain";
+        val = data["domain"];
+        addToTable (key, val);
+
+        key = "Public URL";
+        val = "https://" + data["address"] + "." + data["domain"];
+        addToTable (key, val);
+
+        key = "Description";
+        val = data["description"];
+        addToTable (key, val);
+
+        key = "Finetuned LLM";
+        val = data["chat"].split('/').pop();
+        addToTable (key, val);
+
+        key = "Embedding model for knowledge vectors";
+        val = data["embedding"].split('/').pop();
+        addToTable (key, val);
+
+        key = "Knowledge base";
+        val = data["snapshot"].split('/').pop();
+        addToTable (key, val);
+
+    }).catch(error => console.error('Error fetching JSON:', error));
 </script>
 </body>
 </html>
