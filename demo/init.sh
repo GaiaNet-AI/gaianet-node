@@ -563,11 +563,12 @@ cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 # 11. Download frpc.toml, generate a subdomain and print it
 curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
 
-# Generate a random subdomain
-subdomain=$(openssl rand -hex 4)
-# Check if the subdomain was generated correctly
+# Read address from config.json as node subdomain
+subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
+
+# Check if the subdomain was read correctly
 if [ -z "$subdomain" ]; then
-    echo "Failed to generate a subdomain."
+    echo "Failed to read the address from config.json."
     exit 1
 fi
 
