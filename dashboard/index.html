@@ -8,61 +8,58 @@
 <body>
 
 <section class="jumbotron text-center">
-        <div class="container">
-          <h1 class="jumbotron-heading">GaiaNet node dashboard</h1>
-          <p class="lead text-muted">Manage your own GaiaNet node.</p>
-          <p>
+    <div class="container">
+        <h1 class="jumbotron-heading">GaiaNet node dashboard</h1>
+        <p class="lead text-muted">Manage your own GaiaNet node.</p>
+        <p>
             <a href="chatbot-ui/index.html" class="btn btn-primary">Chat with this node</a>
-          </p>
-        </div>
+        </p>
+    </div>
 </section>
 
 <div id="nodeInfo" class="container">
-    <table class="table table-striped">
-      <thead>
+    <table id="jsonTable" class="table table-striped">
+        <thead>
         <tr>
-          <th scope="col">Attribute</th>
-          <th scope="col">Value</th>
+            <th scope="col">Attribute</th>
+            <th scope="col">Value</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Node address</td>
-	  <td>0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5</td>
-	</tr>
-        <tr>
-          <td>Cohort</td>
-	  <td>gaianet.berkeley.edu</td>
-	</tr>
-        <tr>
-          <td>API endpoint</td>
-	  <td>https://0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5.gaianet.berkeley.edu/</td>
-	</tr>
-        <tr>
-          <td>Price</td>
-	  <td>USD $3.14 per million language tokens</td>
-	</tr>
-        <tr>
-          <td>Prepay credits</td>
-	  <td>0xAE3FaDD231C8Fb2B2c756987ecb582963405D018</td>
-	</tr>
-        <tr>
-          <td>Description</td>
-	  <td>A fine-tuned TA model for CS 101 course. Optimized for students with no programming background.</td>
-	</tr>
-        <tr>
-          <td>LLM model name</td>
-	  <td>Llama-2-7b-chat-hf-Q5_K_M</td>
-	</tr>
-        <tr>
-          <td>Embedding model name</td>
-	  <td>all-MiniLM-L6-v2-ggml-model-f16</td>
-	</tr>
-      </tbody>
+        </thead>
+        <tbody>
+
+        </tbody>
     </table>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous"></script>
+<script>
+    // Fetch the JSON file
+    fetch('config_pub.json')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            const tableBody = document.getElementById('jsonTable').querySelector('tbody');
+
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    const row = document.createElement('tr');
+
+                    const keyCell = document.createElement('td');
+                    const valueCell = document.createElement('td');
+
+                    keyCell.textContent = key;
+                    valueCell.textContent = data[key];
+
+                    row.appendChild(keyCell);
+                    row.appendChild(valueCell);
+
+                    tableBody.appendChild(row);
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching JSON:', error));
+</script>
 </body>
 </html>
