@@ -337,10 +337,9 @@ elif [ -n "$url_document" ]; then
             exit 1
         fi
     else
-        printf "Qdrant binary not found at $qdrant_executable\n"
+        printf "Qdrant binary not found at $qdrant_executable\n\n"
         exit 1
     fi
-    printf "\n"
 
     # 9.2. start a Qdrant instance to create the 'default' collection from the given document
     printf "    * Starting LlamaEdge API Server ...\n\n"
@@ -461,7 +460,7 @@ elif [ -n "$url_document" ]; then
 
 
     # (2) upload the document to api-server via the `/v1/files` endpoint
-    printf "    * Uploading the document to LlamaEdge API Server ...\n\n"
+    printf "    * Uploading the document to LlamaEdge API Server ...\n"
     doc_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/files -F "file=@$doc_filename")
     id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
@@ -469,7 +468,7 @@ elif [ -n "$url_document" ]; then
     printf "\n"
 
     # (3) chunk the document
-    printf "    * Chunking the document ...\n\n"
+    printf "    * Chunking the document ...\n"
     chunk_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
 
     chunks=$(echo $chunk_response | grep -o '"chunks":\[[^]]*\]' | sed 's/"chunks"://')
@@ -477,7 +476,7 @@ elif [ -n "$url_document" ]; then
     printf "\n"
 
     # (4) compute the embeddings for the chunks and upload them to the Qdrant instance
-    printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n\n"
+    printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n"
 
     data={\"model\":\"$embedding_model_stem\",\"input\":"$chunks"}
 
