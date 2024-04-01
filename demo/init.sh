@@ -165,7 +165,7 @@ cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the llama-api-server.wasm ...\n\n"
 
-    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-files-endpoint/api-server/llama-api-server.wasm
+    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm
 
 else
     printf "[+] Using the cached llama-api-server.wasm ...\n"
@@ -198,7 +198,7 @@ printf "\n"
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the registry.wasm ...\n\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
-else 
+else
     printf "[+] Using cached registry ...\n"
 fi
 printf "[+] Generating node ID ...\n"
@@ -354,25 +354,6 @@ elif [ -n "$url_document" ]; then
 
     # 9.2. start a Qdrant instance to create the 'paris' collection from the given document
     printf "    * Starting LlamaEdge API Server ...\n\n"
-    if [ "$(uname)" == "Darwin" ]; then
-        if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
-            pid=$(lsof -t -i:8080)
-            kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if netstat -tuln | grep -q ':8080'; then
-            printf "    Port 8080 is in use. Stopping the process on 8080 ...\n\n"
-            pid=$(fuser -n tcp 8080 2> /dev/null)
-            kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
-        exit 1
-    else
-        printf "Only support Linux, MacOS and Windows.\n"
-        exit 1
-    fi
 
     # parse cli options for chat model
     cd $gaianet_base_dir
@@ -387,7 +368,6 @@ elif [ -n "$url_document" ]; then
     prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
     # parse reverse prompt for chat model
     reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-
     # parse cli options for embedding model
     url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
     # gguf filename
@@ -396,9 +376,28 @@ elif [ -n "$url_document" ]; then
     embedding_model_stem=$(basename "$embedding_model_name" .gguf)
     # parse context size for embedding model
     embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
-
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
+
+    if [ "$(uname)" == "Darwin" ]; then
+        if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+            printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
+            pid=$(lsof -t -i:$llamaedge_port)
+            kill $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if netstat -tuln | grep -q ":$llamaedge_port"; then
+            printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
+            pid=$(fuser -n tcp $llamaedge_port 2> /dev/null)
+            kill $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+        exit 1
+    fi
 
     cd $gaianet_base_dir
     llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
@@ -416,7 +415,7 @@ elif [ -n "$url_document" ]; then
     --model-name $chat_model_stem,$embedding_model_stem \
     --ctx-size $chat_ctx_size,$embedding_ctx_size \
     --qdrant-url http://127.0.0.1:6333 \
-    --qdrant-collection-name "paris" \
+    --qdrant-collection-name "default" \
     --qdrant-limit 3 \
     --qdrant-score-threshold 0.4 \
     --web-ui ./dashboard \
@@ -473,7 +472,7 @@ elif [ -n "$url_document" ]; then
 
     # (2) upload the document to api-server via the `/v1/files` endpoint
     printf "    * Uploading the document to LlamaEdge API Server ...\n\n"
-    doc_response=$(curl -s -X POST http://127.0.0.1:8080/v1/files -F "file=@$doc_filename")
+    doc_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/files -F "file=@$doc_filename")
     id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     rm $doc_filename
@@ -481,16 +480,18 @@ elif [ -n "$url_document" ]; then
 
     # (3) chunk the document
     printf "    * Chunking the document ...\n\n"
-    chunk_response=$(curl -s -X POST http://127.0.0.1:8080/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
-    chunks=$(echo "$chunk_response" | jq -c '.chunks')
+    chunk_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
+
+    chunks=$(echo $chunk_response | grep -o '"chunks":\[[^]]*\]' | sed 's/"chunks"://')
 
     printf "\n"
 
     # (4) compute the embeddings for the chunks and upload them to the Qdrant instance
     printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n\n"
 
-    data=$(jq -n --arg model "all-MiniLM-L6-v2-ggml-model-f16" --argjson input "$chunks" '{"model": $model, "input": $input}')
-    embedding_response=$(curl -s -X POST http://127.0.0.1:8080/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
+    data={\"model\":\"$embedding_model_stem\",\"input\":"$chunks"}
+
+    embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
 
     printf "\n"
 
@@ -604,7 +605,5 @@ find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc
 printf "The subdomain for frpc is: https://$subdomain.$gaianet_domain\n"
 
 printf "Your node ID is $subdomain Please register it in your portal account to receive awards!\n"
-
-printf "\n>>> Run 'source $HOME/.wasmedge/env' to get the GaiaNet environment ready for the current terminal. <<<\n"
 
 exit 0
