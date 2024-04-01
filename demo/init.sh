@@ -289,7 +289,7 @@ if [ -n "$url_snapshot" ]; then
     sleep 2
     qdrant_pid=$!
 
-    response=$(curl -s -X PUT http://localhost:6333/collections/paris/snapshots/recover \
+    response=$(curl -s -X PUT http://localhost:6333/collections/default/snapshots/recover \
         -H "Content-Type: application/json" \
         -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
     sleep 5
