@@ -248,8 +248,9 @@ url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
 if [ -n "$url_snapshot" ]; then
     printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
-    collection_name=$(basename $url_snapshot)
-    collection_stem=$(basename "$collection_name" .snapshot)
+    curl --progress-bar -L $url_snapshot -o default.snapshot
+    # collection_name=$(basename $url_snapshot)
+    # collection_stem=$(basename "$collection_name" .snapshot)
 
     # check 6333 port is in use or not
     if [ "$(uname)" == "Darwin" ]; then
@@ -278,9 +279,12 @@ if [ -n "$url_snapshot" ]; then
     sleep 2
     qdrant_pid=$!
 
-    response=$(curl -s -X PUT http://localhost:6333/collections/default/snapshots/recover \
-        -H "Content-Type: application/json" \
-        -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
+    response=$(curl -s -X POST 'http://localhost:6333/collections/default/snapshots/upload?priority=snapshot' \
+        -H 'Content-Type:multipart/form-data' \
+        -F 'snapshot=@default.snapshot')
+    # response=$(curl -s -X PUT http://localhost:6333/collections/default/snapshots/recover \
+    #     -H "Content-Type: application/json" \
+    #     -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
     sleep 5
 
     # stop qdrant
