@@ -298,8 +298,8 @@ if [ -n "$url_snapshot" ]; then
 elif [ -n "$url_document" ]; then
     printf "[+] Creating a Qdrant collection from the given document ...\n\n"
 
-    # 9.1. start a Qdrant instance to remove the 'paris' collection if it exists
-    printf "    * Remove 'paris' collection if it exists ...\n\n"
+    # 9.1. start a Qdrant instance to remove the 'default' collection if it exists
+    printf "    * Remove 'default' collection if it exists ...\n\n"
     if [ "$(uname)" == "Darwin" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
@@ -328,12 +328,12 @@ elif [ -n "$url_document" ]; then
         qdrant_pid=$!
         echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
 
-        # remove the 'paris' collection if it exists
-        del_response=$(curl -s -X DELETE http://localhost:6333/collections/paris \
+        # remove the 'default' collection if it exists
+        del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
             -H "Content-Type: application/json")
         status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
         if [ "$status" != "ok" ]; then
-            printf "    Failed to remove the 'paris' collection. $del_response\n\n"
+            printf "    Failed to remove the 'default' collection. $del_response\n\n"
             exit 1
         fi
     else
@@ -342,7 +342,7 @@ elif [ -n "$url_document" ]; then
     fi
     printf "\n"
 
-    # 9.2. start a Qdrant instance to create the 'paris' collection from the given document
+    # 9.2. start a Qdrant instance to create the 'default' collection from the given document
     printf "    * Starting LlamaEdge API Server ...\n\n"
 
     # parse cli options for chat model
