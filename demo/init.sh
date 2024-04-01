@@ -606,6 +606,4 @@ printf "The subdomain for frpc is: https://$subdomain.$gaianet_domain\n"
 
 printf "Your node ID is $subdomain Please register it in your portal account to receive awards!\n"
 
-printf "\n>>> Run 'source $HOME/.wasmedge/env' to get the GaiaNet environment ready for the current terminal. <<<\n"
-
 exit 0
