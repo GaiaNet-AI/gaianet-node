@@ -128,44 +128,33 @@ printf "\n"
 
 # 4. Download GGUF chat model to $HOME/gaianet
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
-if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_chat_model =~ ^https://huggingface\.co/gaianet ]]; then
-    chat_model=$(basename $url_chat_model)
-
-    if [ -f "$gaianet_base_dir/$chat_model" ]; then
-        printf "[+] Using the cached chat model: $chat_model\n"
-    else
-        printf "[+] Downloading $chat_model ...\n\n"
-        curl --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
-    fi
-    printf "\n"
+chat_model=$(basename $url_chat_model)
+if [ -f "$gaianet_base_dir/$chat_model" ]; then
+    printf "[+] Using the cached chat model: $chat_model\n"
 else
-    printf "Error: the chat model is not from https://huggingface.co/second-state or or https://huggingface.co/gaianet\n"
-    exit 1
+    printf "[+] Downloading $chat_model ...\n\n"
+    curl --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
 fi
+printf "\n"
 
 # 5. Download GGUF embedding model to $HOME/gaianet
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
-if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_embedding_model =~ ^https://huggingface\.co/gaianet ]]; then
-    embedding_model=$(basename $url_embedding_model)
-
-    if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-        printf "[+] Using the cached embedding model: $embedding_model\n"
-    else
-        printf "[+] Downloading $embedding_model ...\n\n"
-        curl --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
-    fi
-    printf "\n"
+embedding_model=$(basename $url_embedding_model)
+if [ -f "$gaianet_base_dir/$embedding_model" ]; then
+    printf "[+] Using the cached embedding model: $embedding_model\n"
 else
-    printf "Error: the embedding model is not from https://huggingface.co/second-state\n or or https://huggingface.co/gaianet\n"
-    exit 1
+    printf "[+] Downloading $embedding_model ...\n\n"
+    curl --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
 fi
+printf "\n"
+
 
 # 6. Download llama-api-server.wasm
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the llama-api-server.wasm ...\n\n"
 
-    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-files-endpoint/api-server/llama-api-server.wasm
+    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm
 
 else
     printf "[+] Using the cached llama-api-server.wasm ...\n"
@@ -199,7 +188,7 @@ if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the registry.wasm ...\n\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
 else
-    printf "[+] Using cached registry ...\n"
+    printf "[+] Using cached registry ...\n\n"
 fi
 printf "[+] Generating node ID ...\n"
 wasmedge --dir .:. registry.wasm
@@ -303,13 +292,14 @@ if [ -n "$url_snapshot" ]; then
         printf "    Recovery is done.\n"
     else
         printf "    Failed to recover from the collection snapshot. $response \n"
+        exit 1
     fi
 
 elif [ -n "$url_document" ]; then
     printf "[+] Creating a Qdrant collection from the given document ...\n\n"
 
-    # 9.1. start a Qdrant instance to remove the 'paris' collection if it exists
-    printf "    * Remove 'paris' collection if it exists ...\n\n"
+    # 9.1. start a Qdrant instance to remove the 'default' collection if it exists
+    printf "    * Remove 'default' collection if it exists ...\n\n"
     if [ "$(uname)" == "Darwin" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
@@ -338,21 +328,20 @@ elif [ -n "$url_document" ]; then
         qdrant_pid=$!
         echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
 
-        # remove the 'paris' collection if it exists
-        del_response=$(curl -s -X DELETE http://localhost:6333/collections/paris \
+        # remove the 'default' collection if it exists
+        del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
             -H "Content-Type: application/json")
         status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
         if [ "$status" != "ok" ]; then
-            printf "    Failed to remove the 'paris' collection. $del_response\n\n"
+            printf "    Failed to remove the 'default' collection. $del_response\n\n"
             exit 1
         fi
     else
-        printf "Qdrant binary not found at $qdrant_executable\n"
+        printf "Qdrant binary not found at $qdrant_executable\n\n"
         exit 1
     fi
-    printf "\n"
 
-    # 9.2. start a Qdrant instance to create the 'paris' collection from the given document
+    # 9.2. start a Qdrant instance to create the 'default' collection from the given document
     printf "    * Starting LlamaEdge API Server ...\n\n"
 
     # parse cli options for chat model
@@ -471,7 +460,7 @@ elif [ -n "$url_document" ]; then
 
 
     # (2) upload the document to api-server via the `/v1/files` endpoint
-    printf "    * Uploading the document to LlamaEdge API Server ...\n\n"
+    printf "    * Uploading the document to LlamaEdge API Server ...\n"
     doc_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/files -F "file=@$doc_filename")
     id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
@@ -479,7 +468,7 @@ elif [ -n "$url_document" ]; then
     printf "\n"
 
     # (3) chunk the document
-    printf "    * Chunking the document ...\n\n"
+    printf "    * Chunking the document ...\n"
     chunk_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
 
     chunks=$(echo $chunk_response | grep -o '"chunks":\[[^]]*\]' | sed 's/"chunks"://')
@@ -487,7 +476,7 @@ elif [ -n "$url_document" ]; then
     printf "\n"
 
     # (4) compute the embeddings for the chunks and upload them to the Qdrant instance
-    printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n\n"
+    printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n"
 
     data={\"model\":\"$embedding_model_stem\",\"input\":"$chunks"}
 
