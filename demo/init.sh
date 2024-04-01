@@ -128,37 +128,26 @@ printf "\n"
 
 # 4. Download GGUF chat model to $HOME/gaianet
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
-if [[ $url_chat_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_chat_model =~ ^https://huggingface\.co/gaianet ]]; then
-    chat_model=$(basename $url_chat_model)
-
-    if [ -f "$gaianet_base_dir/$chat_model" ]; then
-        printf "[+] Using the cached chat model: $chat_model\n"
-    else
-        printf "[+] Downloading $chat_model ...\n\n"
-        curl --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
-    fi
-    printf "\n"
+chat_model=$(basename $url_chat_model)
+if [ -f "$gaianet_base_dir/$chat_model" ]; then
+    printf "[+] Using the cached chat model: $chat_model\n"
 else
-    printf "Error: the chat model is not from https://huggingface.co/second-state or or https://huggingface.co/gaianet\n"
-    exit 1
+    printf "[+] Downloading $chat_model ...\n\n"
+    curl --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
 fi
+printf "\n"
 
 # 5. Download GGUF embedding model to $HOME/gaianet
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
-if [[ $url_embedding_model =~ ^https://huggingface\.co/second-state ]] || [[ $url_embedding_model =~ ^https://huggingface\.co/gaianet ]]; then
-    embedding_model=$(basename $url_embedding_model)
-
-    if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-        printf "[+] Using the cached embedding model: $embedding_model\n"
-    else
-        printf "[+] Downloading $embedding_model ...\n\n"
-        curl --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
-    fi
-    printf "\n"
+embedding_model=$(basename $url_embedding_model)
+if [ -f "$gaianet_base_dir/$embedding_model" ]; then
+    printf "[+] Using the cached embedding model: $embedding_model\n"
 else
-    printf "Error: the embedding model is not from https://huggingface.co/second-state\n or or https://huggingface.co/gaianet\n"
-    exit 1
+    printf "[+] Downloading $embedding_model ...\n\n"
+    curl --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
 fi
+printf "\n"
+
 
 # 6. Download llama-api-server.wasm
 cd $gaianet_base_dir
