@@ -165,7 +165,7 @@ cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the llama-api-server.wasm ...\n\n"
 
-    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/raw/feat-files-endpoint/api-server/llama-api-server.wasm
+    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm
 
 else
     printf "[+] Using the cached llama-api-server.wasm ...\n"
@@ -199,7 +199,7 @@ if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the registry.wasm ...\n\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
 else
-    printf "[+] Using cached registry ...\n"
+    printf "[+] Using cached registry ...\n\n"
 fi
 printf "[+] Generating node ID ...\n"
 wasmedge --dir .:. registry.wasm
@@ -303,6 +303,7 @@ if [ -n "$url_snapshot" ]; then
         printf "    Recovery is done.\n"
     else
         printf "    Failed to recover from the collection snapshot. $response \n"
+        exit 1
     fi
 
 elif [ -n "$url_document" ]; then
