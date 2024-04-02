@@ -10,7 +10,8 @@ clap = {version = "4.5.3", features = ["derive"]}
 serde_json = "1.0.114"
 ethers-core = "2.0.14"
 ethers-signers = "2.0.14"
-reqwest_wasi = { version = "0.11", features = ["wasmedge-tls"] }
+# reqwest_wasi = { version = "0.11", features = ["wasmedge-tls"] }
+reqwest_wasi = { version = "0.11" }
 tokio_wasi = { version = "1.25.1", features = ["macros", "rt", "sync"] }
 const-hex = "1.11.1"
 eth-keystore = "0.5.0"
