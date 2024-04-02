@@ -12,6 +12,12 @@ fi
 # Set "gaianet_base_dir" to $HOME/gaianet
 gaianet_base_dir="$HOME/gaianet"
 
+# check if `log` directory exists or not
+if [ ! -d "$gaianet_base_dir/log" ]; then
+    mkdir -p $gaianet_base_dir/log
+fi
+log_dir=$gaianet_base_dir/log
+
 # check if config.json exists or not
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "config.json file not found in $gaianet_base_dir\n"
@@ -21,16 +27,10 @@ fi
 # 1. start a Qdrant instance
 printf "[+] Starting Qdrant instance ...\n"
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
         printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
         pid=$(lsof -t -i:6333)
-        kill -9 $pid
-    fi
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    if netstat -tuln | grep -q ':6333'; then
-        printf "    Port 6333 is in use. Stopping the process on 6333 ...\n"
-        pid=$(fuser -n tcp 6333 2> /dev/null)
         kill -9 $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -44,16 +44,15 @@ fi
 qdrant_executable="$gaianet_base_dir/bin/qdrant"
 if [ -f "$qdrant_executable" ]; then
     cd $gaianet_base_dir/qdrant
-    nohup $qdrant_executable > start-qdrant-log.txt 2>&1 &
+    nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
     sleep 2
     qdrant_pid=$!
-    echo $qdrant_pid > $script_dir/qdrant.pid
+    echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
     printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
 else
-    printf "Qdrant binary not found at $qdrant_executable\n"
+    printf "Qdrant binary not found at $qdrant_executable\n\n"
     exit 1
 fi
-printf "\n"
 
 # 2. start a LlamaEdge instance
 printf "[+] Starting LlamaEdge API Server ...\n\n"
@@ -85,16 +84,10 @@ embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
 # parse port for LlamaEdge API Server
 llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
         printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
         pid=$(lsof -t -i:$llamaedge_port)
-        kill $pid
-    fi
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    if netstat -tuln | grep -q ":$llamaedge_port"; then
-        printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
-        pid=$(fuser -n tcp $llamaedge_port 2> /dev/null)
         kill $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -140,18 +133,18 @@ printf "    %s\n\n" "$cmd"
 
 # eval $cmd
 
-nohup $cmd > start-llamaedge-log.txt 2>&1 &
+nohup $cmd > $log_dir/start-llamaedge.log 2>&1 &
 sleep 2
 llamaedge_pid=$!
-echo $llamaedge_pid > $script_dir/llamaedge.pid
+echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
 
 # start gaianet-domain
 printf "[+] Starting gaianet-domain ...\n"
-nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > start-gaianet-domain-log.txt 2>&1 &
+nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
 sleep 2
 gaianet_domain_pid=$!
-echo $gaianet_domain_pid > $script_dir/gaianet-domain.pid
+echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
 printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n\n"
 
 # Extract the subdomain from frpc.toml
