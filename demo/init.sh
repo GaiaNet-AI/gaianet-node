@@ -51,8 +51,14 @@ fi
 
 # Check if $gaianet_base_dir directory exists
 if [ ! -d $gaianet_base_dir ]; then
-    mkdir $gaianet_base_dir
+    mkdir -p $gaianet_base_dir
 fi
+
+# check if `log` directory exists or not
+if [ ! -d "$gaianet_base_dir/log" ]; then
+    mkdir -p $gaianet_base_dir/log
+fi
+log_dir=$gaianet_base_dir/log
 
 # 1. check if config.json exists or not
 cd $gaianet_base_dir
@@ -233,7 +239,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     fi
 
     # start qdrant to create the storage directory structure if it does not exist
-    nohup $gaianet_base_dir/bin/qdrant > init-log.txt 2>&1 &
+    nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
     sleep 2
     qdrant_pid=$!
     kill $qdrant_pid
@@ -275,7 +281,7 @@ if [ -n "$url_snapshot" ]; then
 
     # start qdrant
     cd $gaianet_base_dir/qdrant
-    nohup $gaianet_base_dir/bin/qdrant > $gaianet_base_dir/init-log.txt 2>&1 &
+    nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant-recover-snapshot.log 2>&1 &
     sleep 2
     qdrant_pid=$!
 
@@ -326,7 +332,7 @@ elif [ -n "$url_document" ]; then
     qdrant_executable="$gaianet_base_dir/bin/qdrant"
     if [ -f "$qdrant_executable" ]; then
         cd $gaianet_base_dir/qdrant
-        nohup $qdrant_executable > init-log.txt 2>&1 &
+        nohup $qdrant_executable > $log_dir/init-qdrant-gen-collection.log 2>&1 &
         sleep 2
         qdrant_pid=$!
         echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
@@ -423,7 +429,7 @@ elif [ -n "$url_document" ]; then
     # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
     # printf "    %s\n\n" "$cmd"
 
-    nohup $cmd > init-log.txt 2>&1 &
+    nohup $cmd >> $log_dir/init-qdrant-gen-collection.log 2>&1 &
     sleep 2
     llamaedge_pid=$!
     echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid

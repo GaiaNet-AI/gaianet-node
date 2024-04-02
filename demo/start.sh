@@ -12,6 +12,12 @@ fi
 # Set "gaianet_base_dir" to $HOME/gaianet
 gaianet_base_dir="$HOME/gaianet"
 
+# check if `log` directory exists or not
+if [ ! -d "$gaianet_base_dir/log" ]; then
+    mkdir -p $gaianet_base_dir/log
+fi
+log_dir=$gaianet_base_dir/log
+
 # check if config.json exists or not
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "config.json file not found in $gaianet_base_dir\n"
@@ -44,16 +50,15 @@ fi
 qdrant_executable="$gaianet_base_dir/bin/qdrant"
 if [ -f "$qdrant_executable" ]; then
     cd $gaianet_base_dir/qdrant
-    nohup $qdrant_executable > start-qdrant-log.txt 2>&1 &
+    nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
     sleep 2
     qdrant_pid=$!
     echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
     printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
 else
-    printf "Qdrant binary not found at $qdrant_executable\n"
+    printf "Qdrant binary not found at $qdrant_executable\n\n"
     exit 1
 fi
-printf "\n"
 
 # 2. start a LlamaEdge instance
 printf "[+] Starting LlamaEdge API Server ...\n\n"
@@ -140,7 +145,7 @@ printf "    %s\n\n" "$cmd"
 
 # eval $cmd
 
-nohup $cmd > start-llamaedge-log.txt 2>&1 &
+nohup $cmd > $log_dir/start-llamaedge.log 2>&1 &
 sleep 2
 llamaedge_pid=$!
 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -148,7 +153,7 @@ printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
 
 # start gaianet-domain
 printf "[+] Starting gaianet-domain ...\n"
-nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > start-gaianet-domain-log.txt 2>&1 &
+nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
 sleep 2
 gaianet_domain_pid=$!
 echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
