@@ -219,9 +219,9 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
             kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if netstat -tuln | grep -q ':6333'; then
+        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(fuser -n tcp 6333 2> /dev/null)
+            pid=$(lsof -t -i:6333)
             kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -260,9 +260,9 @@ if [ -n "$url_snapshot" ]; then
             kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if netstat -tuln | grep -q ':6333'; then
+        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(fuser -n tcp 6333 2> /dev/null)
+            pid=$(lsof -t -i:6333)
             kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then

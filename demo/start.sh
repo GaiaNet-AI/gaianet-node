@@ -28,9 +28,9 @@ if [ "$(uname)" == "Darwin" ]; then
         kill -9 $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    if netstat -tuln | grep -q ':6333'; then
-        printf "    Port 6333 is in use. Stopping the process on 6333 ...\n"
-        pid=$(fuser -n tcp 6333 2> /dev/null)
+    if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+        printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+        pid=$(lsof -t -i:6333)
         kill -9 $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -92,10 +92,10 @@ if [ "$(uname)" == "Darwin" ]; then
         kill $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    if netstat -tuln | grep -q ":$llamaedge_port"; then
+    if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
         printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
-        pid=$(fuser -n tcp $llamaedge_port 2> /dev/null)
-        kill $pid
+        pid=$(lsof -t -i:$llamaedge_port)
+        kill -9 $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     printf "For Windows users, please run this script in WSL.\n"
