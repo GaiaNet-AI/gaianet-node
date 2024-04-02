@@ -27,13 +27,7 @@ fi
 # 1. start a Qdrant instance
 printf "[+] Starting Qdrant instance ...\n"
 
-if [ "$(uname)" == "Darwin" ]; then
-    if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-        printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-        pid=$(lsof -t -i:6333)
-        kill -9 $pid
-    fi
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
         printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
         pid=$(lsof -t -i:6333)
@@ -90,17 +84,11 @@ embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
 # parse port for LlamaEdge API Server
 llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
         printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
         pid=$(lsof -t -i:$llamaedge_port)
         kill $pid
-    fi
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-        printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
-        pid=$(lsof -t -i:$llamaedge_port)
-        kill -9 $pid
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     printf "For Windows users, please run this script in WSL.\n"

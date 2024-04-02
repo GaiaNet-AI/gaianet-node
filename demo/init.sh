@@ -218,13 +218,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     rm -rf qdrant-1.8.1
 
     # check 6333 port is in use or not
-    if [ "$(uname)" == "Darwin" ]; then
-        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(lsof -t -i:6333)
-            kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
             pid=$(lsof -t -i:6333)
@@ -259,13 +253,7 @@ if [ -n "$url_snapshot" ]; then
     # collection_stem=$(basename "$collection_name" .snapshot)
 
     # check 6333 port is in use or not
-    if [ "$(uname)" == "Darwin" ]; then
-        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(lsof -t -i:6333)
-            kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
             pid=$(lsof -t -i:6333)
@@ -309,16 +297,10 @@ elif [ -n "$url_document" ]; then
 
     # 9.1. start a Qdrant instance to remove the 'default' collection if it exists
     printf "    * Remove 'default' collection if it exists ...\n\n"
-    if [ "$(uname)" == "Darwin" ]; then
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
             pid=$(lsof -t -i:6333)
-            kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if netstat -tuln | grep -q ':6333'; then
-            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(fuser -n tcp 6333 2> /dev/null)
             kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -377,16 +359,10 @@ elif [ -n "$url_document" ]; then
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
 
-    if [ "$(uname)" == "Darwin" ]; then
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
             printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
             pid=$(lsof -t -i:$llamaedge_port)
-            kill $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if netstat -tuln | grep -q ":$llamaedge_port"; then
-            printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
-            pid=$(fuser -n tcp $llamaedge_port 2> /dev/null)
             kill $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
