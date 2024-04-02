@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 # stop the Qdrant instance
 if [ -f "qdrant.pid" ]; then

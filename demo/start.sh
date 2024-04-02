@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 
 # represents the directory where the script is located
