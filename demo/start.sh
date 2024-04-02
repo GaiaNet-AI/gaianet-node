@@ -47,7 +47,7 @@ if [ -f "$qdrant_executable" ]; then
     nohup $qdrant_executable > start-qdrant-log.txt 2>&1 &
     sleep 2
     qdrant_pid=$!
-    echo $qdrant_pid > $script_dir/qdrant.pid
+    echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
     printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
 else
     printf "Qdrant binary not found at $qdrant_executable\n"
@@ -143,7 +143,7 @@ printf "    %s\n\n" "$cmd"
 nohup $cmd > start-llamaedge-log.txt 2>&1 &
 sleep 2
 llamaedge_pid=$!
-echo $llamaedge_pid > $script_dir/llamaedge.pid
+echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
 
 # start gaianet-domain
@@ -151,7 +151,7 @@ printf "[+] Starting gaianet-domain ...\n"
 nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > start-gaianet-domain-log.txt 2>&1 &
 sleep 2
 gaianet_domain_pid=$!
-echo $gaianet_domain_pid > $script_dir/gaianet-domain.pid
+echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
 printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n\n"
 
 # Extract the subdomain from frpc.toml
