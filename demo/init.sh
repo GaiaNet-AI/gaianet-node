@@ -274,11 +274,12 @@ if [ -n "$url_snapshot" ]; then
     fi
 
     # start qdrant
-    cd $gaianet_base_dir/qdrant
+    # cd $gaianet_base_dir/qdrant
     nohup $gaianet_base_dir/bin/qdrant > $gaianet_base_dir/init-log.txt 2>&1 &
     sleep 2
     qdrant_pid=$!
 
+    cd $gaianet_base_dir
     response=$(curl -s -X POST 'http://localhost:6333/collections/default/snapshots/upload?priority=snapshot' \
         -H 'Content-Type:multipart/form-data' \
         -F 'snapshot=@default.snapshot')
