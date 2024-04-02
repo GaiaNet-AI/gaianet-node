@@ -70,7 +70,7 @@ fi
 # 2. Install WasmEdge with wasi-nn_ggml plugin for local user
 if ! command -v wasmedge >/dev/null 2>&1 || [ "$reinstall" -eq 1 ]; then
     printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n\n"
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- --plugins wasi_nn-ggml wasmedge_rustls; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- --plugins wasi_nn-ggml; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
