@@ -291,8 +291,6 @@ if [ -n "$url_snapshot" ]; then
     # stop qdrant
     kill $qdrant_pid
 
-    printf "\n"
-
     if echo "$response" | grep -q '"status":"ok"'; then
         printf "    Recovery is done.\n"
     else
