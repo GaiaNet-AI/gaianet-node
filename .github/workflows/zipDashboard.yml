@@ -15,11 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install zip
-        run: sudo apt-get install zip -y
-
       - name: Package dashboard
-        run: zip -r dashboard.zip dashboard
+        run: tar -czf dashboard.tar.gz dashboard
 
       - name: Commit changes
         run: |
