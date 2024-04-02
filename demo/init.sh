@@ -168,9 +168,9 @@ fi
 printf "\n"
 
 # 7. Download dashboard to $HOME/gaianet
-if ! command -v unzip &> /dev/null
+if ! command -v tar &> /dev/null
 then
-    echo "unzip could not be found, please install it."
+    echo "tar could not be found, please install it."
     exit
 fi
 
@@ -180,10 +180,10 @@ if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
         rm -rf $gaianet_base_dir/gaianet-node
     fi
     cd $gaianet_base_dir
-    curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.zip
-    unzip -q dashboard.zip
+    curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.tar.gz
+    tar xzf dashboard.tar.gz
 
-    rm -rf $gaianet_base_dir/dashboard.zip
+    rm -rf $gaianet_base_dir/dashboard.tar.gz
 else
     printf "[+] Using cached dashboard ...\n"
 fi

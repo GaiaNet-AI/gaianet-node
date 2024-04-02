@@ -76,12 +76,20 @@ fetch('config_pub.json')
         val = data["chat"].split('/').pop();
         addToTable (key, val);
 
+        key = "System prompt";
+        val = data["system_prompt"];
+        addToTable (key, val);
+
         key = "Embedding model for knowledge vectors";
         val = data["embedding"].split('/').pop();
         addToTable (key, val);
 
         key = "Knowledge base";
         val = data["snapshot"].split('/').pop();
+        addToTable (key, val);
+
+        key = "RAG prompt";
+        val = data["rag_prompt"];
         addToTable (key, val);
 
     }).catch(error => console.error('Error fetching JSON:', error));
