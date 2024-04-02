@@ -274,7 +274,7 @@ if [ -n "$url_snapshot" ]; then
     fi
 
     # start qdrant
-    # cd $gaianet_base_dir/qdrant
+    cd $gaianet_base_dir/qdrant
     nohup $gaianet_base_dir/bin/qdrant > $gaianet_base_dir/init-log.txt 2>&1 &
     sleep 2
     qdrant_pid=$!
