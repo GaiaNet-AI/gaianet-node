@@ -243,8 +243,6 @@ fi
 
 # 9. recover from the given qdrant collection snapshot =======================
 cd $gaianet_base_dir
-curl -s -X DELETE 'http://localhost:6333/collections/default'
-
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
@@ -274,6 +272,7 @@ if [ -n "$url_snapshot" ]; then
     qdrant_pid=$!
 
     cd $gaianet_base_dir
+    curl -s -X DELETE 'http://localhost:6333/collections/default'
     response=$(curl -s -X POST 'http://localhost:6333/collections/default/snapshots/upload?priority=snapshot' \
         -H 'Content-Type:multipart/form-data' \
         -F 'snapshot=@default.snapshot')
