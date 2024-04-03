@@ -272,7 +272,16 @@ if [ -n "$url_snapshot" ]; then
     qdrant_pid=$!
 
     cd $gaianet_base_dir
-    curl -s -X DELETE 'http://localhost:6333/collections/default'
+    # remove the 'default' collection if it exists
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
+        -H "Content-Type: application/json")
+    status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    if [ "$status" != "ok" ]; then
+        printf "    Failed to remove the 'default' collection. $del_response\n\n"
+        exit 1
+    fi
+
+    # Import the default.snapshot file
     response=$(curl -s -X POST 'http://localhost:6333/collections/default/snapshots/upload?priority=snapshot' \
         -H 'Content-Type:multipart/form-data' \
         -F 'snapshot=@default.snapshot')
