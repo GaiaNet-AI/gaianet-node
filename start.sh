@@ -133,8 +133,7 @@ printf "    %s\n\n" "$cmd"
 
 # eval $cmd
 
-# nohup $cmd > $log_dir/start-llamaedge.log 2>&1 &
-nohup $cmd &
+nohup $cmd > $log_dir/start-llamaedge.log 2>&1 &
 sleep 2
 llamaedge_pid=$!
 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
