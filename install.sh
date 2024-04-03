@@ -64,7 +64,7 @@ log_dir=$gaianet_base_dir/log
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "[+] Downloading config.json ...\n\n"
-    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/demo/config.json
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json
 fi
 
 # 2. Install WasmEdge with wasi-nn_ggml plugin for local user
@@ -536,7 +536,7 @@ printf "\n"
 cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 
 # 11. Download frpc.toml, generate a subdomain and print it
-curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/demo/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
+curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # Read address from config.json as node subdomain
 subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)

@@ -1,23 +1,54 @@
-# gaianet-node
+# Run your own GaiaNet node
 
-## Installation
+## Quick start
 
-To install the node, you can use the following command:
+Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
 
-  ```bash
-  curl -sSf https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install-gaia.sh | bash -s -- --model-url <model-url>
-  ```
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh')
+```
 
-If you want to install the node and recover a collection from a given collection snapshot by URL or local path, you can use the following command:
+Next, you can start the node as follows.
 
-  ```bash
-  curl -sSf https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install-gaia.sh | bash -s -- --model-url <model-url> --collection-name <recovered-collection-name> --snapshot <snapshot-url-or-path>
-  ```
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh')
+```
 
-Example: Install the node and recover a collection from a given collection snapshot by local path:
+The script prints the official node address on the console as follows.
 
-  ```bash
-  curl -sSf https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install-gaia.sh | bash -s -- --model-url https://huggingface.co/second-state/Qwen1.5-0.5B-Chat-GGUF/resolve/main/Qwen1.5-0.5B-Chat-Q5_K_M.gguf --collection-name paris-france --snapshot file:////Users/sam/workspace/demo/gaia/paris-5345043712122094-2024-03-12-14-02-37.snapshot
-  ```
+```
+The subdomain for gaianet-domain is: https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+```
 
-Note that replace the snapshot file path with your own path before running the example command above.
+You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+
+To stop the node, you can run the following script.
+
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/stop.sh')
+```
+
+## Customize the node
+
+The primary reason to run the GaiaNet node is to deploy your own AI agent with your own finetuned LLM model and your own private knowledge base. 
+For example, you can finetune an LLM with yur own writings and then supplement with your own private notes. The GaiaNet node that runs this set of finetuned LLM and knowledge base will "speak" like you do!
+
+Visit our demo site to select models and knowledge bases from our open source community to create a `config.json` file.
+
+https://gaianet-ai.github.io/Generate-config-demo/
+
+Copy the generated `config.json` file into the `~/gaianet` directory.
+Then, run the install script again.
+
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh')
+```
+
+Start the node.
+
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh')
+```
+
+Have fun!
+
