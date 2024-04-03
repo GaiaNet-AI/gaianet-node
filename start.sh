@@ -132,8 +132,7 @@ printf "    Run the following command to start the LlamaEdge API Server:\n\n"
 printf "    %s\n\n" "$cmd"
 
 # eval $cmd
-
-nohup $cmd > $log_dir/start-llamaedge.log 2>&1 &
+nohup nice -n -20 $cmd > $log_dir/start-llamaedge.log 2>&1 &
 sleep 2
 llamaedge_pid=$!
 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
