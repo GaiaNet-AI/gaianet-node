@@ -17,7 +17,7 @@ bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/mai
 The script prints the official node address on the console as follows.
 
 ```
-The subdomain for gaianet-domain is: https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
 ```
 
 You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
@@ -30,8 +30,8 @@ bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/mai
 
 ## Customize the node
 
-The primary reason to run the GaiaNet node is to deploy your own AI agent with your own finetuned LLM model and your own private knowledge base. 
-For example, you can finetune an LLM with yur own writings and then supplement with your own private notes. The GaiaNet node that runs this set of finetuned LLM and knowledge base will "speak" like you do!
+The primary reason to run the GaiaNet node is to deploy your own AI agent with your own finetuned LLM model and your own private knowledge. 
+For example, you can finetune an LLM with your blog posts, and then supplement it with your private notes as a knowledge base. The GaiaNet node that runs this set of finetuned LLM and knowledge base will "speak" like your public persona!
 
 Visit our demo site to select models and knowledge bases from our open source community to create a `config.json` file.
 
