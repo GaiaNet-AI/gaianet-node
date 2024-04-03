@@ -243,6 +243,8 @@ fi
 
 # 9. recover from the given qdrant collection snapshot =======================
 cd $gaianet_base_dir
+curl -X DELETE 'http://localhost:6333/collections/default'
+
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
