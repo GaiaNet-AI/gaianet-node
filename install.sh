@@ -70,7 +70,7 @@ fi
 # 2. Install WasmEdge with wasi-nn_ggml plugin for local user
 if ! command -v wasmedge >/dev/null 2>&1 || [ "$reinstall" -eq 1 ]; then
     printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n\n"
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- --plugins wasi_nn-ggml; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
@@ -249,8 +249,6 @@ url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 if [ -n "$url_snapshot" ]; then
     printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
     curl --progress-bar -L $url_snapshot -o default.snapshot
-    # collection_name=$(basename $url_snapshot)
-    # collection_stem=$(basename "$collection_name" .snapshot)
 
     # check 6333 port is in use or not
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
@@ -277,15 +275,13 @@ if [ -n "$url_snapshot" ]; then
     response=$(curl -s -X POST 'http://localhost:6333/collections/default/snapshots/upload?priority=snapshot' \
         -H 'Content-Type:multipart/form-data' \
         -F 'snapshot=@default.snapshot')
-    # response=$(curl -s -X PUT http://localhost:6333/collections/default/snapshots/recover \
-    #     -H "Content-Type: application/json" \
-    #     -d "{\"location\":\"$url_snapshot\", \"priority\": \"snapshot\", \"checksum\": null}")
     sleep 5
 
     # stop qdrant
     kill $qdrant_pid
 
     if echo "$response" | grep -q '"status":"ok"'; then
+        rm $gaianet_base_dir/default.snapshot
         printf "    Recovery is done.\n"
     else
         printf "    Failed to recover from the collection snapshot. $response \n"
