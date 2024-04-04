@@ -14,17 +14,20 @@
         <p>
             <a href="chatbot-ui/index.html" class="btn btn-primary">Chat with this node</a>
         </p>
-	<p>Send an API request to the node using OpenAI JSON</p>
-	<p>
-	    <pre><code id="api-req">
+    </div>
+</section>
+
+<div id="api-sample" class="container">
+    <h4>Send an API request to the node using OpenAI JSON</h4>
+    <p>
+        <pre><code id="api-req">
 curl -X POST <public_url>/v1/chat/completions \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"Llama-2-7b-chat-hf-Q5_K_M"}'
-	    </code></pre>
-	</p>
-    </div>
-</section>
+        </code></pre>
+    </p>
+</div>
 
 <div id="nodeInfo" class="container">
     <table id="jsonTable" class="table table-striped">
