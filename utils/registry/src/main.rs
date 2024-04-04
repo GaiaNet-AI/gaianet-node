@@ -68,8 +68,9 @@ async fn main() {
         .get_matches();
 
     // Configuration
-    let path = "./config.json";
-    let path_web = "./dashboard/config_pub.json";
+    let path_node_config = "./config.json";
+    let path_nodeid = "./nodeid.json";
+    let path_web_config = "./dashboard/config_pub.json";
     let chain_id = 18;
     let rpc_node_url = "https://mainnet.cybermiles.io";
     let contract_address = "0x44Ed2acE4a5D7f939efbe283966ffE10f57A8040";
@@ -86,15 +87,16 @@ async fn main() {
         strict: true,
     };
 
-    let mut config = parse_config(path);
+    let mut node_config = parse_config(path_node_config);
+    let mut nodeid = parse_config(path_nodeid);
     if let Some(status) = matches.get_one::<String>("status") {
-        let keystore = if config.contains_key("keystore") {
-            config["keystore"].to_string().trim_matches('"').to_string()
+        let keystore = if nodeid.contains_key("keystore") {
+            nodeid["keystore"].to_string().trim_matches('"').to_string()
         } else {
             "keystore.def".to_string()
         };
-        let password = if config.contains_key("password") {
-            config["password"].to_string().trim_matches('"').to_string()
+        let password = if nodeid.contains_key("password") {
+            nodeid["password"].to_string().trim_matches('"').to_string()
         } else {
             panic!("You need provide password.");
         };
@@ -115,25 +117,26 @@ async fn main() {
         } else {
             panic!("Status must be 0 or 1");
         };
+
+        let mut public_url = "https://".to_owned();
+        public_url.push_str(&node_config["address"].to_string());
+        public_url.push_str("/");
+        public_url.push_str(&node_config["domain"].to_string());
+
         let data = create_contract_call_data(
             "updateNode",
             vec![
                 Token::Address(
-                    H160::from_str(config["address"].to_string().trim_matches('"')).unwrap(),
+                    H160::from_str(nodeid["address"].to_string().trim_matches('"')).unwrap(),
                 ),
-                Token::String(config["address"].to_string().trim_matches('"').to_string()),
+                Token::String(nodeid["address"].to_string().trim_matches('"').to_string()),
                 Token::String(
-                    config["description"]
+                    node_config["description"]
                         .to_string()
                         .trim_matches('"')
                         .to_string(),
                 ),
-                Token::String(
-                    config["public_url"]
-                        .to_string()
-                        .trim_matches('"')
-                        .to_string(),
-                ),
+                Token::String(public_url),
                 Token::Bool(status),
             ],
         )
@@ -154,7 +157,7 @@ async fn main() {
             .expect("Failed to send raw transaction.");
         println!("Send transaction: {}", resp);
     } else {
-        if !config.contains_key("address") {
+        if !nodeid.contains_key("address") {
             let (address, private_key) = match matches.get_one::<String>("private_key") {
                 Some(private_key) => (
                     private_key.parse::<LocalWallet>().unwrap().address(),
@@ -163,11 +166,11 @@ async fn main() {
                 _ => generate_key(),
             };
 
-            let password = if config.contains_key("password") {
-                config["password"].to_string().trim_matches('"').to_string()
+            let password = if nodeid.contains_key("password") {
+                nodeid["password"].to_string().trim_matches('"').to_string()
             } else {
                 let password = pg.generate_one().unwrap();
-                config.insert("password".to_string(), Value::from(password.clone()));
+                nodeid.insert("password".to_string(), Value::from(password.clone()));
                 password
             };
             let name = eth_keystore::encrypt_key(
@@ -178,23 +181,24 @@ async fn main() {
                 None,
             )
             .unwrap();
-            config.insert(
+            nodeid.insert(
                 "address".to_string(),
                 Value::from(address.encode_hex_with_prefix()),
             );
-            config.insert(
+            nodeid.insert(
                 "keystore".to_string(),
                 Value::from(name.clone()),
             );
-            save_config(path, serde_json::to_string_pretty(&config).unwrap());
+            save_config(path_nodeid, serde_json::to_string_pretty(&nodeid).unwrap());
             println!("Generate new key storing in {:?}.", dir.join(name));
         } else {
             println!("You already have a private key.")
         }
 
+        // Put the address in node config
+        node_config["address"] = nodeid["address"].clone();
+        save_config(path_node_config, serde_json::to_string_pretty(&node_config).unwrap());
         // Save a public copy for the web site
-        let _ = config.remove("password");
-        let _ = config.remove("keystore");
-        save_config(path_web, serde_json::to_string_pretty(&config).unwrap());
+        save_config(path_web_config, serde_json::to_string_pretty(&node_config).unwrap());
     }
 }
