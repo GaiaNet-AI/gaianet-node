@@ -1,9 +1,7 @@
 #!/bin/bash
 
-
 # target name
 target=$(uname -m)
-
 
 # represents the directory where the script is located
 cwd=$(pwd)
@@ -60,11 +58,14 @@ if [ ! -d "$gaianet_base_dir/log" ]; then
 fi
 log_dir=$gaianet_base_dir/log
 
-# 1. check if config.json exists or not
+# 1. check if config.json and nodeid.json exist or not
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
-    printf "[+] Downloading config.json ...\n\n"
+    printf "[+] Downloading config files ...\n\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json
+fi
+if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/nodeid.json
 fi
 
 # 2. Install WasmEdge with wasi-nn_ggml plugin for local user
@@ -190,12 +191,14 @@ fi
 printf "\n"
 
 # 7.5 Generate node ID and copy config to dashboard
-if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading the registry.wasm ...\n\n"
-    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
-else
-    printf "[+] Using cached registry ...\n\n"
-fi
+printf "[+] Downloading the registry.wasm ...\n\n"
+curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+# if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
+#     printf "[+] Downloading the registry.wasm ...\n\n"
+#     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+# else
+#     printf "[+] Using cached registry ...\n\n"
+# fi
 printf "[+] Generating node ID ...\n"
 wasmedge --dir .:. registry.wasm
 printf "\n"
@@ -220,9 +223,10 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     # check 6333 port is in use or not
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(lsof -t -i:6333)
-            kill -9 $pid
+            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+            exit 1
+            # pid=$(lsof -t -i:6333)
+            # kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
@@ -253,9 +257,10 @@ if [ -n "$url_snapshot" ]; then
     # check 6333 port is in use or not
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(lsof -t -i:6333)
-            kill -9 $pid
+            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+            exit 1
+            # pid=$(lsof -t -i:6333)
+            # kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
@@ -305,9 +310,10 @@ elif [ -n "$url_document" ]; then
     printf "    * Remove 'default' collection if it exists ...\n\n"
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            pid=$(lsof -t -i:6333)
-            kill -9 $pid
+            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+            exit 1
+            # pid=$(lsof -t -i:6333)
+            # kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
@@ -367,9 +373,10 @@ elif [ -n "$url_document" ]; then
 
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
-            pid=$(lsof -t -i:$llamaedge_port)
-            kill $pid
+            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+            exit 1
+            # pid=$(lsof -t -i:6333)
+            # kill -9 $pid
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
