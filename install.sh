@@ -589,7 +589,7 @@ $sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_ba
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
 
-printf "The subdomain for frpc is: https://$subdomain.$gaianet_domain\n"
+printf "Please run the start.sh script to start the GaiaNet node. Once started, the node will be available at: https://$subdomain.$gaianet_domain\n"
 
 printf "Your node ID is $subdomain Please register it in your portal account to receive awards!\n"
 
