@@ -14,6 +14,15 @@
         <p>
             <a href="chatbot-ui/index.html" class="btn btn-primary">Chat with this node</a>
         </p>
+	<p>Send an API request to the node using OpenAI JSON</p>
+	<p>
+	    <pre><code id="api-req">
+curl -X POST <public_url>/v1/chat/completions \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"Llama-2-7b-chat-hf-Q5_K_M"}'
+	    </code></pre>
+	</p>
     </div>
 </section>
 
@@ -91,6 +100,9 @@ fetch('config_pub.json')
         key = "RAG prompt";
         val = data["rag_prompt"];
         addToTable (key, val);
+
+        var code_snippet = document.getElementById("api-req").innerHTML;
+        document.getElementById("api-req").innerHTML = code_snippet.replace("<public_url>", "https://" + data["address"] + "." + data["domain"]);
 
     }).catch(error => console.error('Error fetching JSON:', error));
 </script>
