@@ -345,22 +345,13 @@ elif [ -n "$url_document" ]; then
     cmd="wasmedge --dir .:. \
     --nn-preload default:GGML:AUTO:$chat_model_name \
     --nn-preload embedding:GGML:AUTO:$embedding_model_name \
-    llama-api-server.wasm -p $prompt_type \
+    rag-api-server.wasm -p $prompt_type \
     --model-name $chat_model_stem,$embedding_model_stem \
     --ctx-size $chat_ctx_size,$embedding_ctx_size \
-    --qdrant-url http://127.0.0.1:6333 \
-    --qdrant-collection-name "default" \
-    --qdrant-limit 3 \
-    --qdrant-score-threshold 0.4 \
     --web-ui ./dashboard \
     --socket-addr 0.0.0.0:$llamaedge_port \
     --log-prompts \
     --log-stat"
-
-    # Add reverse prompt if it exists
-    if [ -n "$reverse_prompt" ]; then
-        cmd="$cmd --reverse-prompt \"${reverse_prompt}\""
-    fi
 
     # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
     # printf "    %s\n\n" "$cmd"
@@ -370,8 +361,7 @@ elif [ -n "$url_document" ]; then
     llamaedge_pid=$!
     echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
 
-    # (1) download the document
-    printf "    * Downloading the document ...\n\n"
+    printf "    * Convert the document to embeddings ...\n\n"
     cd $gaianet_base_dir
     doc_filename=$(basename $url_document)
     curl -s $url_document -o $doc_filename
@@ -389,31 +379,16 @@ elif [ -n "$url_document" ]; then
         exit 1
     fi
 
+    # compute embeddings
+    embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/rag/embeddings -F "file=@$doc_filename")
 
-    # (2) upload the document to api-server via the `/v1/files` endpoint
-    printf "    * Uploading the document to LlamaEdge API Server ...\n"
-    doc_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/files -F "file=@$doc_filename")
-    id=$(echo "$doc_response" | grep -o '"id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
-    filename=$(echo "$doc_response" | grep -o '"filename":"[^"]*"' | cut -d':' -f2 | tr -d '"')
-    rm $doc_filename
-    printf "\n"
+    if [ -z "$embedding_response" ]; then
+        printf "Failed to compute embeddings. Exit ...\n"
+        exit 1
+    fi
 
-    # (3) chunk the document
-    printf "    * Chunking the document ...\n"
-    chunk_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/chunks -H "accept: application/json" -H "Content-Type: application/json" -d "{\"id\":\"$id\",\"filename\":\"$filename\"}")
-
-    chunks=$(echo $chunk_response | grep -o '"chunks":\[[^]]*\]' | sed 's/"chunks"://')
-
-    printf "\n"
-
-    # (4) compute the embeddings for the chunks and upload them to the Qdrant instance
-    printf "    * Computing the embeddings and uploading them to the Qdrant instance ...\n"
-
-    data={\"model\":\"$embedding_model_stem\",\"input\":"$chunks"}
-
-    embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/embeddings -H "accept: application/json" -H "Content-Type: application/json" -d "$data")
-
-    printf "\n"
+    # remove the downloaded document
+    rm -f $gaianet_base_dir/$doc_filename
 
     # stop the api-server
     if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
@@ -421,7 +396,6 @@ elif [ -n "$url_document" ]; then
         kill $(cat $gaianet_base_dir/llamaedge.pid)
         rm $gaianet_base_dir/llamaedge.pid
     fi
-
 
 else
     echo "Please set 'snapshot' or 'document' field in config.json"
