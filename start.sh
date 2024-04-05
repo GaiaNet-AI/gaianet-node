@@ -88,6 +88,8 @@ chat_model_stem=$(basename "$chat_model_name" .gguf)
 chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
 # parse prompt type for chat model
 prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
+# parse system prompt for chat model
+system_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
 # parse reverse prompt for chat model
 reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
 # parse cli options for embedding model
@@ -124,28 +126,33 @@ fi
 
 # command to start LlamaEdge API Server
 cd $gaianet_base_dir
-cmd="wasmedge --dir .:./dashboard \
+cmd=(wasmedge --dir .:./dashboard \
   --nn-preload default:GGML:AUTO:$chat_model_name \
   --nn-preload embedding:GGML:AUTO:$embedding_model_name \
-  rag-api-server.wasm -p $prompt_type \
+  rag-api-server.wasm \
   --model-name $chat_model_stem,$embedding_model_stem \
   --ctx-size $chat_ctx_size,$embedding_ctx_size \
+  --prompt-template $prompt_type \
   --web-ui ./ \
   --socket-addr 0.0.0.0:$llamaedge_port \
   --log-prompts \
-  --log-stat"
+  --log-stat)
+
+# Add system prompt if it exists
+if [ -n "$system_prompt" ]; then
+    cmd+=("--system-prompt" "$system_prompt")
+fi
 
 # Add reverse prompt if it exists
 if [ -n "$reverse_prompt" ]; then
-    cmd="$cmd --reverse-prompt \"${reverse_prompt}\""
+    cmd+=("--reverse_prompt" "$reverse_prompt")
 fi
 
-
 printf "    Run the following command to start the LlamaEdge API Server:\n\n"
-printf "    %s\n\n" "$cmd"
+printf "    %s\n\n" "${cmd[*]}"
 
 # eval $cmd
-nohup $cmd > $log_dir/start-llamaedge.log 2>&1 &
+nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
 sleep 2
 llamaedge_pid=$!
 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
