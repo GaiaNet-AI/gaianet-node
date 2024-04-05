@@ -116,7 +116,7 @@ else
 fi
 
 cd $gaianet_base_dir
-llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
 if [ ! -f "$llamaedge_wasm" ]; then
     printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
     exit 1
@@ -127,13 +127,9 @@ cd $gaianet_base_dir
 cmd="wasmedge --dir .:./dashboard \
   --nn-preload default:GGML:AUTO:$chat_model_name \
   --nn-preload embedding:GGML:AUTO:$embedding_model_name \
-  llama-api-server.wasm -p $prompt_type \
+  rag-api-server.wasm -p $prompt_type \
   --model-name $chat_model_stem,$embedding_model_stem \
   --ctx-size $chat_ctx_size,$embedding_ctx_size \
-  --qdrant-url http://127.0.0.1:6333 \
-  --qdrant-collection-name "default" \
-  --qdrant-limit 3 \
-  --qdrant-score-threshold 0.4 \
   --web-ui ./ \
   --socket-addr 0.0.0.0:$llamaedge_port \
   --log-prompts \
