@@ -238,7 +238,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
 
     # start qdrant to create the storage directory structure if it does not exist
     nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-    sleep 2
+    sleep 5
     qdrant_pid=$!
     kill $qdrant_pid
 
@@ -273,7 +273,7 @@ if [ -n "$url_snapshot" ]; then
     # start qdrant
     cd $gaianet_base_dir/qdrant
     nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant-recover-snapshot.log 2>&1 &
-    sleep 2
+    sleep 5
     qdrant_pid=$!
 
     cd $gaianet_base_dir
@@ -283,6 +283,7 @@ if [ -n "$url_snapshot" ]; then
     status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     if [ "$status" != "ok" ]; then
         printf "    Failed to remove the 'default' collection. $del_response\n\n"
+        kill $qdrant_pid
         exit 1
     fi
 
@@ -327,7 +328,7 @@ elif [ -n "$url_document" ]; then
     if [ -f "$qdrant_executable" ]; then
         cd $gaianet_base_dir/qdrant
         nohup $qdrant_executable > $log_dir/init-qdrant-gen-collection.log 2>&1 &
-        sleep 2
+        sleep 5
         qdrant_pid=$!
         echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
 
@@ -337,6 +338,7 @@ elif [ -n "$url_document" ]; then
         status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
         if [ "$status" != "ok" ]; then
             printf "    Failed to remove the 'default' collection. $del_response\n\n"
+            kill $qdrant_pid
             exit 1
         fi
     else
