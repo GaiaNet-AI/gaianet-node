@@ -99,11 +99,11 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
     if [ "$(uname)" == "Darwin" ]; then
         # download qdrant binary
         if [ "$target" = "x86_64" ]; then
-            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz
+            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz
             tar -xzf qdrant-x86_64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-x86_64-apple-darwin.tar.gz
         elif [ "$target" = "arm64" ]; then
-            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz
+            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz
             tar -xzf qdrant-aarch64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-aarch64-apple-darwin.tar.gz
         fi
@@ -111,11 +111,11 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         # download qdrant statically linked binary
         if [ "$target" = "x86_64" ]; then
-            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz
+            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz
             tar -xzf qdrant-x86_64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-x86_64-unknown-linux-musl.tar.gz
         elif [ "$target" = "aarch64" ]; then
-            curl --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz
+            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz
             tar -xzf qdrant-aarch64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
             rm qdrant-aarch64-unknown-linux-musl.tar.gz
         fi
@@ -140,7 +140,7 @@ if [ -f "$gaianet_base_dir/$chat_model" ]; then
     printf "[+] Using the cached chat model: $chat_model\n"
 else
     printf "[+] Downloading $chat_model ...\n\n"
-    curl --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
+    curl --retry 3 --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
 fi
 printf "\n"
 
@@ -151,7 +151,7 @@ if [ -f "$gaianet_base_dir/$embedding_model" ]; then
     printf "[+] Using the cached embedding model: $embedding_model\n"
 else
     printf "[+] Downloading $embedding_model ...\n\n"
-    curl --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
+    curl --retry 3 --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
 fi
 printf "\n"
 
@@ -160,9 +160,7 @@ printf "\n"
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the llama-api-server.wasm ...\n\n"
-
-    curl --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm
-
+    curl --retry 3 --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm
 else
     printf "[+] Using the cached llama-api-server.wasm ...\n"
 fi
@@ -181,7 +179,7 @@ if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
         rm -rf $gaianet_base_dir/gaianet-node
     fi
     cd $gaianet_base_dir
-    curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.tar.gz
+    curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.tar.gz
     tar xzf dashboard.tar.gz
 
     rm -rf $gaianet_base_dir/dashboard.tar.gz
@@ -209,7 +207,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
     # download qdrant binary
-    curl --progress-bar -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
+    curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
     # unzip to `qdrant-1.8.1` directory
     tar -xzf v1.8.1.tar.gz
     rm v1.8.1.tar.gz
@@ -517,11 +515,11 @@ gaianet_domain_version="v0.1.0-alpha.1"
 if [ "$(uname)" == "Darwin" ]; then
     # download gaianet-domain binary
     if [ "$target" = "x86_64" ]; then
-        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
         tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
-        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
         tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
     fi
@@ -529,11 +527,11 @@ if [ "$(uname)" == "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # download gaianet-domain statically linked binary
     if [ "$target" = "x86_64" ]; then
-        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
         tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
     elif [ "$target" = "arm64" ]; then
-        curl --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
         tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
         rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
     fi
