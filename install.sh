@@ -156,13 +156,13 @@ fi
 printf "\n"
 
 
-# 6. Download llama-api-server.wasm
+# 6. Download rag-api-server.wasm
 cd $gaianet_base_dir
-if [ ! -f "$gaianet_base_dir/llama-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading the llama-api-server.wasm ...\n\n"
-    curl --retry 3 --progress-bar -LO https://github.com/LlamaEdge/LlamaEdge/releases/download/0.7.1/llama-api-server.wasm
+if [ ! -f "$gaianet_base_dir/rag-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
+    printf "[+] Downloading the rag-api-server.wasm ...\n\n"
+    curl --retry 3 --progress-bar -LO https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm
 else
-    printf "[+] Using the cached llama-api-server.wasm ...\n"
+    printf "[+] Using the cached rag-api-server.wasm ...\n"
 fi
 printf "\n"
 
@@ -334,7 +334,7 @@ elif [ -n "$url_document" ]; then
     fi
 
     cd $gaianet_base_dir
-    llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+    llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
     if [ ! -f "$llamaedge_wasm" ]; then
         printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
         exit 1
