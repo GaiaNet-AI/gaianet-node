@@ -108,7 +108,8 @@ fetch('config_pub.json')
         addToTable (key, val);
 
         var code_snippet = document.getElementById("api-req").innerHTML;
-        document.getElementById("api-req").innerHTML = code_snippet.replace("<public_url>", "https://" + data["address"] + "." + data["domain"]);
+        // document.getElementById("api-req").innerHTML = code_snippet.replace("<public_url>", "https://" + data["address"] + "." + data["domain"]);
+        document.getElementById("api-req").innerHTML = code_snippet.replace("<public_url>", window.location.protocol + "//" + window.location.host);
 
     }).catch(error => console.error('Error fetching JSON:', error));
 </script>
