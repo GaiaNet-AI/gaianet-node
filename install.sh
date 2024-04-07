@@ -176,7 +176,7 @@ printf "\n"
 # 7. Download rag-api-server.wasm
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/rag-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading the rag-api-server.wasm ...\n\n"
+    printf "[+] Downloading the rag-api-server.wasm ...\n"
     curl --retry 3 --progress-bar -LO https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm
 else
     printf "[+] Using the cached rag-api-server.wasm ...\n"
@@ -430,7 +430,7 @@ kill $qdrant_pid
 # ======================================================================================
 
 # 11. Install gaianet-domain at $HOME/gaianet/bin
-printf "[+] Installing gaianet-domain...\n\n"
+printf "[+] Installing gaianet-domain...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
     mkdir -p $gaianet_base_dir/gaianet-domain
