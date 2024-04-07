@@ -8,10 +8,14 @@ cwd=$(pwd)
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
+# url to the config file
+config_url=""
 
 function print_usage {
     printf "Usage:\n"
-    printf "  ./init.sh\n\n"
+    printf "  ./install.sh [Options]\n\n"
+    printf "Options:\n"
+    printf "  --config <Url>: specify a url to the config file\n"
     printf "  --reinstall: install and download all required deps\n"
     printf "  --help: Print usage\n"
 }
@@ -19,6 +23,11 @@ function print_usage {
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --config)
+            config_url="$2"
+            shift
+            shift
+            ;;
         --reinstall)
             reinstall=1
             shift
@@ -60,15 +69,23 @@ log_dir=$gaianet_base_dir/log
 
 # 1. check if config.json and nodeid.json exist or not
 cd $gaianet_base_dir
-if [ ! -f "$gaianet_base_dir/config.json" ]; then
-    printf "[+] Downloading config files ...\n\n"
+if [ -n "$config_url" ]; then
+    printf "[+] Downloading config file from %s\n" "$config_url"
+    curl --retry 3 --progress-bar -L $config_url -o config.json
+    printf "\n"
+elif [ ! -f "$gaianet_base_dir/config.json" ]; then
+    printf "[+] Downloading default config file ...\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json
+    printf "\n"
 fi
+
+# 2. download nodeid.json
 if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
+    printf "[+] Downloading nodeid.json ...\n\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/nodeid.json
 fi
 
-# 2. Install WasmEdge with wasi-nn_ggml plugin for local user
+# 3. Install WasmEdge with wasi-nn_ggml plugin for local user
 if ! command -v wasmedge >/dev/null 2>&1 || [ "$reinstall" -eq 1 ]; then
     printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n\n"
     if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
@@ -86,7 +103,7 @@ else
 fi
 printf "\n"
 
-# 3. Install Qdrant at $HOME/gaianet/bin
+# 4. Install Qdrant at $HOME/gaianet/bin
 # Check if "$gaianet_base_dir/bin" directory exists
 if [ ! -d "$gaianet_base_dir/bin" ]; then
     # If not, create it
@@ -133,7 +150,7 @@ else
 fi
 printf "\n"
 
-# 4. Download GGUF chat model to $HOME/gaianet
+# 5. Download GGUF chat model to $HOME/gaianet
 url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
 chat_model=$(basename $url_chat_model)
 if [ -f "$gaianet_base_dir/$chat_model" ]; then
@@ -144,7 +161,7 @@ else
 fi
 printf "\n"
 
-# 5. Download GGUF embedding model to $HOME/gaianet
+# 6. Download GGUF embedding model to $HOME/gaianet
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
 embedding_model=$(basename $url_embedding_model)
 if [ -f "$gaianet_base_dir/$embedding_model" ]; then
@@ -156,7 +173,7 @@ fi
 printf "\n"
 
 
-# 6. Download rag-api-server.wasm
+# 7. Download rag-api-server.wasm
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/rag-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the rag-api-server.wasm ...\n\n"
@@ -188,7 +205,7 @@ else
 fi
 printf "\n"
 
-# 7.5 Generate node ID and copy config to dashboard
+# 8 Generate node ID and copy config to dashboard
 printf "[+] Downloading the registry.wasm ...\n\n"
 curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
 # if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
@@ -201,7 +218,7 @@ printf "[+] Generating node ID ...\n"
 wasmedge --dir .:. registry.wasm
 printf "\n"
 
-# 8. prepare qdrant dir if it does not exist
+# 9. prepare qdrant dir if it does not exist
 if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "[+] Preparing Qdrant directory ...\n"
     mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
@@ -220,7 +237,9 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "\n"
 fi
 
-# 9. recover from the given qdrant collection snapshot =======================
+# 10. recover from the given qdrant collection snapshot =======================
+printf "[+] Initializing the Qdrant server ...\n\n"
+
 # check 6333 port is in use or not
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
@@ -236,7 +255,6 @@ else
 fi
 
 # start qdrant
-printf "[+] Initializing the Qdrant server ...\n\n"
 cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
 sleep 15
@@ -247,6 +265,8 @@ url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
 if [ -n "$url_snapshot" ]; then
+    # 10.1 recover from the given qdrant collection snapshot
+
     printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
     curl --progress-bar -L $url_snapshot -o default.snapshot
 
@@ -277,10 +297,12 @@ if [ -n "$url_snapshot" ]; then
     fi
 
 elif [ -n "$url_document" ]; then
+    # 10.2 generate a Qdrant collection from the given document
+
     printf "[+] Creating a Qdrant collection from the given document ...\n\n"
 
     # Remove the 'default' collection if it exists
-    printf "    * Remove 'default' collection if it exists ...\n\n"
+    printf "    * Removing 'default' collection if it exists ...\n\n"
     # remove the 'default' collection if it exists
     del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
         -H "Content-Type: application/json")
@@ -361,7 +383,7 @@ elif [ -n "$url_document" ]; then
     llamaedge_pid=$!
     echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
 
-    printf "    * Convert the document to embeddings ...\n\n"
+    printf "    * Converting the document to embeddings ...\n\n"
     cd $gaianet_base_dir
     doc_filename=$(basename $url_document)
     curl -s $url_document -o $doc_filename
@@ -392,7 +414,7 @@ elif [ -n "$url_document" ]; then
 
     # stop the api-server
     if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
-        # printf "[+] Stopping API server ...\n"
+        # stop API server
         kill $(cat $gaianet_base_dir/llamaedge.pid)
         rm $gaianet_base_dir/llamaedge.pid
     fi
@@ -402,12 +424,12 @@ else
 fi
 printf "\n"
 
-# Done stop qdrant
+# stop qdrant
 kill $qdrant_pid
 
 # ======================================================================================
 
-# 10. Install gaianet-domain at $HOME/gaianet/bin
+# 11. Install gaianet-domain at $HOME/gaianet/bin
 printf "[+] Installing gaianet-domain...\n\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
@@ -451,7 +473,7 @@ printf "\n"
 # Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
 cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 
-# 11. Download frpc.toml, generate a subdomain and print it
+# 12. Download frpc.toml, generate a subdomain and print it
 curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # Read address from config.json as node subdomain
