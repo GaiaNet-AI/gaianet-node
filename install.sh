@@ -238,7 +238,7 @@ fi
 # start qdrant
 cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-sleep 2
+sleep 5
 qdrant_pid=$!
 
 cd $gaianet_base_dir
