@@ -207,7 +207,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
     # download qdrant binary
-    curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
+    curl --retry 3 -s -LO https://github.com/qdrant/qdrant/archive/refs/tags/v1.8.1.tar.gz
     # unzip to `qdrant-1.8.1` directory
     tar -xzf v1.8.1.tar.gz
     rm v1.8.1.tar.gz
@@ -236,9 +236,10 @@ else
 fi
 
 # start qdrant
+printf "[+] Initializing the Qdrant server ...\n"
 cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-sleep 5
+sleep 15
 qdrant_pid=$!
 
 cd $gaianet_base_dir
