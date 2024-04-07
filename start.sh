@@ -1,5 +1,22 @@
 #!/bin/bash
 
+local_only=0
+
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        --local)
+            local_only=1
+            shift
+            ;;
+        *)
+            echo "Unknown argument: $key"
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+
 
 # represents the directory where the script is located
 script_dir=$(pwd)
@@ -138,18 +155,22 @@ llamaedge_pid=$!
 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
 printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
 
-# start gaianet-domain
-printf "[+] Starting gaianet-domain ...\n"
-nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
-sleep 2
-gaianet_domain_pid=$!
-echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
-printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n\n"
+if [ "$local_only" -eq 0 ]; then
+    # start gaianet-domain
+    printf "[+] Starting gaianet-domain ...\n"
+    nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
+    sleep 2
+    gaianet_domain_pid=$!
+    echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
+    printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n\n"
 
-# Extract the subdomain from frpc.toml
-subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-printf "    The subdomain for gaianet-domain is: https://$subdomain.gaianet.xyz\n"
-
+    # Extract the subdomain from frpc.toml
+    subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+    printf "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz\n"
+fi
+if [ "$local_only" -eq 1 ]; then
+    printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n"
+fi
 printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
 exit 0
