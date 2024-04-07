@@ -236,7 +236,7 @@ else
 fi
 
 # start qdrant
-printf "[+] Initializing the Qdrant server ...\n"
+printf "[+] Initializing the Qdrant server ...\n\n"
 cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
 sleep 15
@@ -279,7 +279,7 @@ if [ -n "$url_snapshot" ]; then
 elif [ -n "$url_document" ]; then
     printf "[+] Creating a Qdrant collection from the given document ...\n\n"
 
-    # 9.1. start a Qdrant instance to remove the 'default' collection if it exists
+    # Remove the 'default' collection if it exists
     printf "    * Remove 'default' collection if it exists ...\n\n"
     # remove the 'default' collection if it exists
     del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
@@ -291,7 +291,7 @@ elif [ -n "$url_document" ]; then
         exit 1
     fi
 
-    # 9.2. start a Qdrant instance to create the 'default' collection from the given document
+    # Start LlamaEdge API Server
     printf "    * Starting LlamaEdge API Server ...\n\n"
 
     # parse cli options for chat model
@@ -380,7 +380,7 @@ elif [ -n "$url_document" ]; then
     fi
 
     # compute embeddings
-    embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/rag/embeddings -F "file=@$doc_filename")
+    embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/create/rag -F "file=@$doc_filename")
 
     if [ -z "$embedding_response" ]; then
         printf "Failed to compute embeddings. Exit ...\n"
