@@ -217,29 +217,6 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
 
     # remove the `qdrant-1.8.1` directory
     rm -rf qdrant-1.8.1
-
-    # check 6333 port is in use or not
-    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
-            exit 1
-            # pid=$(lsof -t -i:6333)
-            # kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
-        exit 1
-    else
-        printf "Only support Linux, MacOS and Windows.\n"
-        exit 1
-    fi
-
-    # start qdrant to create the storage directory structure if it does not exist
-    nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-    sleep 5
-    qdrant_pid=$!
-    kill $qdrant_pid
-
     printf "\n"
 fi
 
@@ -248,31 +225,29 @@ cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
+# check 6333 port is in use or not
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+        printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+        exit 1
+    fi
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    printf "For Windows users, please run this script in WSL.\n"
+    exit 1
+else
+    printf "Only support Linux, MacOS and Windows.\n"
+    exit 1
+fi
+
+# start qdrant
+cd $gaianet_base_dir/qdrant
+nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
+sleep 5
+qdrant_pid=$!
+
 if [ -n "$url_snapshot" ]; then
     printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
     curl --progress-bar -L $url_snapshot -o default.snapshot
-
-    # check 6333 port is in use or not
-    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
-            exit 1
-            # pid=$(lsof -t -i:6333)
-            # kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
-        exit 1
-    else
-        printf "Only support Linux, MacOS and Windows.\n"
-        exit 1
-    fi
-
-    # start qdrant
-    cd $gaianet_base_dir/qdrant
-    nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant-recover-snapshot.log 2>&1 &
-    sleep 5
-    qdrant_pid=$!
 
     cd $gaianet_base_dir
     # remove the 'default' collection if it exists
@@ -291,14 +266,12 @@ if [ -n "$url_snapshot" ]; then
         -F 'snapshot=@default.snapshot')
     sleep 5
 
-    # stop qdrant
-    kill $qdrant_pid
-
     if echo "$response" | grep -q '"status":"ok"'; then
         rm $gaianet_base_dir/default.snapshot
         printf "    Recovery is done.\n"
     else
         printf "    Failed to recover from the collection snapshot. $response \n"
+        kill $qdrant_pid
         exit 1
     fi
 
@@ -307,40 +280,13 @@ elif [ -n "$url_document" ]; then
 
     # 9.1. start a Qdrant instance to remove the 'default' collection if it exists
     printf "    * Remove 'default' collection if it exists ...\n\n"
-    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
-            exit 1
-            # pid=$(lsof -t -i:6333)
-            # kill -9 $pid
-        fi
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
-        exit 1
-    else
-        printf "Only support Linux, MacOS and Windows.\n"
-        exit 1
-    fi
-
-    qdrant_executable="$gaianet_base_dir/bin/qdrant"
-    if [ -f "$qdrant_executable" ]; then
-        cd $gaianet_base_dir/qdrant
-        nohup $qdrant_executable > $log_dir/init-qdrant-gen-collection.log 2>&1 &
-        sleep 5
-        qdrant_pid=$!
-        echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
-
-        # remove the 'default' collection if it exists
-        del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
-            -H "Content-Type: application/json")
-        status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
-        if [ "$status" != "ok" ]; then
-            printf "    Failed to remove the 'default' collection. $del_response\n\n"
-            kill $qdrant_pid
-            exit 1
-        fi
-    else
-        printf "Qdrant binary not found at $qdrant_executable\n\n"
+    # remove the 'default' collection if it exists
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
+        -H "Content-Type: application/json")
+    status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    if [ "$status" != "ok" ]; then
+        printf "    Failed to remove the 'default' collection. $del_response\n\n"
+        kill $qdrant_pid
         exit 1
     fi
 
@@ -432,25 +378,11 @@ elif [ -n "$url_document" ]; then
     if [[ $doc_filename != *.txt ]] && [[ $doc_filename != *.md ]]; then
         printf "Error: the document to upload should be a file with 'txt' or 'md' extension.\n"
 
-        # stop the Qdrant instance
-        if [ -f "$gaianet_base_dir/qdrant.pid" ]; then
-            # printf "[+] Stopping Qdrant instance ...\n"
-            kill $(cat $gaianet_base_dir/qdrant.pid)
-            rm $gaianet_base_dir/qdrant.pid
-        fi
-
         # stop the api-server
         if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
             # printf "[+] Stopping API server ...\n"
             kill $(cat $gaianet_base_dir/llamaedge.pid)
             rm $gaianet_base_dir/llamaedge.pid
-        fi
-
-        # stop gaianet-domain
-        if [ -f "$gaianet_base_dir/gaianet-domain.pid" ]; then
-            # printf "[+] Stopping gaianet-domain ...\n"
-            kill $(cat $gaianet_base_dir/gaianet-domain.pid)
-            rm $gaianet_base_dir/gaianet-domain.pid
         fi
 
         exit 1
@@ -482,13 +414,6 @@ elif [ -n "$url_document" ]; then
 
     printf "\n"
 
-    # stop the Qdrant instance
-    if [ -f "$gaianet_base_dir/qdrant.pid" ]; then
-        # printf "[+] Stopping Qdrant instance ...\n"
-        kill $(cat $gaianet_base_dir/qdrant.pid)
-        rm $gaianet_base_dir/qdrant.pid
-    fi
-
     # stop the api-server
     if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
         # printf "[+] Stopping API server ...\n"
@@ -501,6 +426,9 @@ else
     echo "Please set 'snapshot' or 'document' field in config.json"
 fi
 printf "\n"
+
+# Done stop qdrant
+kill -9 $qdrant_pid
 
 # ======================================================================================
 
