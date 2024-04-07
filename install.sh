@@ -221,10 +221,6 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
 fi
 
 # 9. recover from the given qdrant collection snapshot =======================
-cd $gaianet_base_dir
-url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
-url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
-
 # check 6333 port is in use or not
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
@@ -244,6 +240,10 @@ cd $gaianet_base_dir/qdrant
 nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
 sleep 5
 qdrant_pid=$!
+
+cd $gaianet_base_dir
+url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
+url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 
 if [ -n "$url_snapshot" ]; then
     printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
