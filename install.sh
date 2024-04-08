@@ -71,7 +71,7 @@ log_dir=$gaianet_base_dir/log
 cd $gaianet_base_dir
 if [ -n "$config_url" ]; then
     printf "[+] Downloading config file from %s\n" "$config_url"
-    curl --retry 3 --progress-bar -L $config_url -o config.json
+    curl -s -L $config_url -o config.json
     printf "\n"
 elif [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "[+] Downloading default config file ...\n"
