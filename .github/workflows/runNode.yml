@@ -1,0 +1,31 @@
+name: Run a GaiaNet Node
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  run-node-and-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install apt packages
+        run: sudo apt-get update && sudo apt-get install -y curl git jq lsof
+      - name: Run install script
+        run: ./install.sh
+      - name: Run start script
+        run: ./start.sh
+      - name: Sleep 10 seconds
+        run: sleep 10
+      - name: Test localhost API
+        run: |
+          curl -X POST http://localhost:8080/v1/chat/completions \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"Llama-2-7b-chat-hf-Q5_K_M"}'
+      - name: Run stop script
+        run: ./stop.sh
