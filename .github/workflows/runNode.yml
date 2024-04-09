@@ -29,10 +29,16 @@ jobs:
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"Llama-2-7b-chat-hf-Q5_K_M"}'
       - name: Test frp API
         run: |
+          ls -l $HOME/
+          cat $HOME/gaianet/config.json
           ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
+          echo $ADDRESS
+          echo https://$ADDRESS.gaianet.xyz/v1/chat/completions
           curl -X POST https://$ADDRESS.gaianet.xyz/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"Llama-2-7b-chat-hf-Q5_K_M"}'
+      - name: Sleep 600 seconds
+        run: sleep 600
       - name: Run stop script
         run: ./stop.sh
