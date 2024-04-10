@@ -149,7 +149,14 @@ if [ -n "$reverse_prompt" ]; then
 fi
 
 printf "    Run the following command to start the LlamaEdge API Server:\n\n"
-printf "    %s\n\n" "${cmd[*]}"
+for i in "${cmd[@]}"; do
+    if [[ $i == *" "* ]]; then
+        printf "\"%s\" " "$i"
+    else
+        printf "%s " "$i"
+    fi
+done
+printf "\n\n"
 
 # eval $cmd
 nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
