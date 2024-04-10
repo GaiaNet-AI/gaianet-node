@@ -89,7 +89,7 @@ chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
 # parse prompt type for chat model
 prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
 # parse system prompt for chat model
-system_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
+rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
 # parse reverse prompt for chat model
 reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
 # parse cli options for embedding model
@@ -139,8 +139,8 @@ cmd=(wasmedge --dir .:./dashboard \
   --log-stat)
 
 # Add system prompt if it exists
-if [ -n "$system_prompt" ]; then
-    cmd+=("--system-prompt" "$system_prompt")
+if [ -n "$rag_prompt" ]; then
+    cmd+=("--rag-prompt" "$rag_prompt")
 fi
 
 # Add reverse prompt if it exists
