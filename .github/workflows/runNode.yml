@@ -15,6 +15,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install apt packages
         run: sudo apt-get update && sudo apt-get install -y curl git jq lsof
+      - name: Use TinyLlama instead of Llama-2-7B
+        run: |
+          GAIANET_DIR=$HOME/gaianet
+          mkdir -p $GAIANET_DIR
+          cp config.json $GAIANET_DIR/config.json
+          sed -i 's|Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf|TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf|g' $GAIANET_DIR/config.json
+          sed -i 's|llama-2-chat|chatml|g' $GAIANET_DIR/config.json
+          cat $GAIANET_DIR/config.json
       - name: Run install script
         run: ./install.sh
       - name: Run start script
@@ -26,6 +34,13 @@ jobs:
           curl -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
-            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"Llama-2-7b-chat-hf-Q5_K_M"}'
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
+      - name: Test frp API
+        run: |
+          ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
+          curl -X POST https://$ADDRESS.gaianet.xyz/v1/chat/completions \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
       - name: Run stop script
         run: ./stop.sh
