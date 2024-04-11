@@ -1,5 +1,6 @@
 serverAddr = "52.77.216.244"
 serverPort = 7000
+metadatas.deviceId = ""
 
 [[proxies]]
 name = "demo.gaianet.xyz"
