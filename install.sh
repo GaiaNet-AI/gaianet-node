@@ -10,12 +10,15 @@ cwd=$(pwd)
 reinstall=0
 # url to the config file
 config_url=""
+# path to the gaianet base directory
+gaianet_base_dir="$HOME/gaianet"
 
 function print_usage {
     printf "Usage:\n"
     printf "  ./install.sh [Options]\n\n"
     printf "Options:\n"
     printf "  --config <Url>: specify a url to the config file\n"
+    printf "  --base <Path>: specify a path to the gaianet base directory\n"
     printf "  --reinstall: install and download all required deps\n"
     printf "  --help: Print usage\n"
 }
@@ -25,6 +28,11 @@ while [[ $# -gt 0 ]]; do
     case $key in
         --config)
             config_url="$2"
+            shift
+            shift
+            ;;
+        --base)
+            gaianet_base_dir="$2"
             shift
             shift
             ;;
@@ -44,11 +52,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
 printf "\n"
-
-# Set "gaianet_base_dir" to $HOME/gaianet
-gaianet_base_dir="$HOME/gaianet"
 
 # if need to reinstall, remove the $gaianet_base_dir directory
 if [ "$reinstall" -eq 1 ] && [ -d "$gaianet_base_dir" ]; then

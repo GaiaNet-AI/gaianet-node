@@ -1,12 +1,20 @@
 #!/bin/bash
 
+# default is to use frpc
 local_only=0
+# path to the gaianet base directory
+gaianet_base_dir="$HOME/gaianet"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         --local)
             local_only=1
+            shift
+            ;;
+	--base)
+            gaianet_base_dir="$2"
+            shift
             shift
             ;;
         *)
@@ -21,13 +29,11 @@ done
 # represents the directory where the script is located
 script_dir=$(pwd)
 
-# Check if "gaianet" directory exists in $HOME
-if [ ! -d "$HOME/gaianet" ]; then
-    printf "Not found $HOME/gaianet\n"
+# Check if "gaianet" home directory exists
+if [ ! -d "$gaianet_base_dir" ]; then
+    printf "Not found $gaianet_base_dir\n"
     exit 1
 fi
-# Set "gaianet_base_dir" to $HOME/gaianet
-gaianet_base_dir="$HOME/gaianet"
 
 # check if `log` directory exists or not
 if [ ! -d "$gaianet_base_dir/log" ]; then

@@ -2,11 +2,14 @@
 
 # 1: stop WasmEdge, Qdrant and frpc processes
 force_stop=0
+# path to the gaianet base directory
+gaianet_base_dir="$HOME/gaianet"
 
 function print_usage {
     printf "Usage:\n"
     printf "  ./stop.sh [--force-stop]\n\n"
     printf "  --force:  stop WasmEdge, Qdrant and frpc processes\n"
+    printf "  --base <Path>:  stop GaiaNet node installed in a specified home directory\n"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -14,6 +17,11 @@ while [[ $# -gt 0 ]]; do
     case $key in
         --force)
             force_stop=1
+            shift
+            ;;
+	--base)
+            gaianet_base_dir="$2"
+            shift
             shift
             ;;
         --help)
@@ -29,12 +37,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if "gaianet" directory exists in $HOME
-if [ ! -d "$HOME/gaianet" ]; then
-    printf "Not found $HOME/gaianet\n"
+if [ ! -d "$gaianet_base_dir" ]; then
+    printf "Not found $gaianet_base_dir\n"
     exit 1
 fi
-# Set "gaianet_base_dir" to $HOME/gaianet
-gaianet_base_dir="$HOME/gaianet"
 
 if [ $force_stop -eq 1 ]; then
     printf "Force stopping WasmEdge, Qdrant and frpc processes ...\n"
