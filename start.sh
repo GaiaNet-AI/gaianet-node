@@ -44,11 +44,13 @@ fi
 # 1. start a Qdrant instance
 printf "[+] Starting Qdrant instance ...\n"
 
+qdrant_already_running=false
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-        printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-        pid=$(lsof -t -i:6333)
-        kill -9 $pid
+        # printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
+        # pid=$(lsof -t -i:6333)
+        # kill -9 $pid
+        qdrant_already_running=true
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     printf "For Windows users, please run this script in WSL.\n"
@@ -58,17 +60,19 @@ else
     exit 1
 fi
 
-qdrant_executable="$gaianet_base_dir/bin/qdrant"
-if [ -f "$qdrant_executable" ]; then
-    cd $gaianet_base_dir/qdrant
-    nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
-    sleep 2
-    qdrant_pid=$!
-    echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
-    printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
-else
-    printf "Qdrant binary not found at $qdrant_executable\n\n"
-    exit 1
+if [ "$qdrant_already_running" = false ]; then
+    qdrant_executable="$gaianet_base_dir/bin/qdrant"
+    if [ -f "$qdrant_executable" ]; then
+        cd $gaianet_base_dir/qdrant
+        nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
+        sleep 2
+        qdrant_pid=$!
+        echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
+        printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
+    else
+        printf "Qdrant binary not found at $qdrant_executable\n\n"
+        exit 1
+    fi
 fi
 
 # 2. start a LlamaEdge instance
@@ -94,6 +98,8 @@ rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
 reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
 # parse cli options for embedding model
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+# parse cli options for embedding vector collection name
+embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
 # gguf filename
 embedding_model_name=$(basename $url_embedding_model)
 # stem part of the filename
@@ -133,6 +139,7 @@ cmd=(wasmedge --dir .:./dashboard \
   --model-name $chat_model_stem,$embedding_model_stem \
   --ctx-size $chat_ctx_size,$embedding_ctx_size \
   --prompt-template $prompt_type \
+  --qdrant-collection-name $embedding_collection_name \
   --web-ui ./ \
   --socket-addr 0.0.0.0:$llamaedge_port \
   --log-prompts \
