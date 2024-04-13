@@ -272,6 +272,9 @@ cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
 embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+if [[ -z "$embedding_collection_name" ]]; then
+    embedding_collection_name="default"
+fi
 
 if [ -n "$url_snapshot" ]; then
     # 10.1 recover from the given qdrant collection snapshot
@@ -348,6 +351,9 @@ elif [ -n "$url_document" ]; then
     embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
     # parse cli options for embedding vector collection name
     embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+    if [[ -z "$embedding_collection_name" ]]; then
+        embedding_collection_name="default"
+    fi
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
 
