@@ -10,12 +10,15 @@ cwd=$(pwd)
 reinstall=0
 # url to the config file
 config_url=""
+# path to the gaianet base directory
+gaianet_base_dir="$HOME/gaianet"
 
 function print_usage {
     printf "Usage:\n"
     printf "  ./install.sh [Options]\n\n"
     printf "Options:\n"
     printf "  --config <Url>: specify a url to the config file\n"
+    printf "  --base <Path>: specify a path to the gaianet base directory\n"
     printf "  --reinstall: install and download all required deps\n"
     printf "  --help: Print usage\n"
 }
@@ -25,6 +28,11 @@ while [[ $# -gt 0 ]]; do
     case $key in
         --config)
             config_url="$2"
+            shift
+            shift
+            ;;
+        --base)
+            gaianet_base_dir="$2"
             shift
             shift
             ;;
@@ -44,11 +52,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
 printf "\n"
-
-# Set "gaianet_base_dir" to $HOME/gaianet
-gaianet_base_dir="$HOME/gaianet"
 
 # if need to reinstall, remove the $gaianet_base_dir directory
 if [ "$reinstall" -eq 1 ] && [ -d "$gaianet_base_dir" ]; then
@@ -240,11 +244,13 @@ fi
 # 10. recover from the given qdrant collection snapshot =======================
 printf "[+] Initializing the Qdrant server ...\n\n"
 
-# check 6333 port is in use or not
+qdrant_pid=0
+qdrant_already_running=false
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-        printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
-        exit 1
+        # printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+        # exit 1
+	qdrant_already_running=true
     fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     printf "For Windows users, please run this script in WSL.\n"
@@ -254,15 +260,18 @@ else
     exit 1
 fi
 
-# start qdrant
-cd $gaianet_base_dir/qdrant
-nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-sleep 15
-qdrant_pid=$!
+if [ "$qdrant_already_running" = false ]; then
+    # start qdrant
+    cd $gaianet_base_dir/qdrant
+    nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
+    sleep 15
+    qdrant_pid=$!
+fi
 
 cd $gaianet_base_dir
 url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
 url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
+embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
 
 if [ -n "$url_snapshot" ]; then
     # 10.1 recover from the given qdrant collection snapshot
@@ -271,18 +280,18 @@ if [ -n "$url_snapshot" ]; then
     curl --progress-bar -L $url_snapshot -o default.snapshot
 
     cd $gaianet_base_dir
-    # remove the 'default' collection if it exists
-    del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
+    # remove the collection if it exists
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
         -H "Content-Type: application/json")
     status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     if [ "$status" != "ok" ]; then
-        printf "    Failed to remove the 'default' collection. $del_response\n\n"
+        printf "    Failed to remove the $embedding_collection_name collection. $del_response\n\n"
         kill $qdrant_pid
         exit 1
     fi
 
     # Import the default.snapshot file
-    response=$(curl -s -X POST 'http://localhost:6333/collections/default/snapshots/upload?priority=snapshot' \
+    response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
         -H 'Content-Type:multipart/form-data' \
         -F 'snapshot=@default.snapshot')
     sleep 5
@@ -301,14 +310,14 @@ elif [ -n "$url_document" ]; then
 
     printf "[+] Creating a Qdrant collection from the given document ...\n\n"
 
-    # Remove the 'default' collection if it exists
-    printf "    * Removing 'default' collection if it exists ...\n\n"
+    # Remove the collection if it exists
+    printf "    * Removing collection if it exists ...\n\n"
     # remove the 'default' collection if it exists
-    del_response=$(curl -s -X DELETE http://localhost:6333/collections/default \
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
         -H "Content-Type: application/json")
     status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     if [ "$status" != "ok" ]; then
-        printf "    Failed to remove the 'default' collection. $del_response\n\n"
+        printf "    Failed to remove the collection. $del_response\n\n"
         kill $qdrant_pid
         exit 1
     fi
@@ -337,6 +346,8 @@ elif [ -n "$url_document" ]; then
     embedding_model_stem=$(basename "$embedding_model_name" .gguf)
     # parse context size for embedding model
     embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
+    # parse cli options for embedding vector collection name
+    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
 
@@ -370,6 +381,7 @@ elif [ -n "$url_document" ]; then
     rag-api-server.wasm -p $prompt_type \
     --model-name $chat_model_stem,$embedding_model_stem \
     --ctx-size $chat_ctx_size,$embedding_ctx_size \
+    --qdrant-collection-name $embedding_collection_name \
     --web-ui ./dashboard \
     --socket-addr 0.0.0.0:$llamaedge_port \
     --log-prompts \
@@ -424,8 +436,10 @@ else
 fi
 printf "\n"
 
-# stop qdrant
-kill $qdrant_pid
+if [ "$qdrant_already_running" = false ]; then
+    # stop qdrant
+    kill $qdrant_pid
+fi
 
 # ======================================================================================
 
