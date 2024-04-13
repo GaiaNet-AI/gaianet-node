@@ -106,6 +106,9 @@ reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
 url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
 # parse cli options for embedding vector collection name
 embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+if [[ -z "$embedding_collection_name" ]]; then
+    embedding_collection_name="default"
+fi
 # gguf filename
 embedding_model_name=$(basename $url_embedding_model)
 # stem part of the filename
