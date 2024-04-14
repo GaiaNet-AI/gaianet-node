@@ -50,7 +50,7 @@ Start the node.
 bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh')
 ```
 
-## Run multuple nodes on a single machine
+## Run multiple nodes on a single machine
 
 For a larger machine, you can run multiple GaiaNet nodes. But please note that, for now, only one node can register on a GiaiaNet domain to be publicly accessible. First, you can start the first (and default) node as above.
 
