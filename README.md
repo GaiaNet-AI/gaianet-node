@@ -50,5 +50,38 @@ Start the node.
 bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh')
 ```
 
+## Run multuple nodes on a single machine
+
+For a larger machine, you can run multiple GaiaNet nodes. But please note that, for now, only one node can register on a GiaiaNet domain to be publicly accessible. First, you can start the first (and default) node as above.
+
+For the second node, you will first create a `config.json` file for its models, prompts, and knowledge collections. Pay special attention to the following.
+
+* The `llamaedge_port` value must be unqiue and probably not `8080`.
+* The `embedding_collection_name` value must be unique and probably not `default`.
+
+Upload the `config.json` file to a service that makes it available via a public URL (e.g., GitHub, Gist, or Dropbox). Next, install the second node in a new directory. Let's use `/home/username/gaianet2` as its base directory. You can run the installer as follows.
+
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh') --config https://hosting.service/config.json --base /home/username/gaianet2
+```
+
+Start the second node in "local only" mode.
+
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh') --base /home/username/gaianet2 --local
+```
+
+While the second node cannot be registered on the GaiaNet domain, you can access the node locally. Replace the port number `8081` with the `llamaedge_port` in your `/home/username/gaianet2/config.json`.
+
+```
+http://localhost:8081
+```
+
+To stop the second node, do the following.
+
+```bash
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/stop.sh') --base /home/username/gaianet2
+```
+
 Have fun!
 
