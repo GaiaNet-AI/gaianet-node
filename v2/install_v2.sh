@@ -204,6 +204,110 @@ else
 fi
 printf "\n"
 
+# 7. Generate node ID and copy config to dashboard
+if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
+    printf "[+] Downloading the registry.wasm ...\n\n"
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+else
+    printf "[+] Using cached registry ...\n\n"
+fi
+printf "[+] Generating node ID ...\n"
+wasmedge --dir .:. registry.wasm
+printf "\n"
+
+# 8. Install gaianet-domain
+printf "[+] Installing gaianet-domain...\n"
+# Check if the directory exists, if not, create it
+if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
+    mkdir -p $gaianet_base_dir/gaianet-domain
+fi
+
+gaianet_domain_version="v0.1.0-alpha.1"
+if [ "$(uname)" == "Darwin" ]; then
+    # download gaianet-domain binary
+    if [ "$target" = "x86_64" ]; then
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+    elif [ "$target" = "arm64" ]; then
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    # download gaianet-domain statically linked binary
+    if [ "$target" = "x86_64" ]; then
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+    elif [ "$target" = "arm64" ]; then
+        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    printf "For Windows users, please run this script in WSL.\n"
+    exit 1
+else
+    printf "Only support Linux, MacOS and Windows.\n"
+    exit 1
+fi
+printf "\n"
+
+# Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
+cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
+
+# 12. Download frpc.toml, generate a subdomain and print it
+curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
+
+# Read address from config.json as node subdomain
+subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
+
+# Check if the subdomain was read correctly
+if [ -z "$subdomain" ]; then
+    echo "Failed to read the address from config.json."
+    exit 1
+fi
+
+# Read domain from config.json
+gaianet_domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+
+# Resolve the IP address of the domain
+ip_address=$(dig +short a.$gaianet_domain | tr -d '\n')
+
+# Check if the IP address was resolved correctly
+if [ -z "$ip_address" ]; then
+    echo "Failed to resolve the IP address of the domain."
+    exit 1
+fi
+
+# Replace the serverAddr & subdomain in frpc.toml
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    sed_i_cmd="sed -i"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    sed_i_cmd="sed -i ''"
+else
+    echo "Unsupported OS"
+    exit 1
+fi
+
+# Generate a random string as Device ID
+device_id="device-$(openssl rand -hex 12)"
+
+$sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+
+# Remove all files in the directory except for frpc and frpc.toml
+find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
+
+printf "Your node ID is $subdomain Please register it in your portal account to receive awards!\n"
+
+exit 0
+
 # # 7. Install gaianet-domain at $HOME/gaianet/bin
 # printf "[+] Installing gaianet-domain...\n"
 # # Check if the directory exists, if not, create it
