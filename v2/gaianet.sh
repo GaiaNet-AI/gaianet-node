@@ -15,9 +15,11 @@ if [ ! -d "$gaianet_base_dir/log" ]; then
 fi
 log_dir=$gaianet_base_dir/log
 
+# * init subcommand
+
 # create or recover a qdrant collection
 create_collection() {
-    printf "[+] Creating 'default' collection in the Qdrant instance ...\n\n"
+    printf "[+] Creating 'default' collection in the Qdrant instance ...\n"
 
     qdrant_pid=0
     qdrant_already_running=false
@@ -26,6 +28,7 @@ create_collection() {
             printf "    * A Qdrant instance is already running ...\n"
             qdrant_already_running=true
         fi
+        printf "\n"
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
         exit 1
@@ -617,9 +620,8 @@ case $subcommand in
 
                 ;;
             *)
-                # init
-                init
-
+                show_help
+                exit 1
                 ;;
         esac
         ;;
