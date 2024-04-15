@@ -210,7 +210,6 @@ fi
 printf "\n"
 
 # 8 Generate node ID and copy config to dashboard
-printf "[+] Downloading the registry.wasm ...\n\n"
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the registry.wasm ...\n\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
