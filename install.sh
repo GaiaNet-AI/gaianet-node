@@ -210,12 +210,14 @@ fi
 printf "\n"
 
 # 8 Generate node ID and copy config to dashboard
-if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading the registry.wasm ...\n\n"
-    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
-else
-    printf "[+] Using cached registry ...\n\n"
-fi
+printf "[+] Downloading the registry.wasm ...\n\n"
+curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+# if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
+#     printf "[+] Downloading the registry.wasm ...\n\n"
+#     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+# else
+#     printf "[+] Using cached registry ...\n\n"
+# fi
 printf "[+] Generating node ID ...\n"
 wasmedge --dir .:. registry.wasm
 printf "\n"
@@ -237,6 +239,212 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     # remove the `qdrant-1.8.1` directory
     rm -rf qdrant-1.8.1
     printf "\n"
+fi
+
+# 10. recover from the given qdrant collection snapshot =======================
+printf "[+] Initializing the Qdrant server ...\n\n"
+
+qdrant_pid=0
+qdrant_already_running=false
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+        # printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+        # exit 1
+	qdrant_already_running=true
+    fi
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    printf "For Windows users, please run this script in WSL.\n"
+    exit 1
+else
+    printf "Only support Linux, MacOS and Windows.\n"
+    exit 1
+fi
+
+if [ "$qdrant_already_running" = false ]; then
+    # start qdrant
+    cd $gaianet_base_dir/qdrant
+    nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
+    sleep 15
+    qdrant_pid=$!
+fi
+
+cd $gaianet_base_dir
+url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
+url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
+embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+if [[ -z "$embedding_collection_name" ]]; then
+    embedding_collection_name="default"
+fi
+
+if [ -n "$url_snapshot" ]; then
+    # 10.1 recover from the given qdrant collection snapshot
+
+    printf "[+] Recovering the given Qdrant collection snapshot ...\n\n"
+    curl --progress-bar -L $url_snapshot -o default.snapshot
+
+    cd $gaianet_base_dir
+    # remove the collection if it exists
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
+        -H "Content-Type: application/json")
+    status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    if [ "$status" != "ok" ]; then
+        printf "    Failed to remove the $embedding_collection_name collection. $del_response\n\n"
+        kill $qdrant_pid
+        exit 1
+    fi
+
+    # Import the default.snapshot file
+    response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
+        -H 'Content-Type:multipart/form-data' \
+        -F 'snapshot=@default.snapshot')
+    sleep 5
+
+    if echo "$response" | grep -q '"status":"ok"'; then
+        rm $gaianet_base_dir/default.snapshot
+        printf "    Recovery is done.\n"
+    else
+        printf "    Failed to recover from the collection snapshot. $response \n"
+        kill $qdrant_pid
+        exit 1
+    fi
+
+elif [ -n "$url_document" ]; then
+    # 10.2 generate a Qdrant collection from the given document
+
+    printf "[+] Creating a Qdrant collection from the given document ...\n\n"
+
+    # Remove the collection if it exists
+    printf "    * Removing collection if it exists ...\n\n"
+    # remove the 'default' collection if it exists
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
+        -H "Content-Type: application/json")
+    status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+    if [ "$status" != "ok" ]; then
+        printf "    Failed to remove the collection. $del_response\n\n"
+        kill $qdrant_pid
+        exit 1
+    fi
+
+    # Start LlamaEdge API Server
+    printf "    * Starting LlamaEdge API Server ...\n\n"
+
+    # parse cli options for chat model
+    cd $gaianet_base_dir
+    url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
+    # gguf filename
+    chat_model_name=$(basename $url_chat_model)
+    # stem part of the filename
+    chat_model_stem=$(basename "$chat_model_name" .gguf)
+    # parse context size for chat model
+    chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
+    # parse prompt type for chat model
+    prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
+    # parse reverse prompt for chat model
+    reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
+    # parse cli options for embedding model
+    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+    # gguf filename
+    embedding_model_name=$(basename $url_embedding_model)
+    # stem part of the filename
+    embedding_model_stem=$(basename "$embedding_model_name" .gguf)
+    # parse context size for embedding model
+    embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
+    # parse cli options for embedding vector collection name
+    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+    if [[ -z "$embedding_collection_name" ]]; then
+        embedding_collection_name="default"
+    fi
+    # parse port for LlamaEdge API Server
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
+
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+            printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+            exit 1
+            # pid=$(lsof -t -i:6333)
+            # kill -9 $pid
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+        exit 1
+    fi
+
+    cd $gaianet_base_dir
+    llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
+    if [ ! -f "$llamaedge_wasm" ]; then
+        printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
+        exit 1
+    fi
+
+    # command to start LlamaEdge API Server
+    cd $gaianet_base_dir
+    cmd="wasmedge --dir .:. \
+    --nn-preload default:GGML:AUTO:$chat_model_name \
+    --nn-preload embedding:GGML:AUTO:$embedding_model_name \
+    rag-api-server.wasm -p $prompt_type \
+    --model-name $chat_model_stem,$embedding_model_stem \
+    --ctx-size $chat_ctx_size,$embedding_ctx_size \
+    --qdrant-collection-name $embedding_collection_name \
+    --web-ui ./dashboard \
+    --socket-addr 0.0.0.0:$llamaedge_port \
+    --log-prompts \
+    --log-stat"
+
+    # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
+    # printf "    %s\n\n" "$cmd"
+
+    nohup $cmd >> $log_dir/init-qdrant-gen-collection.log 2>&1 &
+    sleep 2
+    llamaedge_pid=$!
+    echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+
+    printf "    * Converting the document to embeddings ...\n\n"
+    cd $gaianet_base_dir
+    doc_filename=$(basename $url_document)
+    curl -s $url_document -o $doc_filename
+
+    if [[ $doc_filename != *.txt ]] && [[ $doc_filename != *.md ]]; then
+        printf "Error: the document to upload should be a file with 'txt' or 'md' extension.\n"
+
+        # stop the api-server
+        if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
+            # printf "[+] Stopping API server ...\n"
+            kill $(cat $gaianet_base_dir/llamaedge.pid)
+            rm $gaianet_base_dir/llamaedge.pid
+        fi
+
+        exit 1
+    fi
+
+    # compute embeddings
+    embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/create/rag -F "file=@$doc_filename")
+
+    if [ -z "$embedding_response" ]; then
+        printf "Failed to compute embeddings. Exit ...\n"
+        exit 1
+    fi
+
+    # remove the downloaded document
+    rm -f $gaianet_base_dir/$doc_filename
+
+    # stop the api-server
+    if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
+        # stop API server
+        kill $(cat $gaianet_base_dir/llamaedge.pid)
+        rm $gaianet_base_dir/llamaedge.pid
+    fi
+
+else
+    echo "Please set 'snapshot' or 'document' field in config.json"
+fi
+printf "\n"
+
+if [ "$qdrant_already_running" = false ]; then
+    # stop qdrant
+    kill $qdrant_pid
 fi
 
 # ======================================================================================
