@@ -1,5 +1,8 @@
 # GaiaNet Installer v2
 
+> [!NOTE]
+> GaiaNet Installer v2 is still in active development. Please report any issues you encounter.
+
 ## install_v2.sh
 
 ```bash
