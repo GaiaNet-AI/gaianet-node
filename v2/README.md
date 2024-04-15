@@ -3,6 +3,23 @@
 > [!NOTE]
 > GaiaNet Installer v2 is still in active development. Please report any issues you encounter.
 
+Todo list:
+
+- [x] `gaianet init`
+  - [x] `gaianet init <url-to-config.json>`
+  - [ ] `gaianet init paris_guide`
+  - [ ] `gaianet init berkeley_cs_101_ta`
+  - [ ] `gaianet init vitalik_buterin`
+- [x] `gaianet run`
+- [x] `gaianet stop`
+  - [x] `gaianet stop --force`
+- [ ] `gaianet config`
+  - [x] `gaianet config chat <url>`
+  - [x] `gaianet config chat_ctx_size <size>`
+  - [x] `gaianet config embedding <url>`
+  - [x] `gaianet config embedding_ctx_size <size>`
+  - [ ] `gaianet config system_prompt <prompt>`
+
 ## install_v2.sh
 
 ```bash
