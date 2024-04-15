@@ -6,7 +6,7 @@
 gaianet-node/v2$ bash install_v2.sh
 ```
 
-The output should look like below:
+<details><summary> The output should look like below: </summary>
 
 ```console
 [+] Downloading default config file ...
@@ -49,6 +49,8 @@ WasmEdge binaries accessible
 [+] Downloading dashboard ...
 ################################################################################################## 100.0%
 ```
+
+</details>
 
 ## gaianet.sh
 
@@ -97,7 +99,7 @@ bash gaianet.sh config chat_ctx_size 5120
 gaianet-node/v2$ bash gaianet.sh init
 ```
 
-The output should look like below:
+<details><summary> The output should look like below: </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -121,13 +123,15 @@ The output should look like below:
     * Recovery is done successfully
 ```
 
+</details>
+
 ### Start GaiaNet-node
 
 ```bash
 gaianet-node/v2$ bash gaianet.sh run
 ```
 
-The output should look like below:
+<details><summary> The output should look like below: </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -144,13 +148,15 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
     LlamaEdge API Server started with pid: 39796
 ```
 
+</details>
+
 ### Stop GaiaNet-node
 
 ```bash
 gaianet-node/v2$ bash gaianet.sh stop
 ```
 
-The output should look like below:
+<details><summary> The output should look like below: </summary>
 
 ```bash
 [+] Stopping Qdrant instance ...
@@ -162,3 +168,5 @@ To force stop the GaiaNet-node, use the following command:
 ```bash
 gaianet-node/v2$ bash gaianet.sh stop --force
 ```
+
+</details>
