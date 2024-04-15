@@ -204,52 +204,52 @@ else
 fi
 printf "\n"
 
-# 7. Install gaianet-domain at $HOME/gaianet/bin
-printf "[+] Installing gaianet-domain...\n"
-# Check if the directory exists, if not, create it
-if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
-    mkdir -p $gaianet_base_dir/gaianet-domain
-fi
+# # 7. Install gaianet-domain at $HOME/gaianet/bin
+# printf "[+] Installing gaianet-domain...\n"
+# # Check if the directory exists, if not, create it
+# if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
+#     mkdir -p $gaianet_base_dir/gaianet-domain
+# fi
 
-gaianet_domain_version="v0.1.0-alpha.1"
-if [ "$(uname)" == "Darwin" ]; then
-    # download gaianet-domain binary
-    if [ "$target" = "x86_64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
-        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
-    elif [ "$target" = "arm64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
-        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
-    fi
+# gaianet_domain_version="v0.1.0-alpha.1"
+# if [ "$(uname)" == "Darwin" ]; then
+#     # download gaianet-domain binary
+#     if [ "$target" = "x86_64" ]; then
+#         curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+#         tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+#         rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+#     elif [ "$target" = "arm64" ]; then
+#         curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+#         tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+#         rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+#     fi
 
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    # download gaianet-domain statically linked binary
-    if [ "$target" = "x86_64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
-        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
-    elif [ "$target" = "arm64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
-        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
-    fi
+# elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+#     # download gaianet-domain statically linked binary
+#     if [ "$target" = "x86_64" ]; then
+#         curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+#         tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+#         rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+#     elif [ "$target" = "arm64" ]; then
+#         curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+#         tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+#         rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+#     fi
 
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    printf "For Windows users, please run this script in WSL.\n"
-    exit 1
-else
-    printf "Only support Linux, MacOS and Windows.\n"
-    exit 1
-fi
-printf "\n"
+# elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+#     printf "For Windows users, please run this script in WSL.\n"
+#     exit 1
+# else
+#     printf "Only support Linux, MacOS and Windows.\n"
+#     exit 1
+# fi
+# printf "\n"
 
-# Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
-cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
+# # Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
+# cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 
-# 8. Download frpc.toml, generate a subdomain and print it
-curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
+# # 8. Download frpc.toml, generate a subdomain and print it
+# curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # # Read address from config.json as node subdomain
 # subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
