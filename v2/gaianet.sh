@@ -3,6 +3,12 @@
 # path to the gaianet base directory
 gaianet_base_dir="$HOME/gaianet"
 
+# Check if $gaianet_base_dir directory exists
+if [ ! -d $gaianet_base_dir ]; then
+    printf "\n[Error] Not found $gaianet_base_dir.\n\nPlease run 'bash install_v2.sh' command first, then try again.\n\n"
+    exit 1
+fi
+
 # check if `log` directory exists or not
 if [ ! -d "$gaianet_base_dir/log" ]; then
     mkdir -p $gaianet_base_dir/log
@@ -247,7 +253,7 @@ init() {
     if [ -f "$gaianet_base_dir/$chat_model" ]; then
         printf "[+] Using the cached chat model: $chat_model\n"
     else
-        printf "[+] Downloading $chat_model ...\n\n"
+        printf "[+] Downloading $chat_model ...\n"
         curl --retry 3 --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
     fi
     printf "\n"
