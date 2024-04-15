@@ -211,13 +211,12 @@ printf "\n"
 
 # 8 Generate node ID and copy config to dashboard
 printf "[+] Downloading the registry.wasm ...\n\n"
-curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
-# if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
-#     printf "[+] Downloading the registry.wasm ...\n\n"
-#     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
-# else
-#     printf "[+] Using cached registry ...\n\n"
-# fi
+if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
+    printf "[+] Downloading the registry.wasm ...\n\n"
+    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm
+else
+    printf "[+] Using cached registry ...\n\n"
+fi
 printf "[+] Generating node ID ...\n"
 wasmedge --dir .:. registry.wasm
 printf "\n"
