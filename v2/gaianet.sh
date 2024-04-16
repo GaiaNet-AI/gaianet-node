@@ -301,18 +301,7 @@ update_config_system_prompt() {
 
 # start rag-api-server and a qdrant instance
 start() {
-
-    # Check if "gaianet" home directory exists
-    if [ ! -d "$gaianet_base_dir" ]; then
-        printf "Not found $gaianet_base_dir\n"
-        exit 1
-    fi
-
-    # check if `log` directory exists or not
-    if [ ! -d "$gaianet_base_dir/log" ]; then
-        mkdir -p $gaianet_base_dir/log
-    fi
-    log_dir=$gaianet_base_dir/log
+    local_only=$1
 
     # check if config.json exists or not
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
@@ -320,6 +309,11 @@ start() {
         exit 1
     fi
 
+    # check if supervise is installed or not
+    use_supervise=true
+    if ! command -v supervise &> /dev/null; then
+        use_supervise=false
+    fi
 
     # 1. start a Qdrant instance
     printf "[+] Starting Qdrant instance ...\n"
@@ -448,41 +442,73 @@ start() {
     done
     printf "\n\n"
 
-    # eval $cmd
-    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
-    sleep 2
-    llamaedge_pid=$!
-    echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-    printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+    if $use_supervise; then
+        cmd_string=""
+        for i in "${cmd[@]}"; do
+            if [[ $i == *" "* ]]; then
+                cmd_string+=\""$i"\"
+            else
+                cmd_string+="$i"
+            fi
+            cmd_string+=" "
+        done
 
-    # if [ "$local_only" -eq 0 ]; then
-    #     # start gaianet-domain
-    #     printf "[+] Starting gaianet-domain ...\n"
-    #     nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
-    #     sleep 2
-    #     gaianet_domain_pid=$!
-    #     echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
-    #     printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n\n"
+        # create `run` file for supervise
+        echo '#!/bin/bash' > $gaianet_base_dir/run
+        echo $cmd_string >> $gaianet_base_dir/run
+        chmod u+x $gaianet_base_dir/run
 
-    #     # Extract the subdomain from frpc.toml
-    #     subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-    #     printf "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz\n"
-    # fi
-    # if [ "$local_only" -eq 1 ]; then
-    #     printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n"
-    # fi
-    # printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
+        # start LlamaEdge API Server with supervise
+        nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+        sleep 2
+        supervise_pid=$!
+        echo $supervise_pid > $gaianet_base_dir/supervise.pid
+        printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
+
+        # Get the status of the service
+        status=$(svstat $gaianet_base_dir)
+        # Extract the PID from the status
+        llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
+        # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
+        llamaedge_pid=$((llamaedge_pid + 1))
+        echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+        printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+
+    else
+        # start LlamaEdge API Server
+        nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+        sleep 2
+        llamaedge_pid=$!
+        echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+        printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+    fi
+
+    # 3. start gaianet-domain
+    if [ "$local_only" -eq 0 ]; then
+        # start gaianet-domain
+        printf "[+] Starting gaianet-domain ...\n\n"
+        nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
+        sleep 2
+        gaianet_domain_pid=$!
+        echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
+        printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n"
+
+        # Extract the subdomain from frpc.toml
+        subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+        printf "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz\n\n"
+    fi
+    if [ "$local_only" -eq 1 ]; then
+        printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
+    fi
+    printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
 
     exit 0
-
-
 }
 
 # * stop subcommand
 
 # stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop() {
-
     # Check if "gaianet" directory exists in $HOME
     if [ ! -d "$gaianet_base_dir" ]; then
         printf "Not found $gaianet_base_dir\n"
@@ -497,12 +523,37 @@ stop() {
         rm $qdrant_pid
     fi
 
-    # stop the api-server
-    llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-    if [ -f $llamaedge_pid ]; then
-        printf "[+] Stopping API server ...\n"
-        kill -9 $(cat $llamaedge_pid)
-        rm $llamaedge_pid
+    # stop api-server
+    if svok $gaianet_base_dir > /dev/null 2>&1; then
+        # stop supervise
+        printf "[+] Stopping Daemontools-Supervise ...\n"
+        svc -d $gaianet_base_dir
+        svc -k $gaianet_base_dir
+        svc -x $gaianet_base_dir
+        supervise_pid=$gaianet_base_dir/supervise.pid
+        if [ -f $supervise_pid ]; then
+            # kill -9 $(cat $supervise_pid)
+            rm $supervise_pid
+        fi
+        rm $gaianet_base_dir/run
+        rm -rf $gaianet_base_dir/supervise
+
+        # stop api-server
+        llamaedge_pid=$gaianet_base_dir/llamaedge.pid
+        if [ -f $llamaedge_pid ]; then
+            printf "[+] Stopping API server ...\n"
+            kill -9 $(cat $llamaedge_pid)
+            rm $llamaedge_pid
+        fi
+
+    else
+        # stop api-server
+        llamaedge_pid=$gaianet_base_dir/llamaedge.pid
+        if [ -f $llamaedge_pid ]; then
+            printf "[+] Stopping API server ...\n"
+            kill -9 $(cat $llamaedge_pid)
+            rm $llamaedge_pid
+        fi
     fi
 
     # stop gaianet-domain
@@ -514,7 +565,6 @@ stop() {
     fi
 
     exit 0
-
 }
 
 # force stop the Qdrant instance, rag-api-server, and gaianet-domain
@@ -650,9 +700,16 @@ case $subcommand in
         esac
         ;;
     run)
-        # start rag-api-server and a qdrant instance
-        start
-
+        case $arg in
+            --local)
+                # start rag-api-server, a qdrant instance, and gaianet-domain in local mode
+                start 1
+                ;;
+            *)
+                # start rag-api-server, a qdrant instance, and frpc
+                start 0
+                ;;
+        esac
         ;;
     stop)
         case $arg in
