@@ -5,15 +5,15 @@
 
 Todo list:
 
-- [ ] install_v2.sh
+- [x] install_v2.sh
   - [x] Download default config file
   - [x] Download nodeid.json
   - [x] Install WasmEdge with wasi-nn_ggml plugin
   - [x] Install Qdrant binary and initialize Qdrant directory
   - [x] Download rag-api-server.wasm
   - [x] Download dashboard
-  - [ ] Install gaianet-domain (frpc binary + frpc.toml)
-  - [ ] Generates keys
+  - [x] Install gaianet-domain (frpc binary + frpc.toml)
+  - [x] Generates keys
 
 - [ ] gaianet.sh
   - [x] `gaianet init`
@@ -22,6 +22,7 @@ Todo list:
     - [ ] `gaianet init berkeley_cs_101_ta`
     - [ ] `gaianet init vitalik_buterin`
   - [x] `gaianet run`
+    - [x] `gaianet run --local`
   - [x] `gaianet stop`
     - [x] `gaianet stop --force`
   - [ ] `gaianet config`
