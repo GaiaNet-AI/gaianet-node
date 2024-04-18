@@ -11,25 +11,30 @@ Todo list:
   - [x] Install WasmEdge with wasi-nn_ggml plugin
   - [x] Install Qdrant binary and initialize Qdrant directory
   - [x] Download rag-api-server.wasm
+  - [x] Download `gaianet` CLI tool
   - [x] Download dashboard
   - [x] Install gaianet-domain (frpc binary + frpc.toml)
   - [x] Generates keys
 
 - [ ] gaianet.sh
   - [x] `gaianet init`
+    - [x] `gaianet init list` lists available arguments
+    - [x] `gaianet init paris_guide`
+    - [x] `gaianet init mua`
+    - [x] `gaianet init gaia`
     - [x] `gaianet init <url-to-config.json>`
-    - [ ] `gaianet init paris_guide`
-    - [ ] `gaianet init berkeley_cs_101_ta`
-    - [ ] `gaianet init vitalik_buterin`
   - [x] `gaianet run`
     - [x] `gaianet run --local`
   - [x] `gaianet stop`
     - [x] `gaianet stop --force`
   - [ ] `gaianet config`
+    - [x] `gaianet config list` lists available arguments
     - [x] `gaianet config chat <url>`
     - [x] `gaianet config chat_ctx_size <size>`
     - [x] `gaianet config embedding <url>`
     - [x] `gaianet config embedding_ctx_size <size>`
+    - [x] `gaianet config prompt_template <template>`
+    - [x] `gaianet config port <port>`
     - [ ] `gaianet config system_prompt <prompt>`
 
 ## install_v2.sh
@@ -84,17 +89,18 @@ WasmEdge binaries accessible
 
 </details>
 
-## gaianet.sh
+## GaiaNet CLI Tool
 
 ```bash
-gaianet-node/v2$ bash gaianet.sh --help
-Usage: gaianet.sh {config|init|run|stop} [arg]
+gaianet$ ./gaianet --help
+
+Usage: ./gaianet {config|init|run|stop} [arg]
 
 Subcommands:
   config <arg>  Update the configuration.
                 Available args: chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, system_prompt
   init [arg]    Initialize with optional argument.
-                Available args: paris_guide, berkeley_cs_101_ta, vitalik_buterin, <url-to-config.json>
+                Available args: paris_guide, mua, gaia, <url-to-config.json>
   run           Run the program
   stop [arg]    Stop the program.
                 Available args: --force
@@ -105,30 +111,32 @@ Options:
 
 ### Update configuration
 
-Using `bash gaianet.sh config` subcommand can update the following fields defined in the `config.json` file:
+Using `gaianet config` subcommand can update the following fields defined in the `config.json` file:
 
-- `chat`: Url of the chat model
-- `chat_ctx_size`: Context size of the chat model
-- `embedding`: Url of the embedding model
-- `embedding_ctx_size`: Context size of the embedding model
-- `system_prompt`: System prompt
+- `gaianet config list` lists available arguments
+- `gaianet config chat_url <url>`: updates url of the chat model
+- `gaianet config chat_ctx_size <size>` updates context size of the chat model
+- `gaianet config embedding_url <url>` updates url of the embedding model
+- `gaianet config embedding_ctx_size <size>` updates context size of the embedding model
+- `gaianet config prompt_template <template>`: update chat prompt template
+- `gaianet config port <port>`: update the socket port number of LlamaEdge-RAG API server
 
-To update the `chat` field, for example, use the following command:
+To update the `chat_url` field, for example, use the following command:
 
 ```bash
-bash gaianet.sh config chat https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf
+gaianet$ ./gaianet.sh config chat_url https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf
 ```
 
 To update the `chat_ctx_size` field, for example, use the following command:
 
 ```bash
-bash gaianet.sh config chat_ctx_size 5120
+gaianet$ ./gaianet config chat_ctx_size 5120
 ```
 
 ### Initialize GaiaNet-node
 
 ```bash
-gaianet-node/v2$ bash gaianet.sh init
+gaianet$ ./gaianet.sh init
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -160,7 +168,7 @@ gaianet-node/v2$ bash gaianet.sh init
 ### Start GaiaNet-node
 
 ```bash
-gaianet-node/v2$ bash gaianet.sh run
+gaianet$ ./gaianet.sh run
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -185,7 +193,7 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 ### Stop GaiaNet-node
 
 ```bash
-gaianet-node/v2$ bash gaianet.sh stop
+gaianet$ ./gaianet stop
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -198,7 +206,7 @@ gaianet-node/v2$ bash gaianet.sh stop
 To force stop the GaiaNet-node, use the following command:
 
 ```bash
-gaianet-node/v2$ bash gaianet.sh stop --force
+gaianet$ ./gaianet stop --force
 ```
 
 </details>
