@@ -598,7 +598,7 @@ show_help() {
     printf "Usage: $0 {config|init|run|stop} [arg]\n\n"
     printf "Subcommands:\n"
     printf "  config <arg>  Update the configuration.
-                Available args: list, chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, prompt_template, port, system_prompt\n"
+                Available args: list, chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, prompt_template, port\n"
     printf "  init [arg]    Initialize with optional argument.
                 Available args: list, paris_guide, mua, gaia, <url-to-config.json>\n"
     printf "  run           Run the program\n"
@@ -627,7 +627,7 @@ case $subcommand in
                 printf "  chat_ctx_size\n"
                 printf "  embedding_url\n"
                 printf "  embedding_ctx_size\n"
-                printf "  system_prompt\n"
+                printf "  prompt_template\n"
                 printf "  port\n"
                 ;;
             chat_url)
