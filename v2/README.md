@@ -16,7 +16,7 @@ Todo list:
   - [x] Install gaianet-domain (frpc binary + frpc.toml)
   - [x] Generates keys
 
-- [ ] gaianet.sh
+- [x] gaianet.sh
   - [x] `gaianet init`
     - [x] `gaianet init list` lists available arguments
     - [x] `gaianet init paris_guide`
@@ -27,7 +27,7 @@ Todo list:
     - [x] `gaianet run --local`
   - [x] `gaianet stop`
     - [x] `gaianet stop --force`
-  - [ ] `gaianet config`
+  - [x] `gaianet config`
     - [x] `gaianet config list` lists available arguments
     - [x] `gaianet config chat <url>`
     - [x] `gaianet config chat_ctx_size <size>`
@@ -35,7 +35,8 @@ Todo list:
     - [x] `gaianet config embedding_ctx_size <size>`
     - [x] `gaianet config prompt_template <template>`
     - [x] `gaianet config port <port>`
-    - [ ] `gaianet config system_prompt <prompt>`
+    - [x] `gaianet config system_prompt <prompt>`
+    - [x] `gaianet config rag_prompt <prompt>`
 
 ## install_v2.sh
 
@@ -118,8 +119,10 @@ Using `gaianet config` subcommand can update the following fields defined in the
 - `gaianet config chat_ctx_size <size>` updates context size of the chat model
 - `gaianet config embedding_url <url>` updates url of the embedding model
 - `gaianet config embedding_ctx_size <size>` updates context size of the embedding model
-- `gaianet config prompt_template <template>`: update chat prompt template
-- `gaianet config port <port>`: update the socket port number of LlamaEdge-RAG API server
+- `gaianet config prompt_template <template>` updates chat prompt template
+- `gaianet config port <port>` updates the socket port number of LlamaEdge-RAG API server
+- `gaianet config system_prompt <value>` updates the system prompt
+- `gaianet config rag_prompt <value>` updates the RAG prompt
 
 To update the `chat_url` field, for example, use the following command:
 
