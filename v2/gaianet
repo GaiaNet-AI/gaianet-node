@@ -288,15 +288,6 @@ update_config() {
     rm $bak
 }
 
-update_config_system_prompt() {
-    key=$1
-    new_value=$2
-    file=$gaianet_base_dir/config.json
-    bak=$gaianet_base_dir/config.json.bak
-    sed -i.bak -e "s#\(\"$key\": \).*#\1\"$new_value\"#" $file
-    rm $bak
-}
-
 # * start subcommand
 
 # start rag-api-server and a qdrant instance
@@ -629,6 +620,8 @@ case $subcommand in
                 printf "  embedding_ctx_size\n"
                 printf "  prompt_template\n"
                 printf "  port\n"
+                printf "  system_prompt\n"
+                printf "  rag_prompt\n"
                 ;;
             chat_url)
                 printf "[+] Updating the url of chat model ...\n"
@@ -685,15 +678,33 @@ case $subcommand in
 
                 ;;
             system_prompt)
-                echo "value: $val"
-
                 printf "[+] Updating system prompt ...\n"
-                printf "    * Old size: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New size: $val\n\n"
+                printf "    * Old value: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+                printf "    * New value: $val\n\n"
 
-                # update
-                # update_config system_prompt $val
-                update_config_system_prompt system_prompt $val
+                # The new value for system_prompt
+                new_value="$val"
+
+                # Escape ampersands and backslashes in the new value
+                new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
+
+                # Update the value of system_prompt in config.json
+                sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+
+                ;;
+            rag_prompt)
+                printf "[+] Updating rag prompt ...\n"
+                printf "    * Old value: $(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+                printf "    * New value: $val\n\n"
+
+                # The new value for rag_prompt
+                new_value="$val"
+
+                # Escape ampersands and backslashes in the new value
+                new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
+
+                # Update the value of rag_prompt in config.json
+                sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
 
                 ;;
             *)
