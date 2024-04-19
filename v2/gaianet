@@ -719,17 +719,26 @@ case $subcommand in
                 config_url="https://raw.githubusercontent.com/alabulei1/test-ports/main/mua/config.json"
                 printf "    Url: $config_url"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+
+                # init
+                init
                 ;;
             gaia)
                 printf "[+] Downloading config.json ...\n"
                 config_url="https://raw.githubusercontent.com/alabulei1/test-ports/main/gaianet/config.json"
                 printf "    Url: $config_url"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+
+                # init
+                init
                 ;;
             *config.json)
                 printf "[+] Downloading config.json ...\n"
                 printf "    Url: $arg\n"
                 curl --retry 3 --progress-bar -L $arg -o $gaianet_base_dir/config.json
+
+                # init
+                init
                 ;;
             *)
                 # init
