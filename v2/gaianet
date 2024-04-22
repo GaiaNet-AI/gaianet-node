@@ -274,6 +274,17 @@ init() {
 
     # create or recover a qdrant collection
     create_collection
+
+    # Generate node ID and copy config to dashboard
+    if [ ! -f "$gaianet_base_dir/registry.wasm" ] ; then
+        printf "[+] Downloading the registry.wasm ...\n"
+        curl -s -L https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm -o $gaianet_base_dir/registry.wasm
+        printf "\n"
+    fi
+    printf "[+] Generating node ID ...\n"
+    cd $gaianet_base_dir
+    wasmedge --dir .:. registry.wasm
+    printf "\n"
 }
 
 # * config subcommand
