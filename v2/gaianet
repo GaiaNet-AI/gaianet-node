@@ -323,9 +323,6 @@ start() {
     qdrant_already_running=false
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            # printf "    Port 6333 is in use. Stopping the process on 6333 ...\n\n"
-            # pid=$(lsof -t -i:6333)
-            # kill -9 $pid
             qdrant_already_running=true
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -390,9 +387,22 @@ start() {
 
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port $llamaedge_port is in use. Stopping the process on $llamaedge_port ...\n\n"
-            pid=$(lsof -t -i:$llamaedge_port)
-            kill $pid
+            printf "    Port $llamaedge_port is in use. Exit ...\n\n"
+
+            # stop the qdrant instance
+            if [ "$qdrant_already_running" = false ]; then
+
+                # stop the Qdrant instance
+                qdrant_pid=$gaianet_base_dir/qdrant.pid
+                if [ -f $qdrant_pid ]; then
+                    printf "    Stopping Qdrant instance ...\n"
+                    kill -9 $(cat $qdrant_pid)
+                    rm $qdrant_pid
+                fi
+
+            fi
+
+            exit 1
         fi
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
