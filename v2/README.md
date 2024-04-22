@@ -5,7 +5,7 @@
 
 Todo list:
 
-- [x] install_v2.sh
+- [x] install.sh
   - [x] Download default config file
   - [x] Download nodeid.json
   - [x] Install WasmEdge with wasi-nn_ggml plugin
@@ -38,10 +38,16 @@ Todo list:
     - [x] `gaianet config system_prompt <prompt>`
     - [x] `gaianet config rag_prompt <prompt>`
 
-## install_v2.sh
+## install.sh
 
 ```bash
 gaianet-node/v2$ bash install_v2.sh
+```
+
+or 
+
+```
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/feat-installer-v2/v2/install.sh')
 ```
 
 <details><summary> The output should look like below: </summary>
