@@ -109,7 +109,8 @@ Subcommands:
                 Available args: chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, system_prompt
   init [arg]    Initialize with optional argument.
                 Available args: paris_guide, mua, gaia, <url-to-config.json>
-  run           Run the program
+  run           Run the program.
+  start         Run the program.
   stop [arg]    Stop the program.
                 Available args: --force
 

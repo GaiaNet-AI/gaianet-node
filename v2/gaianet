@@ -613,7 +613,8 @@ show_help() {
                 Available args: list, chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, prompt_template, port\n"
     printf "  init [arg]    Initialize with optional argument.
                 Available args: list, paris_guide, mua, gaia, <url-to-config.json>\n"
-    printf "  run           Run the program\n"
+    printf "  run           Run the program.\n"
+    printf "  start         Run the program.\n"
     printf "  stop [arg]    Stop the program.
                 Available args: --force\n"
     printf "\nOptions:\n"
@@ -794,7 +795,7 @@ case $subcommand in
                 ;;
         esac
         ;;
-    run)
+    run|start)
         case $arg in
             --local)
                 # start rag-api-server, a qdrant instance, and gaianet-domain in local mode
