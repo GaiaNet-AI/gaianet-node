@@ -37,6 +37,7 @@ Todo list:
     - [x] `gaianet config port <port>`
     - [x] `gaianet config system_prompt <prompt>`
     - [x] `gaianet config rag_prompt <prompt>`
+    - [x] `gaianet config reverse_prompt <prompt>`
 
 ## install.sh
 
@@ -44,7 +45,7 @@ Todo list:
 gaianet-node/v2$ bash install_v2.sh
 ```
 
-or 
+or
 
 ```
 bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/feat-installer-v2/v2/install.sh')
@@ -129,6 +130,7 @@ Using `gaianet config` subcommand can update the following fields defined in the
 - `gaianet config port <port>` updates the socket port number of LlamaEdge-RAG API server
 - `gaianet config system_prompt <value>` updates the system prompt
 - `gaianet config rag_prompt <value>` updates the RAG prompt
+- `gaianet config reverse_prompt <value>` updates the reverse prompt
 
 To update the `chat_url` field, for example, use the following command:
 

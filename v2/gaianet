@@ -622,6 +622,7 @@ case $subcommand in
                 printf "  port\n"
                 printf "  system_prompt\n"
                 printf "  rag_prompt\n"
+                printf "  reverse_prompt\n"
                 ;;
             chat_url)
                 printf "[+] Updating the url of chat model ...\n"
@@ -705,6 +706,21 @@ case $subcommand in
 
                 # Update the value of rag_prompt in config.json
                 sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+
+                ;;
+            reverse_prompt)
+                printf "[+] Updating reverse prompt ...\n"
+                printf "    * Old value: $(awk -F'"' '/"reverse_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+                printf "    * New value: $val\n\n"
+
+                # The new value for reverse_prompt
+                new_value="$val"
+
+                # Escape ampersands and backslashes in the new value
+                new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
+
+                # Update the value of reverse_prompt in config.json
+                sed -i '' "s|\"reverse_prompt\": \".*\"|\"reverse_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
 
                 ;;
             *)
