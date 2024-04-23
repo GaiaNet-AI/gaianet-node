@@ -187,7 +187,7 @@ printf "\n"
 if [ ! -d "$gaianet_base_dir/gaianet-node" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading gaianet-node ...\n"
     cd $gaianet_base_dir
-    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/feat-installer-v2/v2/gaianet
+    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
     chmod +x gaianet
 else
     printf "[+] Using cached gaianet-node ...\n"
