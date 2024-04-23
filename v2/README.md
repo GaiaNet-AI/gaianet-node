@@ -42,13 +42,13 @@ Todo list:
 ## install.sh
 
 ```bash
-gaianet-node/v2$ bash install_v2.sh
+gaianet-node/v2$ bash install.sh
 ```
 
 or
 
 ```
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/feat-installer-v2/v2/install.sh')
+bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/install.sh')
 ```
 
 <details><summary> The output should look like below: </summary>
