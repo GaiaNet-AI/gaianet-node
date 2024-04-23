@@ -25,12 +25,16 @@ jobs:
           cat $GAIANET_DIR/config.json
       - name: Run install script
         run: |
-          chmod +x ./install.sh
-          ./install.sh
-      - name: Run start script
+          chmod +x ./v2/install.sh
+          ./v2/install.sh
+      - name: Initialize
         run: |
-          chmod +x ./start.sh
-          ./start.sh
+          chmod +x ./v2/gaianet
+          ./v2/gaianet init
+      - name: Run
+        run: |
+          chmod +x ./v2/gaianet
+          ./v2/gaianet run
       - name: Sleep 10 seconds
         run: sleep 10
       - name: Test localhost API
@@ -46,7 +50,7 @@ jobs:
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
-      - name: Run stop script
+      - name: Stop
         run: |
-          chmod +x ./stop.sh
-          ./stop.sh
+          chmod +x ./v2/gaianet
+          ./v2/gaianet stop
