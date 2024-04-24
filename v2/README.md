@@ -47,7 +47,7 @@ gaianet-node/v2$ bash install.sh
 
 or
 
-```
+```bash
 bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/install.sh')
 ```
 
@@ -100,9 +100,9 @@ WasmEdge binaries accessible
 ## GaiaNet CLI Tool
 
 ```bash
-gaianet$ ./gaianet --help
+gaianet --help
 
-Usage: ./gaianet {config|init|run|stop} [arg]
+Usage: gaianet {config|init|run|stop} [arg]
 
 Subcommands:
   config <arg>  Update the configuration.
@@ -136,19 +136,19 @@ Using `gaianet config` subcommand can update the following fields defined in the
 To update the `chat_url` field, for example, use the following command:
 
 ```bash
-gaianet$ ./gaianet.sh config chat_url https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf
+gaianet config chat_url https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf
 ```
 
 To update the `chat_ctx_size` field, for example, use the following command:
 
 ```bash
-gaianet$ ./gaianet config chat_ctx_size 5120
+gaianet config chat_ctx_size 5120
 ```
 
 ### Initialize GaiaNet-node
 
 ```bash
-gaianet$ ./gaianet.sh init
+gaianet init
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -180,7 +180,7 @@ gaianet$ ./gaianet.sh init
 ### Start GaiaNet-node
 
 ```bash
-gaianet$ ./gaianet.sh run
+gaianet run
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -205,7 +205,7 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 ### Stop GaiaNet-node
 
 ```bash
-gaianet$ ./gaianet stop
+gaianet stop
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -218,7 +218,7 @@ gaianet$ ./gaianet stop
 To force stop the GaiaNet-node, use the following command:
 
 ```bash
-gaianet$ ./gaianet stop --force
+gaianet stop --force
 ```
 
 </details>

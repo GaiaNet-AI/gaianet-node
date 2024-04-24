@@ -607,7 +607,7 @@ stop_force() {
 # * help option
 
 show_help() {
-    printf "Usage: $0 {config|init|run|stop} [arg]\n\n"
+    printf "Usage: gaianet {config|init|run|stop} [arg]\n\n"
     printf "Subcommands:\n"
     printf "  config <arg>  Update the configuration.
                 Available args: list, chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, prompt_template, port\n"
