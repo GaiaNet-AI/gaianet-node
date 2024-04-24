@@ -183,16 +183,29 @@ else
 fi
 printf "\n"
 
-# 6. Download `gaianet` to $gaianet_base_dir
-if [ ! -d "$gaianet_base_dir/gaianet-node" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading gaianet-node ...\n"
-    cd $gaianet_base_dir
-    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
-    chmod +x gaianet
-else
-    printf "[+] Using cached gaianet-node ...\n"
+# 6. Install `gaianet` CLI tool
+printf "[+] Installing gaianet CLI tool ...\n"
+cd $gaianet_base_dir
+curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
+chmod +x gaianet
+# if $HOME/bin does not exist, then create it
+if [ ! -d "$HOME/bin" ]; then
+    mkdir -p "$HOME/bin"
 fi
-printf "\n"
+# move gaianet to $HOME/bin
+mv gaianet $HOME/bin
+# append $HOME/bin to $PATH if it is not in $PATH
+if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
+    export PATH="$PATH:$HOME/bin"
+
+    # Add it to .bashrc to make it available for future sessions
+    echo 'export PATH="$PATH:$HOME/bin"' >> $HOME/.bashrc
+
+    # Source .bashrc to make it available in the current session
+    source $HOME/.bashrc
+fi
+printf "    * gaianet CLI tool is installed in $HOME/bin\n\n"
+
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
