@@ -196,13 +196,13 @@ fi
 mv gaianet $HOME/bin
 # append $HOME/bin to $PATH if it is not in $PATH
 if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
-    export PATH="$PATH:$HOME/bin"
-
-    # Add it to .bashrc to make it available for future sessions
-    echo 'export PATH="$PATH:$HOME/bin"' >> $HOME/.bashrc
-
-    # Source .bashrc to make it available in the current session
+    # Source the script
+    if ! grep -q 'export PATH=$PATH:$HOME/bin' "$HOME/.bashrc"; then
+        # Add it to .bashrc to make it available for future sessions
+        echo 'export PATH=$PATH:$HOME/bin' >> $HOME/.bashrc
+    fi
     source $HOME/.bashrc
+    printf "    * source $HOME/.bashrc\n"
 fi
 printf "    * gaianet CLI tool is installed in $HOME/bin\n\n"
 
@@ -328,6 +328,6 @@ $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g"
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
 
-printf "Your node ID is $subdomain Please register it in your portal account to receive awards!\n"
+printf "Your node ID is $subdomain. Please register it in your portal account to receive awards!\n"
 
 exit 0
