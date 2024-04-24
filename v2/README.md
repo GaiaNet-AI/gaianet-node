@@ -121,7 +121,7 @@ $ gaianet init --help
 Usage: gaianet init [OPTIONS]
 
 Options:
-  --config <val|url>          Name of a pre-defined GaiaNet config or a url.
+  --config <val|url>          Name of a pre-defined GaiaNet config or a url. Possible values: default, paris_guide, mua, gaia.
   --base <path>              The base directory of GaiaNet.
   --help                     Show this help message
 ```
