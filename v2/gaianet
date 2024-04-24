@@ -607,159 +607,241 @@ stop_force() {
 # * help option
 
 show_help() {
-    printf "Usage: gaianet {config|init|run|stop} [arg]\n\n"
+    printf "Usage: gaianet {config|init|run|stop|OPTIONS} \n\n"
     printf "Subcommands:\n"
-    printf "  config <arg>  Update the configuration.
-                Available args: list, chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, prompt_template, port\n"
-    printf "  init [arg]    Initialize with optional argument.
-                Available args: list, paris_guide, mua, gaia, <url-to-config.json>\n"
-    printf "  run           Run the program.\n"
-    printf "  start         Run the program.\n"
-    printf "  stop [arg]    Stop the program.
-                Available args: --force\n"
-    printf "\nOptions:\n"
-    printf "  --help        Show this help message\n\n"
+    printf "  config             Update the configuration.\n"
+    printf "  init               Initialize the GaiaNet node.\n"
+    printf "  run|start          Start the GaiaNet node.\n"
+    printf "  stop               Stop the GaiaNet node.\n\n"
+    printf "Options:\n"
+    printf "  --help             Show this help message\n\n"
+}
+
+show_config_help() {
+    printf "Usage: gaianet config [OPTIONS] \n\n"
+    printf "Options:\n"
+    printf "  --chat-url <val>           Update the url of chat model.\n"
+    printf "  --chat-ctx-size <val>      Update the context size of chat model.\n"
+    printf "  --embedding-url <val>      Update the url of embedding model.\n"
+    printf "  --embedding-ctx-size <val> Update the context size of embedding model.\n"
+    printf "  --prompt-template <val>    Update the prompt template of chat model.\n"
+    printf "  --port <val>               Update the port of LlamaEdge API Server.\n"
+    printf "  --system-prompt <val>      Update the system prompt.\n"
+    printf "  --rag-prompt <val>         Update the rag prompt.\n"
+    printf "  --reverse-prompt <val>     Update the reverse prompt.\n"
+    printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --help                     Show this help message\n\n"
+}
+
+show_init_help() {
+    printf "Usage: gaianet init [OPTIONS] \n\n"
+    printf "Options:\n"
+    printf "  --config <val|url>          Name of a pre-defined GaiaNet config or a url.\n"
+    printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --help                     Show this help message\n\n"
+}
+
+show_start_help() {
+    printf "Usage: gaianet start|run [OPTIONS] \n\n"
+    printf "Options:\n"
+    printf "  --local-only               Start the program in local mode.\n"
+    printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --help                     Show this help message\n\n"
+}
+
+show_stop_help() {
+    printf "Usage: gaianet stop [OPTIONS] \n\n"
+    printf "Options:\n"
+    printf "  --force                    Force stop the program.\n"
+    printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --help                     Show this help message\n\n"
 }
 
 # * main
 
 subcommand=$1
-arg=$2
-val=$3
-shift 3
+shift
 
 case $subcommand in
     --help)
         show_help
         ;;
     config)
-        case $arg in
-            list)
-                printf "Available configuration options:\n"
-                printf "  chat_url\n"
-                printf "  chat_ctx_size\n"
-                printf "  embedding_url\n"
-                printf "  embedding_ctx_size\n"
-                printf "  prompt_template\n"
-                printf "  port\n"
-                printf "  system_prompt\n"
-                printf "  rag_prompt\n"
-                printf "  reverse_prompt\n"
-                ;;
-            chat_url)
-                printf "[+] Updating the url of chat model ...\n"
-                printf "    * Old url: $(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New url: $val\n\n"
+        chat_ctx_size=""
+        chat_url=""
+        embedding_ctx_size=""
+        embedding_url=""
+        prompt_template=""
+        port=""
+        system_prompt=""
+        rag_prompt=""
+        reverse_prompt=""
 
-                # update
-                update_config chat $val
+        while (( "$#" )); do
+            case "$1" in
+                --chat-url)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        chat_url=$2
+                        shift 2
+                    fi
+                    ;;
+                --chat-ctx-size)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        chat_ctx_size=$2
+                        shift 2
+                    fi
+                    ;;
+                --embedding-url)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        embedding_url=$2
+                        shift 2
+                    fi
+                    ;;
+                --embedding-ctx-size)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        embedding_ctx_size=$2
+                        shift 2
+                    fi
+                    ;;
+                --prompt-template)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        prompt_template=$2
+                        shift 2
+                    fi
+                    ;;
+                --port)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        port=$2
+                        shift 2
+                    fi
+                    ;;
+                --system-prompt)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        system_prompt=$2
+                        shift 2
+                    fi
+                    ;;
+                --rag-prompt)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        rag_prompt=$2
+                        shift 2
+                    fi
+                    ;;
+                --reverse-prompt)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        reverse_prompt=$2
+                        shift 2
+                    fi
+                    ;;
+                --base)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        gaianet_base_dir=$2
+                        shift 2
+                    fi
+                    ;;
+                *)
+                    show_config_help
+                    exit 1
+                    ;;
+            esac
+        done
 
-                ;;
-            chat_ctx_size)
-                printf "[+] Updating the context size of chat model ...\n"
-                printf "    * Old size: $(awk -F'"' '/"chat_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New size: $val\n\n"
+        # update url of chat model
+        if [ -n "$chat_url" ]; then
+            echo "set chat url"
+            # update
+            update_config chat $chat_url
+        fi
 
-                # update
-                update_config chat_ctx_size $val
+        # update context size of chat model
+        if [ -n "$chat_ctx_size" ]; then
+            echo "set ctx size"
+            # update
+            update_config chat_ctx_size $chat_ctx_size
+        fi
 
-                ;;
-            embedding_url)
-                printf "[+] Updating the url of embedding model ...\n"
-                printf "    * Old url: $(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New url: $val\n\n"
+        # update url of embedding model
+        if [ -n "$embedding_url" ]; then
+            echo "set embedding url"
+            # update
+            update_config embedding $embedding_url
+        fi
 
-                # update
-                update_config embedding $val
+        # update context size of embedding model
+        if [ -n "$embedding_ctx_size" ]; then
+            echo "set embedding ctx size"
+            # update
+            update_config embedding_ctx_size $embedding_ctx_size
+        fi
 
-                ;;
-            embedding_ctx_size)
-                printf "[+] Updating the context size of embedding model ...\n"
-                printf "    * Old size: $(awk -F'"' '/"embedding_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New size: $val\n\n"
+        # update prompt template
+        if [ -n "$prompt_template" ]; then
+            echo "set prompt template"
+            # update
+            update_config prompt_template $prompt_template
+        fi
 
-                # update
-                update_config embedding_ctx_size $val
+        # update port
+        if [ -n "$port" ]; then
+            echo "set port"
+            # update
+            update_config llamaedge_port $port
+        fi
 
-                ;;
-            prompt_template)
-                printf "[+] Updating the prompt template of chat model ...\n"
-                printf "    * Old template: $(awk -F'"' '/"prompt_template":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New template: $val\n\n"
+        # update system prompt
+        if [ -n "$system_prompt" ]; then
+            echo "set system prompt"
+            # The new value for system_prompt
+            new_value="$system_prompt"
 
-                # update
-                update_config prompt_template $val
+            # Escape ampersands and backslashes in the new value
+            new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
-                ;;
-            port)
-                printf "[+] Updating the port of LlamaEdge API Server ...\n"
-                printf "    * Old port: $(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New port: $val\n\n"
+            # Update the value of system_prompt in config.json
+            sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+        fi
 
-                # update
-                update_config llamaedge_port $val
+        # update rag prompt
+        if [ -n "$rag_prompt" ]; then
+            echo "set rag prompt"
+            # The new value for rag_prompt
+            new_value="$rag_prompt"
 
-                ;;
-            system_prompt)
-                printf "[+] Updating system prompt ...\n"
-                printf "    * Old value: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New value: $val\n\n"
+            # Escape ampersands and backslashes in the new value
+            new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
-                # The new value for system_prompt
-                new_value="$val"
+            # Update the value of rag_prompt in config.json
+            sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+        fi
 
-                # Escape ampersands and backslashes in the new value
-                new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
-
-                # Update the value of system_prompt in config.json
-                sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-
-                ;;
-            rag_prompt)
-                printf "[+] Updating rag prompt ...\n"
-                printf "    * Old value: $(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New value: $val\n\n"
-
-                # The new value for rag_prompt
-                new_value="$val"
-
-                # Escape ampersands and backslashes in the new value
-                new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
-
-                # Update the value of rag_prompt in config.json
-                sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-
-                ;;
-            reverse_prompt)
-                printf "[+] Updating reverse prompt ...\n"
-                printf "    * Old value: $(awk -F'"' '/"reverse_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
-                printf "    * New value: $val\n\n"
-
-                # The new value for reverse_prompt
-                new_value="$val"
-
-                # Escape ampersands and backslashes in the new value
-                new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
-
-                # Update the value of reverse_prompt in config.json
-                sed -i '' "s|\"reverse_prompt\": \".*\"|\"reverse_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-
-                ;;
-            *)
-                show_help
-                exit 1
-                ;;
-        esac
         ;;
+
     init)
-        case $arg in
-            list)
-                printf "Available init options:\n"
-                printf "  paris_guide\n"
-                printf "  mua\n"
-                printf "  gaia\n"
-                printf "  <url-to-config.json>\n"
-                ;;
+        config=""
+
+        while (( "$#" )); do
+            case "$1" in
+                --config)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        config=$2
+                        shift 2
+                    fi
+                    ;;
+                --base)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        gaianet_base_dir=$2
+                        shift 2
+                    fi
+                    ;;
+                *)
+                    show_init_help
+                    exit 1
+                    ;;
+            esac
+        done
+
+
+        case $config in
             paris_guide)
                 init
                 ;;
@@ -781,44 +863,77 @@ case $subcommand in
                 # init
                 init
                 ;;
-            *config.json)
-                printf "[+] Downloading config.json ...\n"
-                printf "    Url: $arg\n"
-                curl --retry 3 --progress-bar -L $arg -o $gaianet_base_dir/config.json
-
-                # init
-                init
-                ;;
             *)
-                # init
-                init
+                # if config is a url
+                if [[ $config == http* ]]; then
+                    printf "[+] Downloading config.json ...\n"
+                    printf "    Url: $arg\n"
+                    curl --retry 3 --progress-bar -L $arg -o $gaianet_base_dir/config.json
+
+                    # init
+                    init
+                else
+                    show_init_help
+                    exit 1
+                fi
                 ;;
         esac
+
         ;;
     run|start)
-        case $arg in
-            --local)
-                # start rag-api-server, a qdrant instance, and gaianet-domain in local mode
-                start 1
-                ;;
-            *)
-                # start rag-api-server, a qdrant instance, and frpc
-                start 0
-                ;;
-        esac
-        ;;
-    stop)
-        case $arg in
-            --force)
-                # force stop the Qdrant instance, rag-api-server, and gaianet-domain
-                stop_force
-                ;;
-            *)
-                # stop the Qdrant instance, rag-api-server, and gaianet-domain
-                stop
+        local=0
 
-                ;;
-        esac
+        while (( "$#" )); do
+            case "$1" in
+                --local-only)
+                    local=1
+                    shift
+                    ;;
+                --base)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        gaianet_base_dir=$2
+                        shift 2
+                    fi
+                    ;;
+                *)
+                    show_start_help
+                    exit 1
+                    ;;
+            esac
+        done
+
+        start $local
+
+        ;;
+
+    stop)
+        force=0
+
+        while (( "$#" )); do
+            case "$1" in
+                --force)
+                    force=1
+                    shift
+                    ;;
+                --base)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        gaianet_base_dir=$2
+                        shift 2
+                    fi
+                    ;;
+                *)
+                    show_stop_help
+                    exit 1
+                    ;;
+            esac
+        done
+
+        if [ $force -eq 1 ]; then
+            stop_force
+        else
+            stop
+        fi
+
         ;;
     *)
         show_help

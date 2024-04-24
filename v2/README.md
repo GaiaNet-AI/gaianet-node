@@ -3,42 +3,6 @@
 > [!NOTE]
 > GaiaNet Installer v2 is still in active development. Please report any issues you encounter.
 
-Todo list:
-
-- [x] install.sh
-  - [x] Download default config file
-  - [x] Download nodeid.json
-  - [x] Install WasmEdge with wasi-nn_ggml plugin
-  - [x] Install Qdrant binary and initialize Qdrant directory
-  - [x] Download rag-api-server.wasm
-  - [x] Download `gaianet` CLI tool
-  - [x] Download dashboard
-  - [x] Install gaianet-domain (frpc binary + frpc.toml)
-  - [x] Generates keys
-
-- [x] gaianet.sh
-  - [x] `gaianet init`
-    - [x] `gaianet init list` lists available arguments
-    - [x] `gaianet init paris_guide`
-    - [x] `gaianet init mua`
-    - [x] `gaianet init gaia`
-    - [x] `gaianet init <url-to-config.json>`
-  - [x] `gaianet run`
-    - [x] `gaianet run --local`
-  - [x] `gaianet stop`
-    - [x] `gaianet stop --force`
-  - [x] `gaianet config`
-    - [x] `gaianet config list` lists available arguments
-    - [x] `gaianet config chat <url>`
-    - [x] `gaianet config chat_ctx_size <size>`
-    - [x] `gaianet config embedding <url>`
-    - [x] `gaianet config embedding_ctx_size <size>`
-    - [x] `gaianet config prompt_template <template>`
-    - [x] `gaianet config port <port>`
-    - [x] `gaianet config system_prompt <prompt>`
-    - [x] `gaianet config rag_prompt <prompt>`
-    - [x] `gaianet config reverse_prompt <prompt>`
-
 ## install.sh
 
 ```bash
@@ -100,55 +64,66 @@ WasmEdge binaries accessible
 ## GaiaNet CLI Tool
 
 ```bash
-gaianet --help
+$ gaianet --help
 
-Usage: gaianet {config|init|run|stop} [arg]
+Usage: gaianet {config|init|run|stop|OPTIONS}
 
 Subcommands:
-  config <arg>  Update the configuration.
-                Available args: chat_url, chat_ctx_size, embedding_url, embedding_ctx_size, system_prompt
-  init [arg]    Initialize with optional argument.
-                Available args: paris_guide, mua, gaia, <url-to-config.json>
-  run           Run the program.
-  start         Run the program.
-  stop [arg]    Stop the program.
-                Available args: --force
+  config             Update the configuration.
+  init              Initialize with optional argument.
+  run|start         Run the program.
+  stop [arg]        Stop the program.
 
 Options:
-  --help        Show this help message
+  --help            Show this help message
 ```
 
 ### Update configuration
 
 Using `gaianet config` subcommand can update the following fields defined in the `config.json` file:
 
-- `gaianet config list` lists available arguments
-- `gaianet config chat_url <url>`: updates url of the chat model
-- `gaianet config chat_ctx_size <size>` updates context size of the chat model
-- `gaianet config embedding_url <url>` updates url of the embedding model
-- `gaianet config embedding_ctx_size <size>` updates context size of the embedding model
-- `gaianet config prompt_template <template>` updates chat prompt template
-- `gaianet config port <port>` updates the socket port number of LlamaEdge-RAG API server
-- `gaianet config system_prompt <value>` updates the system prompt
-- `gaianet config rag_prompt <value>` updates the RAG prompt
-- `gaianet config reverse_prompt <value>` updates the reverse prompt
+```bash
+$ gaianet config --help
 
-To update the `chat_url` field, for example, use the following command:
+Usage: gaianet config [OPTIONS]
+
+Options:
+  --chat-url <val>           Update the url of chat model.
+  --chat-ctx-size <val>      Update the context size of chat model.
+  --embedding-url <val>      Update the url of embedding model.
+  --embedding-ctx-size <val> Update the context size of embedding model.
+  --prompt-template <val>    Update the prompt template of chat model.
+  --port <val>               Update the port of LlamaEdge API Server.
+  --system-prompt <val>      Update the system prompt.
+  --rag-prompt <val>         Update the rag prompt.
+  --reverse-prompt <val>     Update the reverse prompt.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
+```
+
+To update the `chat` field, for example, use the following command:
 
 ```bash
-gaianet config chat_url https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf
+gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
 To update the `chat_ctx_size` field, for example, use the following command:
 
 ```bash
-gaianet config chat_ctx_size 5120
+gaianet config --chat-ctx-size 5120
 ```
 
 ### Initialize GaiaNet-node
 
 ```bash
-gaianet init
+$ gaianet init --help
+
+Usage: gaianet init [OPTIONS]
+
+Options:
+  --config <val|url>          Name of a pre-defined GaiaNet config or a url.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -180,7 +155,14 @@ gaianet init
 ### Start GaiaNet-node
 
 ```bash
-gaianet run
+$ gaianet start --help
+
+Usage: gaianet start|run [OPTIONS]
+
+Options:
+  --local-only               Start the program in local mode.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -205,7 +187,14 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 ### Stop GaiaNet-node
 
 ```bash
-gaianet stop
+$ gaianet stop
+
+Usage: gaianet stop [OPTIONS]
+
+Options:
+  --force                    Force stop the program.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
 ```
 
 <details><summary> The output should look like below: </summary>
