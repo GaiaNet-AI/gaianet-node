@@ -187,31 +187,31 @@ printf "\n"
 printf "[+] Installing gaianet CLI tool ...\n"
 cd $gaianet_base_dir
 curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
-chmod +x gaianet
-# a) Install gaianet CLI tool in /usr/local/bin if the user has `sudo` access; otherwise,
-# b) Install gaianet CLI tool in $HOME/bin
-if sudo -n true 2>/dev/null; then
-    mv gaianet /usr/local/bin
-    printf "    * gaianet CLI tool is installed in /usr/local/bin\n\n"
-else
-    # if $HOME/bin does not exist, then create it
-    if [ ! -d "$HOME/bin" ]; then
-        mkdir -p "$HOME/bin"
+
+for BINDIR in /usr/local/bin /usr/bin; do
+    echo $PATH | grep -q $BINDIR && break || continue
+done
+# check if a command is available on the system
+available() { command -v $1 >/dev/null; }
+# Check if the script is running as root. If not, it checks if `sudo` is available.
+# If `sudo` is available, it sets the `SUDO` variable to "sudo". If `sudo` is not available, it prints an error message and exists.
+SUDO=
+if [ "$(id -u)" -ne 0 ]; then
+    # check if a command is available on the system
+    if ! command -v sudo >/dev/null; then
+        printf "[ERROR] This script requires superuser permissions. Please re-run as root.\n"
     fi
-    # move gaianet to $HOME/bin
-    mv gaianet $HOME/bin
-    # append $HOME/bin to $PATH if it is not in $PATH
-    if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
-        # Source the script
-        if ! grep -q 'export PATH=$PATH:$HOME/bin' "$HOME/.bashrc"; then
-            # Add it to .bashrc to make it available for future sessions
-            echo 'export PATH=$PATH:$HOME/bin' >> $HOME/.bashrc
-        fi
-        source $HOME/.bashrc
-        printf "    * source $HOME/.bashrc\n"
-    fi
-    printf "    * gaianet CLI tool is installed in $HOME/bin\n\n"
+
+    SUDO="sudo"
 fi
+# create the directory specified by $BINDIR with root ownership and 755 permissions.
+$SUDO install -o0 -g0 -m755 -d $BINDIR
+# copy the `gaianet` file from $HOME/bin to $BINDIR with root ownership and 755 permissions.
+$SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
+# remove the downloaded `gaianet` file
+rm $gaianet_base_dir/gaianet
+printf "    * gaianet CLI tool is installed in $BINDIR/gaianet\n\n"
+
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
