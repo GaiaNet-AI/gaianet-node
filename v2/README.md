@@ -3,15 +3,19 @@
 > [!NOTE]
 > GaiaNet Installer v2 is still in active development. Please report any issues you encounter.
 
-## Install
+## Install a GaiaNet node
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/install.sh' | bash
 ```
 
+The install script requires `sudo` privilege. You must have permission to `sudo` and will be asked your password.
+
 <details><summary> The output should look like below: </summary>
 
 ```console
+Password:
+
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -55,69 +59,18 @@ WasmEdge binaries accessible
 
 </details>
 
-## GaiaNet CLI Tool
+By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
 
-```bash
-$ gaianet --help
-
-Usage: gaianet {config|init|run|stop|OPTIONS}
-
-Subcommands:
-  config             Update the configuration.
-  init              Initialize with optional argument.
-  run|start         Run the program.
-  stop [arg]        Stop the program.
-
-Options:
-  --help            Show this help message
+```
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-### Update configuration
+In this case, you will need to pass `--base $HOME/gaianet.alt` to all `gaianet` CLI commands below in order to operate on the node installed in `$HOME/gaianet.alt`.
 
-Using `gaianet config` subcommand can update the following fields defined in the `config.json` file:
+## Initialize the GaiaNet node
 
-```bash
-$ gaianet config --help
-
-Usage: gaianet config [OPTIONS]
-
-Options:
-  --chat-url <val>           Update the url of chat model.
-  --chat-ctx-size <val>      Update the context size of chat model.
-  --embedding-url <val>      Update the url of embedding model.
-  --embedding-ctx-size <val> Update the context size of embedding model.
-  --prompt-template <val>    Update the prompt template of chat model.
-  --port <val>               Update the port of LlamaEdge API Server.
-  --system-prompt <val>      Update the system prompt.
-  --rag-prompt <val>         Update the rag prompt.
-  --reverse-prompt <val>     Update the reverse prompt.
-  --base <path>              The base directory of GaiaNet.
-  --help                     Show this help message
 ```
-
-To update the `chat` field, for example, use the following command:
-
-```bash
-gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
-```
-
-To update the `chat_ctx_size` field, for example, use the following command:
-
-```bash
-gaianet config --chat-ctx-size 5120
-```
-
-### Initialize GaiaNet-node
-
-```bash
-$ gaianet init --help
-
-Usage: gaianet init [OPTIONS]
-
-Options:
-  --config <val|url>          Name of a pre-defined GaiaNet config or a url. Possible values: default, paris_guide, mua, gaia.
-  --base <path>              The base directory of GaiaNet.
-  --help                     Show this help message
+gaianet init
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -146,17 +99,16 @@ Options:
 
 </details>
 
-### Start GaiaNet-node
+If you need to `init` a node installed in an alternative directory, do this.
 
-```bash
-$ gaianet start --help
+```
+gaianet init --base $HOME/gaianet.alt
+```
 
-Usage: gaianet start|run [OPTIONS]
+### Start the GaiaNet node
 
-Options:
-  --local-only               Start the program in local mode.
-  --base <path>              The base directory of GaiaNet.
-  --help                     Show this help message
+```
+gaianet start
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -178,17 +130,10 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-### Stop GaiaNet-node
+### Stop the GaiaNet node
 
-```bash
-$ gaianet stop
-
-Usage: gaianet stop [OPTIONS]
-
-Options:
-  --force                    Force stop the program.
-  --base <path>              The base directory of GaiaNet.
-  --help                     Show this help message
+```
+gaianet stop
 ```
 
 <details><summary> The output should look like below: </summary>
@@ -205,3 +150,97 @@ gaianet stop --force
 ```
 
 </details>
+
+### Update configuration
+
+Using `gaianet config` subcommand can update the following fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+
+To update the `chat` field, for example, use the following command:
+
+```bash
+gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
+```
+
+To update the `chat_ctx_size` field, for example, use the following command:
+
+```bash
+gaianet config --chat-ctx-size 5120
+```
+
+### CLI options
+
+```bash
+$ gaianet --help
+
+Usage: gaianet {config|init|run|stop|OPTIONS}
+
+Subcommands:
+  config             Update the configuration.
+  init              Initialize with optional argument.
+  run|start         Run the program.
+  stop [arg]        Stop the program.
+
+Options:
+  --help            Show this help message
+```
+
+The `init` subcommand.
+
+```bash
+$ gaianet init --help
+
+Usage: gaianet init [OPTIONS]
+
+Options:
+  --config <val|url>          Name of a pre-defined GaiaNet config or a url. Possible values: default, paris_guide, mua, gaia.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
+```
+
+The `config` subcommand.
+
+```bash
+$ gaianet config --help
+
+Usage: gaianet config [OPTIONS]
+
+Options:
+  --chat-url <val>           Update the url of chat model.
+  --chat-ctx-size <val>      Update the context size of chat model.
+  --embedding-url <val>      Update the url of embedding model.
+  --embedding-ctx-size <val> Update the context size of embedding model.
+  --prompt-template <val>    Update the prompt template of chat model.
+  --port <val>               Update the port of LlamaEdge API Server.
+  --system-prompt <val>      Update the system prompt.
+  --rag-prompt <val>         Update the rag prompt.
+  --reverse-prompt <val>     Update the reverse prompt.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
+```
+
+The `start` subcommand.
+
+```bash
+$ gaianet start --help
+
+Usage: gaianet start|run [OPTIONS]
+
+Options:
+  --local-only               Start the program in local mode.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
+```
+
+The `stop` subcommand.
+
+```bash
+$ gaianet stop --help
+
+Usage: gaianet stop [OPTIONS]
+
+Options:
+  --force                    Force stop the program.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
+```
+
