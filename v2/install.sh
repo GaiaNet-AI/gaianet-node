@@ -69,9 +69,9 @@ if [ ! -d $gaianet_base_dir ]; then
     mkdir -p $gaianet_base_dir
 fi
 
-# check if `log` directory exists or not
+# check if `log` directory exists or not. It needs to allow `gaianet` to write into it
 if [ ! -d "$gaianet_base_dir/log" ]; then
-    mkdir -p $gaianet_base_dir/log
+    mkdir -p -m777 $gaianet_base_dir/log
 fi
 log_dir=$gaianet_base_dir/log
 
