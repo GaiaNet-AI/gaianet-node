@@ -840,9 +840,11 @@ case $subcommand in
             esac
         done
 
-
         case $config in
-            paris_guide|default)
+            "")
+                init
+                ;;
+            paris_guide)
                 init
                 ;;
             mua)

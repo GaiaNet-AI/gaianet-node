@@ -188,24 +188,30 @@ printf "[+] Installing gaianet CLI tool ...\n"
 cd $gaianet_base_dir
 curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
 chmod +x gaianet
-# if $HOME/bin does not exist, then create it
-if [ ! -d "$HOME/bin" ]; then
-    mkdir -p "$HOME/bin"
-fi
-# move gaianet to $HOME/bin
-mv gaianet $HOME/bin
-# append $HOME/bin to $PATH if it is not in $PATH
-if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
-    # Source the script
-    if ! grep -q 'export PATH=$PATH:$HOME/bin' "$HOME/.bashrc"; then
-        # Add it to .bashrc to make it available for future sessions
-        echo 'export PATH=$PATH:$HOME/bin' >> $HOME/.bashrc
+# a) Install gaianet CLI tool in /usr/local/bin if the user has `sudo` access; otherwise,
+# b) Install gaianet CLI tool in $HOME/bin
+if sudo -n true 2>/dev/null; then
+    mv gaianet /usr/local/bin
+    printf "    * gaianet CLI tool is installed in /usr/local/bin\n\n"
+else
+    # if $HOME/bin does not exist, then create it
+    if [ ! -d "$HOME/bin" ]; then
+        mkdir -p "$HOME/bin"
     fi
-    source $HOME/.bashrc
-    printf "    * source $HOME/.bashrc\n"
+    # move gaianet to $HOME/bin
+    mv gaianet $HOME/bin
+    # append $HOME/bin to $PATH if it is not in $PATH
+    if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
+        # Source the script
+        if ! grep -q 'export PATH=$PATH:$HOME/bin' "$HOME/.bashrc"; then
+            # Add it to .bashrc to make it available for future sessions
+            echo 'export PATH=$PATH:$HOME/bin' >> $HOME/.bashrc
+        fi
+        source $HOME/.bashrc
+        printf "    * source $HOME/.bashrc\n"
+    fi
+    printf "    * gaianet CLI tool is installed in $HOME/bin\n\n"
 fi
-printf "    * gaianet CLI tool is installed in $HOME/bin\n\n"
-
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
