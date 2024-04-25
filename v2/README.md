@@ -3,16 +3,10 @@
 > [!NOTE]
 > GaiaNet Installer v2 is still in active development. Please report any issues you encounter.
 
-## install.sh
+## Install
 
 ```bash
-gaianet-node/v2$ bash install.sh
-```
-
-or
-
-```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/install.sh')
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/install.sh' | bash
 ```
 
 <details><summary> The output should look like below: </summary>
