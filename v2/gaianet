@@ -12,8 +12,6 @@ check_base_dir() {
         printf "\n[Error] Not found $gaianet_base_dir.\n\nPlease run 'bash install.sh' command first, then try again.\n\n"
         exit 1
     fi
-
-    log_dir=$gaianet_base_dir/log
 }
 
 # create or recover a qdrant collection
@@ -303,6 +301,7 @@ update_config() {
 # start rag-api-server and a qdrant instance
 start() {
     local_only=$1
+    log_dir=$gaianet_base_dir/log
 
     # check if config.json exists or not
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
@@ -349,9 +348,6 @@ start() {
 
     # 2. start a LlamaEdge instance
     printf "[+] Starting LlamaEdge API Server ...\n\n"
-
-    # We will make sure that the path is setup in case the user runs start.sh immediately after init.sh
-    source $HOME/.wasmedge/env
 
     # parse cli options for chat model
     cd $gaianet_base_dir
