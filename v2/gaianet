@@ -636,7 +636,7 @@ show_config_help() {
 show_init_help() {
     printf "Usage: gaianet init [OPTIONS] \n\n"
     printf "Options:\n"
-    printf "  --config <val|url>          Name of a pre-defined GaiaNet config or a url. Possible values: default, paris_guide, mua, gaia.\n"
+    printf "  --config <val|url>         Name of a pre-defined GaiaNet config or a url. Possible values: default, paris_guide, mua, gaia.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
     printf "  --help                     Show this help message\n\n"
 }
