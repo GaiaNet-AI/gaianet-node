@@ -190,7 +190,7 @@ curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/g
 chmod +x gaianet
 # a) Install gaianet CLI tool in /usr/local/bin if the user has `sudo` access; otherwise,
 # b) Install gaianet CLI tool in $HOME/bin
-if command -v sudo &> /dev/null; then
+if sudo -n true 2>/dev/null; then
     mv gaianet /usr/local/bin
     printf "    * gaianet CLI tool is installed in /usr/local/bin\n\n"
 else
