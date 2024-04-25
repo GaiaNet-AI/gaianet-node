@@ -8,6 +8,8 @@ cwd=$(pwd)
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
+# 0: must be root or sudo, 1: regular unprivileged user
+unprivileged=0
 # url to the config file
 config_url=""
 # path to the gaianet base directory
@@ -23,6 +25,7 @@ function print_usage {
     printf "  --config <Url>: specify a url to the config file\n"
     printf "  --base <Path>: specify a path to the gaianet base directory\n"
     printf "  --reinstall: install and download all required deps\n"
+    printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
     printf "  --help: Print usage\n"
 }
 
@@ -41,6 +44,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --reinstall)
             reinstall=1
+            shift
+            ;;
+        --unprivileged)
+            unprivileged=1
             shift
             ;;
         --help)
@@ -68,6 +75,7 @@ fi
 if [ ! -d $gaianet_base_dir ]; then
     mkdir -p $gaianet_base_dir
 fi
+cd $gaianet_base_dir
 
 # check if `log` directory exists or not. It needs to allow `gaianet` to write into it
 if [ ! -d "$gaianet_base_dir/log" ]; then
@@ -76,34 +84,37 @@ fi
 log_dir=$gaianet_base_dir/log
 
 # 1. Install `gaianet` CLI tool.
-for BINDIR in /usr/local/bin /usr/bin; do
-    echo $PATH | grep -q $BINDIR && break || continue
-done
-# Check if the script is running as root. If not, it checks if `sudo` is available.
-# If `sudo` is available, it sets the `SUDO` variable to "sudo". If `sudo` is not available, it prints an error message and exists.
-SUDO=
-if [ "$(id -u)" -ne 0 ]; then
-    # check if a command is available on the system
-    if ! command -v sudo >/dev/null; then
-        printf "[ERROR] This script requires superuser permissions. Please re-run as root or make sure that you can sudo.\n"
+if [ "$unprivileged" -eq 0 ]; then
+    for BINDIR in /usr/local/bin /usr/bin; do
+        echo $PATH | grep -q $BINDIR && break || continue
+    done
+    # Check if the script is running as root. If not, it checks if `sudo` is available.
+    # If `sudo` is available, it sets the `SUDO` variable to "sudo". If `sudo` is not available, it prints an error message and exists.
+    SUDO=
+    if [ "$(id -u)" -ne 0 ]; then
+        # check if a command is available on the system
+        if ! command -v sudo >/dev/null; then
+            printf "[ERROR] This script requires superuser permissions. Please re-run as root or make sure that you can sudo.\n"
+        fi
+
+        SUDO="sudo"
     fi
+    # create the directory specified by $BINDIR with root ownership and 755 permissions. The first thing the script asks is the sudo password.
+    $SUDO install -o0 -g0 -m755 -d $BINDIR
 
-    SUDO="sudo"
+    printf "[+] Installing gaianet CLI tool ...\n"
+    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
+    # copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
+    $SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
+    # remove the downloaded `gaianet` file
+    rm $gaianet_base_dir/gaianet
+    printf "    * gaianet CLI tool is installed in $BINDIR/gaianet\n\n"
+else
+    printf "[+] Installing gaianet CLI tool ...\n"
+    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
 fi
-# create the directory specified by $BINDIR with root ownership and 755 permissions. The first thing the script asks is the sudo password.
-$SUDO install -o0 -g0 -m755 -d $BINDIR
-
-printf "[+] Installing gaianet CLI tool ...\n"
-cd $gaianet_base_dir
-curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
-# copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
-$SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
-# remove the downloaded `gaianet` file
-rm $gaianet_base_dir/gaianet
-printf "    * gaianet CLI tool is installed in $BINDIR/gaianet\n\n"
 
 # 2. Download default `config.json`
-cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "[+] Downloading default config file ...\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json
