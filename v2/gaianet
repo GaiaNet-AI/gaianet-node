@@ -282,6 +282,7 @@ init() {
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
     printf "\n"
+    printf "\n>>> To start the GaiaNet node, run the command: gaianet start <<<\n"
 }
 
 # * config subcommand
@@ -507,7 +508,7 @@ start() {
     if [ "$local_only" -eq 1 ]; then
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
     fi
-    printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: ./stop.sh <<<\n"
+    printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: gaianet stop <<<\n"
 
     exit 0
 }
