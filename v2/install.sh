@@ -343,5 +343,6 @@ $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g"
 find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
 
 printf "Your node ID is $subdomain. Please register it in your portal account to receive awards!\n"
+printf "\n>>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. Run the command: gaianet init <<<\n"
 
 exit 0
