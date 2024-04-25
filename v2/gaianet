@@ -1,21 +1,24 @@
 #!/bin/bash
 
-# path to the gaianet base directory
+# path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
-# Check if $gaianet_base_dir directory exists
-if [ ! -d $gaianet_base_dir ]; then
-    printf "\n[Error] Not found $gaianet_base_dir.\n\nPlease run 'bash install_v2.sh' command first, then try again.\n\n"
-    exit 1
-fi
+# We will make sure that the path is setup in case the user runs gaianet immediately after init
+source $HOME/.wasmedge/env
 
-# check if `log` directory exists or not
-if [ ! -d "$gaianet_base_dir/log" ]; then
-    mkdir -p $gaianet_base_dir/log
-fi
-log_dir=$gaianet_base_dir/log
+check_base_dir() {
+    # Check if $gaianet_base_dir directory exists
+    if [ ! -d $gaianet_base_dir ]; then
+        printf "\n[Error] Not found $gaianet_base_dir.\n\nPlease run 'bash install_v2.sh' command first, then try again.\n\n"
+        exit 1
+    fi
 
-# * init subcommand
+    # check if `log` directory exists or not
+    if [ ! -d "$gaianet_base_dir/log" ]; then
+        mkdir -p $gaianet_base_dir/log
+    fi
+    log_dir=$gaianet_base_dir/log
+}
 
 # create or recover a qdrant collection
 create_collection() {
@@ -737,6 +740,7 @@ case $subcommand in
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         gaianet_base_dir=$2
                         shift 2
+                        check_base_dir
                     fi
                     ;;
                 *)
@@ -831,6 +835,7 @@ case $subcommand in
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         gaianet_base_dir=$2
                         shift 2
+                        check_base_dir
                     fi
                     ;;
                 *)
@@ -895,6 +900,7 @@ case $subcommand in
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         gaianet_base_dir=$2
                         shift 2
+                        check_base_dir
                     fi
                     ;;
                 *)
@@ -921,6 +927,7 @@ case $subcommand in
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         gaianet_base_dir=$2
                         shift 2
+                        check_base_dir
                     fi
                     ;;
                 *)
