@@ -75,7 +75,34 @@ if [ ! -d "$gaianet_base_dir/log" ]; then
 fi
 log_dir=$gaianet_base_dir/log
 
-# 1. Download default `config.json`
+# 1. Install `gaianet` CLI tool.
+for BINDIR in /usr/local/bin /usr/bin; do
+    echo $PATH | grep -q $BINDIR && break || continue
+done
+# Check if the script is running as root. If not, it checks if `sudo` is available.
+# If `sudo` is available, it sets the `SUDO` variable to "sudo". If `sudo` is not available, it prints an error message and exists.
+SUDO=
+if [ "$(id -u)" -ne 0 ]; then
+    # check if a command is available on the system
+    if ! command -v sudo >/dev/null; then
+        printf "[ERROR] This script requires superuser permissions. Please re-run as root or make sure that you can sudo.\n"
+    fi
+
+    SUDO="sudo"
+fi
+# create the directory specified by $BINDIR with root ownership and 755 permissions. The first thing the script asks is the sudo password.
+$SUDO install -o0 -g0 -m755 -d $BINDIR
+
+printf "[+] Installing gaianet CLI tool ...\n"
+cd $gaianet_base_dir
+curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
+# copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
+$SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
+# remove the downloaded `gaianet` file
+rm $gaianet_base_dir/gaianet
+printf "    * gaianet CLI tool is installed in $BINDIR/gaianet\n\n"
+
+# 2. Download default `config.json`
 cd $gaianet_base_dir
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "[+] Downloading default config file ...\n"
@@ -83,14 +110,14 @@ if [ ! -f "$gaianet_base_dir/config.json" ]; then
     printf "\n"
 fi
 
-# 2. download nodeid.json
+# 3. download nodeid.json
 if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
     printf "[+] Downloading nodeid.json ...\n"
     curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/nodeid.json
     printf "\n"
 fi
 
-# 3. Install WasmEdge and ggml plugin
+# 4. Install WasmEdge and ggml plugin
 if ! command -v wasmedge >/dev/null 2>&1 || [ "$reinstall" -eq 1 ]; then
     printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n\n"
     if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
@@ -108,13 +135,13 @@ else
 fi
 printf "\n"
 
-# 4. Install Qdrant binary and prepare directories
+# 5. Install Qdrant binary and prepare directories
 # Check if "$gaianet_base_dir/bin" directory exists
 if [ ! -d "$gaianet_base_dir/bin" ]; then
     # If not, create it
     mkdir -p $gaianet_base_dir/bin
 fi
-# 4.1 Inatall Qdrant binary
+# 5.1 Inatall Qdrant binary
 if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Installing Qdrant binary...\n"
 
@@ -156,7 +183,7 @@ else
 fi
 printf "\n"
 
-# 4.2 Init qdrant directory
+# 5.2 Init qdrant directory
 if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "    * Initialize Qdrant directory\n"
     mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
@@ -174,7 +201,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "\n"
 fi
 
-# 5. Download rag-api-server.wasm
+# 6. Download rag-api-server.wasm
 if [ ! -f "$gaianet_base_dir/rag-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading the rag-api-server.wasm ...\n"
     curl --retry 3 --progress-bar -L https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm -o $gaianet_base_dir/rag-api-server.wasm
@@ -182,36 +209,6 @@ else
     printf "[+] Using the cached rag-api-server.wasm ...\n"
 fi
 printf "\n"
-
-# 6. Install `gaianet` CLI tool
-printf "[+] Installing gaianet CLI tool ...\n"
-cd $gaianet_base_dir
-curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
-
-for BINDIR in /usr/local/bin /usr/bin; do
-    echo $PATH | grep -q $BINDIR && break || continue
-done
-# check if a command is available on the system
-available() { command -v $1 >/dev/null; }
-# Check if the script is running as root. If not, it checks if `sudo` is available.
-# If `sudo` is available, it sets the `SUDO` variable to "sudo". If `sudo` is not available, it prints an error message and exists.
-SUDO=
-if [ "$(id -u)" -ne 0 ]; then
-    # check if a command is available on the system
-    if ! command -v sudo >/dev/null; then
-        printf "[ERROR] This script requires superuser permissions. Please re-run as root.\n"
-    fi
-
-    SUDO="sudo"
-fi
-# create the directory specified by $BINDIR with root ownership and 755 permissions.
-$SUDO install -o0 -g0 -m755 -d $BINDIR
-# copy the `gaianet` file from $HOME/bin to $BINDIR with root ownership and 755 permissions.
-$SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
-# remove the downloaded `gaianet` file
-rm $gaianet_base_dir/gaianet
-printf "    * gaianet CLI tool is installed in $BINDIR/gaianet\n\n"
-
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
