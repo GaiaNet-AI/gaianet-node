@@ -9,14 +9,10 @@ source $HOME/.wasmedge/env
 check_base_dir() {
     # Check if $gaianet_base_dir directory exists
     if [ ! -d $gaianet_base_dir ]; then
-        printf "\n[Error] Not found $gaianet_base_dir.\n\nPlease run 'bash install_v2.sh' command first, then try again.\n\n"
+        printf "\n[Error] Not found $gaianet_base_dir.\n\nPlease run 'bash install.sh' command first, then try again.\n\n"
         exit 1
     fi
 
-    # check if `log` directory exists or not
-    if [ ! -d "$gaianet_base_dir/log" ]; then
-        mkdir -p $gaianet_base_dir/log
-    fi
     log_dir=$gaianet_base_dir/log
 }
 
