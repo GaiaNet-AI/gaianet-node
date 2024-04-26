@@ -312,7 +312,6 @@ init() {
     if [ -f "$gaianet_base_dir/$embedding_model" ]; then
         warning "    * Using the cached $embedding_model in $gaianet_base_dir"
     else
-        printf "[+] Downloading $embedding_model ...\n\n"
         check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
         info "    * $embedding_model is downloaded in $gaianet_base_dir"
     fi
