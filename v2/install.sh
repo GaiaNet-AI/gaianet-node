@@ -321,8 +321,7 @@ if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
 else
     warning "    * Use the cached registry.wasm in $gaianet_base_dir"
 fi
-# printf "[+] Generating node ID ...\n"
-info "    * Generate node ID"
+printf "    * Generate node ID\n"
 cd $gaianet_base_dir
 wasmedge --dir .:. registry.wasm
 printf "\n"
