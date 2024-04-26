@@ -15,7 +15,7 @@ config_url=""
 # path to the gaianet base directory
 gaianet_base_dir="$HOME/gaianet"
 # qdrant binary
-qdrant_version="v1.8.4"
+qdrant_version="v1.9.0"
 
 
 function print_usage {
