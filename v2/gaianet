@@ -393,9 +393,9 @@ start() {
             sleep 2
             qdrant_pid=$!
             echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
-            printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
+            info "\n    Qdrant instance started with pid: $qdrant_pid"
         else
-            printf "Qdrant binary not found at $qdrant_executable\n\n"
+            error "    Qdrant binary not found at $qdrant_executable\n\n"
             exit 1
         fi
     fi
@@ -533,7 +533,7 @@ start() {
         # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
         llamaedge_pid=$((llamaedge_pid + 1))
         echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-        printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+        info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
 
     else
         # start LlamaEdge API Server
@@ -541,7 +541,7 @@ start() {
         sleep 2
         llamaedge_pid=$!
         echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-        printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+        info "    LlamaEdge API Server started with pid: $llamaedge_pid"
     fi
 
     # 3. start gaianet-domain
@@ -552,16 +552,17 @@ start() {
         sleep 2
         gaianet_domain_pid=$!
         echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
-        printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n"
+        info "    gaianet-domain started with pid: $gaianet_domain_pid"
 
         # Extract the subdomain from frpc.toml
         subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-        printf "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz\n\n"
+        info "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz"
     fi
     if [ "$local_only" -eq 1 ]; then
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
     fi
-    printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: gaianet stop <<<\n"
+
+    info ">>> To stop Qdrant instance and LlamaEdge API Server, run the command: gaianet stop <<<"
 
     exit 0
 }
