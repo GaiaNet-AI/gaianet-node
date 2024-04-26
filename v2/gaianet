@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
@@ -62,10 +64,9 @@ create_collection() {
     qdrant_already_running=false
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    * A Qdrant instance is already running ...\n"
+            warning "    * A Qdrant instance is already running"
             qdrant_already_running=true
         fi
-        printf "\n"
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
         exit 1
@@ -81,7 +82,7 @@ create_collection() {
 
         # check if `log` directory exists or not
         if [ ! -d "$gaianet_base_dir/log" ]; then
-            mkdir -p $gaianet_base_dir/log
+            mkdir -p -m777 $gaianet_base_dir/log
         fi
         log_dir=$gaianet_base_dir/log
 
@@ -105,7 +106,7 @@ create_collection() {
         -H "Content-Type: application/json")
     status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     if [ "$status" != "ok" ]; then
-        printf "      [Error] Failed to remove the $embedding_collection_name collection. $del_response\n\n"
+        error "      Failed to remove the $embedding_collection_name collection. $del_response"
 
         if [ "$qdrant_already_running" = false ]; then
             kill $qdrant_pid
@@ -117,11 +118,11 @@ create_collection() {
     # 10.1 recover from the given qdrant collection snapshot
     if [ -n "$url_snapshot" ]; then
         printf "    * Download Qdrant collection snapshot ...\n"
-        curl --progress-bar -L $url_snapshot -o default.snapshot
-        printf "\n"
+        check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+        info "      The snapshot is downloaded in $gaianet_base_dir"
 
         printf "    * Import the Qdrant collection snapshot ...\n"
-        printf "      The process may take a few minutes. Please wait ...\n\n"
+        printf "      The process may take a few minutes. Please wait ...\n"
         # Import the default.snapshot file
         response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
             -H 'Content-Type:multipart/form-data' \
@@ -130,9 +131,10 @@ create_collection() {
 
         if echo "$response" | grep -q '"status":"ok"'; then
             rm $gaianet_base_dir/default.snapshot
-            printf "    * Recovery is done successfully\n"
+            info "      Recovery is done!"
         else
             printf "    * [Error] Failed to recover from the collection snapshot. $response \n"
+            error "    * [Error] Failed to recover from the collection snapshot. $response"
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -179,7 +181,7 @@ create_collection() {
 
         if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
             if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-                printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+                error "      It appears that the GaiaNet node is running. Please stop it first."
 
                 if [ "$qdrant_already_running" = false ]; then
                     kill $qdrant_pid
@@ -188,7 +190,7 @@ create_collection() {
                 exit 1
             fi
         elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            printf "For Windows users, please run this script in WSL.\n"
+            error "      For Windows users, please run this script in WSL."
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -196,7 +198,7 @@ create_collection() {
 
             exit 1
         else
-            printf "Only support Linux, MacOS and Windows.\n"
+            error "      Only support Linux, MacOS and Windows."
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -231,14 +233,13 @@ create_collection() {
         printf "      The process may take a few minutes. Please wait ...\n\n"
         cd $gaianet_base_dir
         doc_filename=$(basename $url_document)
-        curl -s $url_document -o $doc_filename
+        check_curl_silent $url_document $gaianet_base_dir/$doc_filename
 
         if [[ $doc_filename != *.txt ]] && [[ $doc_filename != *.md ]]; then
-            printf "Error: the document to upload should be a file with 'txt' or 'md' extension.\n"
+            error "The document to upload should be a file with 'txt' or 'md' extension."
 
             # stop the api-server
             if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
-                # printf "[+] Stopping API server ...\n"
                 kill $(cat $gaianet_base_dir/llamaedge.pid)
                 rm $gaianet_base_dir/llamaedge.pid
             fi
@@ -264,7 +265,7 @@ create_collection() {
         fi
 
         if [ -z "$embedding_response" ]; then
-            printf "    * [Error] Failed to compute embeddings. Exit ...\n"
+            error "      Failed to compute embeddings. Exit."
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -272,13 +273,18 @@ create_collection() {
 
             exit 1
         else
-            printf "    * Embeddings are computed successfully\n"
+            info "    * Embeddings are computed successfully"
         fi
 
     else
-        echo "Please set 'snapshot' or 'document' field in config.json"
+        error "Please set 'snapshot' or 'document' field in config.json. Exit."
+
+        if [ "$qdrant_already_running" = false ]; then
+            kill $qdrant_pid
+        fi
+
+        exit 1
     fi
-    printf "\n"
 
     if [ "$qdrant_already_running" = false ]; then
         # stop qdrant
@@ -326,6 +332,8 @@ init() {
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
     printf "\n\n"
+
+    printf "[+] COMPLETED! GaiaNet node is initialized successfully.\n\n"
 
     info ">>> To start the GaiaNet node, run the command: gaianet start <<<"
 }
