@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # target name
 target=$(uname -m)
 
@@ -17,6 +19,14 @@ gaianet_base_dir="$HOME/gaianet"
 # qdrant binary
 qdrant_version="v1.9.0"
 
+# print in red color
+RED=$'\e[0;31m'
+# print in green color
+GREEN=$'\e[0;32m'
+# print in yellow color
+YELLOW=$'\e[0;33m'
+# No Color
+NC=$'\e[0m'
 
 function print_usage {
     printf "Usage:\n"
@@ -62,14 +72,45 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+info() {
+    printf "${GREEN}$1${NC}\n\n"
+}
+
+error() {
+    printf "${RED}$1${NC}\n\n"
+}
+
+warning() {
+    printf "${YELLOW}$1${NC}\n\n"
+}
+
+# download target file to destination. If failed, then exit
+check_curl() {
+    curl --retry 3 --progress-bar -L "$1" -o "$2"
+
+    if [ $? -ne 0 ]; then
+        error "    * Failed to download $1"
+        exit 1
+    fi
+}
+
+check_curl_silent() {
+    curl --retry 3 -s --progress-bar -L "$1" -o "$2"
+
+    if [ $? -ne 0 ]; then
+        error "    * Failed to download $1"
+        exit 1
+    fi
+}
+
 printf "\n"
 cat <<EOF
  ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
 ██╔════╝ ██╔══██╗██║██╔══██╗████╗  ██║██╔════╝╚══██╔══╝
-██║  ███╗███████║██║███████║██╔██╗ ██║█████╗     ██║   
-██║   ██║██╔══██║██║██╔══██║██║╚██╗██║██╔══╝     ██║   
-╚██████╔╝██║  ██║██║██║  ██║██║ ╚████║███████╗   ██║   
- ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   
+██║  ███╗███████║██║███████║██╔██╗ ██║█████╗     ██║
+██║   ██║██╔══██║██║██╔══██║██║╚██╗██║██╔══╝     ██║
+╚██████╔╝██║  ██║██║██║  ██║██║ ╚████║███████╗   ██║
+ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝
 EOF
 
 # if need to reinstall, remove the $gaianet_base_dir directory
@@ -80,7 +121,7 @@ fi
 
 # Check if $gaianet_base_dir directory exists
 if [ ! -d $gaianet_base_dir ]; then
-    mkdir -p $gaianet_base_dir
+    mkdir -p -m777 $gaianet_base_dir
 fi
 cd $gaianet_base_dir
 
@@ -110,109 +151,127 @@ if [ "$unprivileged" -eq 0 ]; then
     $SUDO install -o0 -g0 -m755 -d $BINDIR
 
     printf "[+] Installing gaianet CLI tool ...\n"
-    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
+    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet $gaianet_base_dir/gaianet
+
     # copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
     $SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
     # remove the downloaded `gaianet` file
     rm $gaianet_base_dir/gaianet
-    printf "    * gaianet CLI tool is installed in $BINDIR/gaianet\n\n"
+    info "    * gaianet CLI tool is installed in $BINDIR/gaianet"
 else
     printf "[+] Installing gaianet CLI tool ...\n"
-    curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
+    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet $gaianet_base_dir/gaianet
     chmod +x ./gaianet
+    info "    * gaianet CLI tool is installed in $gaianet_base_dir/gaianet"
 fi
 
 # 2. Download default `config.json`
+printf "[+] Downloading default config file ...\n"
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
-    printf "[+] Downloading default config file ...\n"
-    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json
-    printf "\n"
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json $gaianet_base_dir/config.json
+
+    info "    * The default config file is downloaded in $gaianet_base_dir"
+else
+    warning "    * Use the cached config file in $gaianet_base_dir"
 fi
 
 # 3. download nodeid.json
 if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
     printf "[+] Downloading nodeid.json ...\n"
-    curl -s -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/nodeid.json
-    printf "\n"
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/nodeid.json $gaianet_base_dir/nodeid.json
+
+    info "    * The nodeid.json is downloaded in $gaianet_base_dir"
 fi
 
 # 4. Install WasmEdge and ggml plugin
+printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
 if ! command -v wasmedge >/dev/null 2>&1 || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n\n"
     if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
-        printf "\n    The WasmEdge Runtime %s is installed in %s.\n\n" "$wasmedge_version" "$wasmedge_path"
+        info "    * The $wasmedge_version is installed in $wasmedge_path."
     else
-        echo "Failed to install WasmEdge"
+        error "    * Failed to install WasmEdge"
         exit 1
     fi
 else
+    wasmedge_path=$(which wasmedge)
     wasmedge_version=$(wasmedge --version)
-    printf "[+] WasmEdge Runtime %s is already installed.\n" "$wasmedge_version"
+    warning "    * Use the existed $wasmedge_version in $wasmedge_path."
 fi
-printf "\n"
 
 # 5. Install Qdrant binary and prepare directories
 # Check if "$gaianet_base_dir/bin" directory exists
 if [ ! -d "$gaianet_base_dir/bin" ]; then
     # If not, create it
-    mkdir -p $gaianet_base_dir/bin
+    mkdir -p -m777 $gaianet_base_dir/bin
 fi
 # 5.1 Inatall Qdrant binary
+printf "[+] Installing Qdrant binary...\n"
 if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Installing Qdrant binary...\n"
-
     printf "    * Download Qdrant binary\n"
     if [ "$(uname)" == "Darwin" ]; then
         # download qdrant binary
         if [ "$target" = "x86_64" ]; then
-            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz
-            tar -xzf qdrant-x86_64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
-            rm qdrant-x86_64-apple-darwin.tar.gz
+            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
+
+            tar -xzf $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
+            rm $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
+
+            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
+
         elif [ "$target" = "arm64" ]; then
-            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz
-            tar -xzf qdrant-aarch64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
-            rm qdrant-aarch64-apple-darwin.tar.gz
+            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
+
+            tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
+            rm $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
+
+            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
         fi
 
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         # download qdrant statically linked binary
         if [ "$target" = "x86_64" ]; then
-            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz
-            tar -xzf qdrant-x86_64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
-            rm qdrant-x86_64-unknown-linux-musl.tar.gz
+            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
+
+            tar -xzf $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
+            rm $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
+
+            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
+
         elif [ "$target" = "aarch64" ]; then
-            curl --retry 3 --progress-bar -LO https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz
-            tar -xzf qdrant-aarch64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
-            rm qdrant-aarch64-unknown-linux-musl.tar.gz
+            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
+
+            tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
+            rm $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
+
+            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
         fi
 
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
+        error "    * For Windows users, please run this script in WSL."
         exit 1
     else
-        printf "Only support Linux, MacOS and Windows.\n"
+        error "    * Only support Linux, MacOS and Windows."
         exit 1
     fi
 
 else
-    printf "[+] Using the cached Qdrant binary ...\n"
+    warning "    * Use the cached Qdrant binary in $gaianet_base_dir/bin"
 fi
-printf "\n"
 
 # 5.2 Init qdrant directory
 if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "    * Initialize Qdrant directory\n"
-    mkdir -p $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
+    mkdir -p -m777 $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
     # download qdrant binary
-    curl --retry 3 -s -LO https://github.com/qdrant/qdrant/archive/refs/tags/$qdrant_version.tar.gz
+    check_curl_silent https://github.com/qdrant/qdrant/archive/refs/tags/$qdrant_version.tar.gz $gaianet_base_dir/qdrant/$qdrant_version.tar.gz
 
-    mkdir "$qdrant_version"
-    tar -xzf "$qdrant_version.tar.gz" -C "$qdrant_version" --strip-components 1
-    rm $qdrant_version.tar.gz
+    mkdir -p "$qdrant_version"
+    tar -xzf "$gaianet_base_dir/qdrant/$qdrant_version.tar.gz" -C "$qdrant_version" --strip-components 1
+    rm $gaianet_base_dir/qdrant/$qdrant_version.tar.gz
 
     cp -r $qdrant_version/config .
     rm -rf $qdrant_version
@@ -221,42 +280,48 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
 fi
 
 # 6. Download rag-api-server.wasm
+printf "[+] Downloading the rag-api-server.wasm ...\n"
 if [ ! -f "$gaianet_base_dir/rag-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading the rag-api-server.wasm ...\n"
-    curl --retry 3 --progress-bar -L https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm -o $gaianet_base_dir/rag-api-server.wasm
+    check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+
+    info "    * The rag-api-server.wasm is downloaded in $gaianet_base_dir"
 else
-    printf "[+] Using the cached rag-api-server.wasm ...\n"
+    warning "    * Use the cached rag-api-server.wasm in $gaianet_base_dir"
 fi
-printf "\n"
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
     echo "tar could not be found, please install it."
     exit 1
 fi
+printf "[+] Downloading dashboard ...\n"
 if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading dashboard ...\n"
     if [ -d "$gaianet_base_dir/gaianet-node" ]; then
         rm -rf $gaianet_base_dir/gaianet-node
     fi
 
-    cd $gaianet_base_dir
-    curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.tar.gz
-    tar xzf dashboard.tar.gz
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.tar.gz $gaianet_base_dir/dashboard.tar.gz
+
+    tar xzf $gaianet_base_dir/dashboard.tar.gz -C $gaianet_base_dir
     rm -rf $gaianet_base_dir/dashboard.tar.gz
+
+    info "    * The dashboard is downloaded in $gaianet_base_dir"
 else
-    printf "[+] Using cached dashboard ...\n"
+    warning "    * Use the cached dashboard in $gaianet_base_dir"
 fi
-printf "\n"
 
 # 8. Generate node ID and copy config to dashboard
-if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading the registry.wasm ...\n\n"
-    curl -s -L https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm -o $gaianet_base_dir/registry.wasm
-else
-    printf "[+] Using cached registry ...\n\n"
-fi
 printf "[+] Generating node ID ...\n"
+if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
+    info "    * Download registry.wasm"
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
+
+    info "    * The registry.wasm is downloaded in $gaianet_base_dir"
+else
+    warning "    * Use the cached registry.wasm in $gaianet_base_dir"
+fi
+# printf "[+] Generating node ID ...\n"
+info "    * Generate node ID"
 cd $gaianet_base_dir
 wasmedge --dir .:. registry.wasm
 printf "\n"
@@ -265,55 +330,70 @@ printf "\n"
 printf "[+] Installing gaianet-domain...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
-    mkdir -p $gaianet_base_dir/gaianet-domain
+    mkdir -p -m777 $gaianet_base_dir/gaianet-domain
 fi
 cd $gaianet_base_dir
 gaianet_domain_version="v0.1.0-alpha.1"
+printf "    * Download gaianet-domain binary\n"
 if [ "$(uname)" == "Darwin" ]; then
-    # download gaianet-domain binary
     if [ "$target" = "x86_64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
-        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+
+        tar -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+
+        info "      gaianet-domain is downloaded in $gaianet_base_dir"
     elif [ "$target" = "arm64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
-        tar -xzf gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+
+        tar -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+
+        info "      gaianet-domain is downloaded in $gaianet_base_dir"
     fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # download gaianet-domain statically linked binary
     if [ "$target" = "x86_64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
-        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+
+        tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+
+        info "      gaianet-domain is downloaded in $gaianet_base_dir"
     elif [ "$target" = "arm64" ]; then
-        curl --retry 3 --progress-bar -LO https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
-        tar --warning=no-unknown-keyword -xzf gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+
+        tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
+        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+
+        info "      gaianet-domain is downloaded in $gaianet_base_dir"
     fi
 
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    printf "For Windows users, please run this script in WSL.\n"
+    error "For Windows users, please run this script in WSL."
     exit 1
 else
-    printf "Only support Linux, MacOS and Windows.\n"
+    error "Only support Linux, MacOS and Windows."
     exit 1
 fi
-printf "\n"
 
 # Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
+printf "    * Install frpc binary\n"
 cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
+info "      frpc binary is installed in $gaianet_base_dir/bin"
 
 # 10. Download frpc.toml, generate a subdomain and print it
-curl -s -L https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml -o $gaianet_base_dir/gaianet-domain/frpc.toml
+printf "    * Download frpc.toml\n"
+check_curl_silent https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
+info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
 
 # Read address from config.json as node subdomain
 subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
 
 # Check if the subdomain was read correctly
 if [ -z "$subdomain" ]; then
-    echo "Failed to read the address from config.json."
+    error "Failed to read the address from config.json."
     exit 1
 fi
 
@@ -325,7 +405,7 @@ ip_address=$(dig +short a.$gaianet_domain | tr -d '\n')
 
 # Check if the IP address was resolved correctly
 if [ -z "$ip_address" ]; then
-    echo "Failed to resolve the IP address of the domain."
+    error "Failed to resolve the IP address of the domain."
     exit 1
 fi
 
@@ -350,7 +430,10 @@ $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g"
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
 
-printf "Your node ID is $subdomain. Please register it in your portal account to receive awards!\n"
-printf "\n>>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. Run the command: gaianet init <<<\n"
+printf "[+] COMPLETED! The gaianet node has been installed successfully.\n\n"
+
+printf "Your node ID is $subdomain. Please register it in your portal account to receive awards!\n\n"
+
+info ">>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. Run the command: gaianet init <<<"
 
 exit 0
