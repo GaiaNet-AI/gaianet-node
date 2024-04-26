@@ -124,6 +124,7 @@ create_collection() {
         printf "    * Import the Qdrant collection snapshot ...\n"
         printf "      The process may take a few minutes. Please wait ...\n"
         # Import the default.snapshot file
+        cd $gaianet_base_dir
         response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
             -H 'Content-Type:multipart/form-data' \
             -F 'snapshot=@default.snapshot')
