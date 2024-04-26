@@ -63,7 +63,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 printf "\n"
-
+cat <<EOF
+ ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
+██╔════╝ ██╔══██╗██║██╔══██╗████╗  ██║██╔════╝╚══██╔══╝
+██║  ███╗███████║██║███████║██╔██╗ ██║█████╗     ██║   
+██║   ██║██╔══██║██║██╔══██║██║╚██╗██║██╔══╝     ██║   
+╚██████╔╝██║  ██║██║██║  ██║██║ ╚████║███████╗   ██║   
+ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   
+EOF
 
 # if need to reinstall, remove the $gaianet_base_dir directory
 if [ "$reinstall" -eq 1 ] && [ -d "$gaianet_base_dir" ]; then
@@ -112,6 +119,7 @@ if [ "$unprivileged" -eq 0 ]; then
 else
     printf "[+] Installing gaianet CLI tool ...\n"
     curl --retry 3 --progress-bar -LO https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet
+    chmod +x ./gaianet
 fi
 
 # 2. Download default `config.json`
