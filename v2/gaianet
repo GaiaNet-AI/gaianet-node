@@ -6,6 +6,46 @@ gaianet_base_dir="$HOME/gaianet"
 # We will make sure that the path is setup in case the user runs gaianet immediately after init
 source $HOME/.wasmedge/env
 
+# print in red color
+RED=$'\e[0;31m'
+# print in green color
+GREEN=$'\e[0;32m'
+# print in yellow color
+YELLOW=$'\e[0;33m'
+# No Color
+NC=$'\e[0m'
+
+info() {
+    printf "${GREEN}$1${NC}\n\n"
+}
+
+error() {
+    printf "${RED}$1${NC}\n\n"
+}
+
+warning() {
+    printf "${YELLOW}$1${NC}\n\n"
+}
+
+# download target file to destination. If failed, then exit
+check_curl() {
+    curl --retry 3 --progress-bar -L "$1" -o "$2"
+
+    if [ $? -ne 0 ]; then
+        error "    * Failed to download $1"
+        exit 1
+    fi
+}
+
+check_curl_silent() {
+    curl --retry 3 -s --progress-bar -L "$1" -o "$2"
+
+    if [ $? -ne 0 ]; then
+        error "    * Failed to download $1"
+        exit 1
+    fi
+}
+
 check_base_dir() {
     # Check if $gaianet_base_dir directory exists
     if [ ! -d $gaianet_base_dir ]; then
@@ -80,7 +120,8 @@ create_collection() {
         curl --progress-bar -L $url_snapshot -o default.snapshot
         printf "\n"
 
-        printf "    * Import the Qdrant collection snapshot ...\n\n"
+        printf "    * Import the Qdrant collection snapshot ...\n"
+        printf "      The process may take a few minutes. Please wait ...\n\n"
         # Import the default.snapshot file
         response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
             -H 'Content-Type:multipart/form-data' \
@@ -250,24 +291,25 @@ init() {
     # download GGUF chat model file to $gaianet_base_dir
     url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
     chat_model=$(basename $url_chat_model)
+    printf "[+] Downloading $chat_model ...\n"
     if [ -f "$gaianet_base_dir/$chat_model" ]; then
-        printf "[+] Using the cached chat model: $chat_model\n"
+        warning "    * Using the cached $chat_model in $gaianet_base_dir"
     else
-        printf "[+] Downloading $chat_model ...\n"
-        curl --retry 3 --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
+        check_curl $url_chat_model $gaianet_base_dir/$chat_model
+        info "    * $chat_model is downloaded in $gaianet_base_dir"
     fi
-    printf "\n"
 
     # download GGUF embedding model file to $gaianet_base_dir
     url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
     embedding_model=$(basename $url_embedding_model)
+    printf "[+] Downloading $embedding_model ...\n"
     if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-        printf "[+] Using the cached embedding model: $embedding_model\n"
+        warning "    * Using the cached $embedding_model in $gaianet_base_dir"
     else
         printf "[+] Downloading $embedding_model ...\n\n"
-        curl --retry 3 --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
+        check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
+        info "    * $embedding_model is downloaded in $gaianet_base_dir"
     fi
-    printf "\n"
 
     # create or recover a qdrant collection
     create_collection
@@ -275,14 +317,17 @@ init() {
     # Copy config to dashboard
     if [ ! -f "$gaianet_base_dir/registry.wasm" ] ; then
         printf "[+] Downloading the registry.wasm ...\n"
-        curl -s -L https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm -o $gaianet_base_dir/registry.wasm
+
+        check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
+
         printf "\n"
     fi
     printf "[+] Preparing the dashboard ...\n"
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
-    printf "\n"
-    printf "\n>>> To start the GaiaNet node, run the command: gaianet start <<<\n"
+    printf "\n\n"
+
+    info ">>> To start the GaiaNet node, run the command: gaianet start <<<"
 }
 
 # * config subcommand
