@@ -8,6 +8,8 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
+repo_branch="improve-installer"
+
 # 0: do not reinstall, 1: reinstall
 reinstall=0
 # 0: must be root or sudo, 1: regular unprivileged user
@@ -151,7 +153,7 @@ if [ "$unprivileged" -eq 0 ]; then
     $SUDO install -o0 -g0 -m755 -d $BINDIR
 
     printf "[+] Installing gaianet CLI tool ...\n"
-    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet $gaianet_base_dir/gaianet
+    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/v2/gaianet $gaianet_base_dir/gaianet
 
     # copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
     $SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
@@ -160,7 +162,7 @@ if [ "$unprivileged" -eq 0 ]; then
     info "    * gaianet CLI tool is installed in $BINDIR/gaianet"
 else
     printf "[+] Installing gaianet CLI tool ...\n"
-    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/v2/gaianet $gaianet_base_dir/gaianet
+    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/v2/gaianet $gaianet_base_dir/gaianet
     chmod +x ./gaianet
     info "    * gaianet CLI tool is installed in $gaianet_base_dir/gaianet"
 fi
