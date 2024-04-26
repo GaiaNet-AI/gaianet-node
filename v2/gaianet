@@ -87,7 +87,7 @@ create_collection() {
         log_dir=$gaianet_base_dir/log
 
         nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-        sleep 5
+        sleep 10
         qdrant_pid=$!
     fi
 
@@ -331,7 +331,7 @@ init() {
     printf "[+] Preparing the dashboard ...\n"
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
-    printf "\n\n"
+    printf "\n"
 
     printf "[+] COMPLETED! GaiaNet node is initialized successfully.\n\n"
 
