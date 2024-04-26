@@ -115,6 +115,8 @@ cat <<EOF
  ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝
 EOF
 
+printf "\n\n"
+
 # if need to reinstall, remove the $gaianet_base_dir directory
 if [ "$reinstall" -eq 1 ] && [ -d "$gaianet_base_dir" ]; then
     printf "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
