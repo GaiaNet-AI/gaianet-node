@@ -155,7 +155,7 @@ if [ "$unprivileged" -eq 0 ]; then
     $SUDO install -o0 -g0 -m755 -d $BINDIR
 
     printf "[+] Installing gaianet CLI tool ...\n"
-    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/v2/gaianet $gaianet_base_dir/gaianet
+    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $gaianet_base_dir/gaianet
 
     # copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
     $SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
@@ -164,7 +164,7 @@ if [ "$unprivileged" -eq 0 ]; then
     info "    * gaianet CLI tool is installed in $BINDIR/gaianet"
 else
     printf "[+] Installing gaianet CLI tool ...\n"
-    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/v2/gaianet $gaianet_base_dir/gaianet
+    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $gaianet_base_dir/gaianet
     chmod +x ./gaianet
     info "    * gaianet CLI tool is installed in $gaianet_base_dir/gaianet"
 fi
