@@ -679,7 +679,8 @@ show_config_help() {
     printf "  --system-prompt <val>      Update the system prompt.\n"
     printf "  --rag-prompt <val>         Update the rag prompt.\n"
     printf "  --reverse-prompt <val>     Update the reverse prompt.\n"
-    printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --domain <val>             Update the domain of GaiaNet node.\n"
+    printf "  --base <path>              The base directory of GaiaNet node.\n"
     printf "  --help                     Show this help message\n\n"
 }
 
@@ -726,6 +727,7 @@ case $subcommand in
         system_prompt=""
         rag_prompt=""
         reverse_prompt=""
+        domain=""
 
         while (( "$#" )); do
             case "$1" in
@@ -780,6 +782,12 @@ case $subcommand in
                 --reverse-prompt)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         reverse_prompt=$2
+                        shift 2
+                    fi
+                    ;;
+                --domain)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        domain=$2
                         shift 2
                     fi
                     ;;
@@ -909,6 +917,16 @@ case $subcommand in
                 exit 1
             fi
 
+        fi
+
+        # update domain
+        if [ -n "$domain" ]; then
+            printf "[+] Updating the domain of GaiaNet node ...\n"
+            printf "    * Old domain: $(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New domain: $domain"
+
+            # update
+            update_config domain $domain
         fi
 
         printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
