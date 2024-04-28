@@ -5,83 +5,249 @@
 Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
 
 ```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh')
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-Next, you can start the node as follows.
+Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
 
 ```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh')
-```
-
-The script prints the official node address on the console as follows.
-
-```
-... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
-```
-
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
-
-To stop the node, you can run the following script.
-
-```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/stop.sh')
-```
-
-## Customize the node
-
-The primary reason to run the GaiaNet node is to deploy your own AI agent with your own finetuned LLM model and your own private knowledge. 
-For example, you can finetune an LLM with your blog posts, and then supplement it with your private notes as a knowledge base. The GaiaNet node that runs this set of finetuned LLM and knowledge base will "speak" like your public persona!
-
-Visit our demo site to select models and knowledge bases from our open source community to create a `config.json` file.
-
-https://gaianet-ai.github.io/Generate-config-demo/
-
-Copy the generated `config.json` file into the `~/gaianet` directory.
-Then, run the install script again.
-
-```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh')
+gaianet init
 ```
 
 Start the node.
 
 ```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh')
+gaianet start
 ```
 
-## Run multiple nodes on a single machine
+The script prints the official node address on the console as follows.
+You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
 
-For a larger machine, you can run multiple GaiaNet nodes. But please note that, for now, only one node can register on a GiaiaNet domain to be publicly accessible. First, you can start the first (and default) node as above.
+```
+... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+```
 
-For the second node, you will first create a `config.json` file for its models, prompts, and knowledge collections. Pay special attention to the following.
-
-* The `llamaedge_port` value must be unqiue and probably not `8080`.
-* The `embedding_collection_name` value must be unique and probably not `default`.
-
-Upload the `config.json` file to a service that makes it available via a public URL (e.g., GitHub, Gist, or Dropbox). Next, install the second node in a new directory. Let's use `/home/username/gaianet2` as its base directory. You can run the installer as follows.
+To stop the node, you can run the following script.
 
 ```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh') --config https://hosting.service/config.json --base /home/username/gaianet2
+gaianet stop
 ```
 
-Start the second node in "local only" mode.
+## Install guide
 
 ```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/start.sh') --base /home/username/gaianet2 --local
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-While the second node cannot be registered on the GaiaNet domain, you can access the node locally. Replace the port number `8081` with the `llamaedge_port` in your `/home/username/gaianet2/config.json`.
-
-```
-http://localhost:8081
-```
-
-To stop the second node, do the following.
+The default install script requires `sudo` privilege. You must have permission to `sudo` and will be asked your password.
+To install without `sudo` priviledges, you can use the following command. However, if you install without `sudo`, you will use the full path to invoke the CLI command in subsequent steps, like `$HOME/gaianet/gaianet init` etc.
 
 ```bash
-bash <(curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/stop.sh') --base /home/username/gaianet2
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --unprivileged
+```
+
+<details><summary> The output should look like below: </summary>
+
+```console
+Password:
+
+[+] Downloading default config file ...
+
+[+] Downloading nodeid.json ...
+
+[+] Installing WasmEdge with wasi-nn_ggml plugin ...
+
+Info: Detected Linux-x86_64
+
+Info: WasmEdge Installation at /home/azureuser/.wasmedge
+
+Info: Fetching WasmEdge-0.13.5
+
+/tmp/wasmedge.2884467 ~/gaianet
+######################################################################## 100.0%
+~/gaianet
+Info: Fetching WasmEdge-GGML-Plugin
+
+Info: Detected CUDA version:
+
+/tmp/wasmedge.2884467 ~/gaianet
+######################################################################## 100.0%
+~/gaianet
+Installation of wasmedge-0.13.5 successful
+WasmEdge binaries accessible
+
+    The WasmEdge Runtime wasmedge version 0.13.5 is installed in /home/azureuser/.wasmedge/bin/wasmedge.
+
+
+[+] Installing Qdrant binary...
+    * Download Qdrant binary
+################################################################################################## 100.0%
+
+    * Initialize Qdrant directory
+
+[+] Downloading the rag-api-server.wasm ...
+################################################################################################## 100.0%
+
+[+] Downloading dashboard ...
+################################################################################################## 100.0%
+```
+
+</details>
+
+By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+
+```
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
+```
+
+In this case, you will need to pass `--base $HOME/gaianet.alt` to all `gaianet` CLI commands below in order to operate on the node installed in `$HOME/gaianet.alt`.
+
+## Initialize the node
+
+```
+gaianet init
+```
+
+<details><summary> The output should look like below: </summary>
+
+```bash
+[+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
+############################################################################################################################## 100.0%############################################################################################################################## 100.0%
+
+[+] Downloading all-MiniLM-L6-v2-ggml-model-f16.gguf ...
+
+############################################################################################################################## 100.0%############################################################################################################################## 100.0%
+
+[+] Creating 'default' collection in the Qdrant instance ...
+
+    * Start a Qdrant instance ...
+
+    * Remove the existed 'default' Qdrant collection ...
+
+    * Download Qdrant collection snapshot ...
+############################################################################################################################## 100.0%############################################################################################################################## 100.0%
+
+    * Import the Qdrant collection snapshot ...
+
+    * Recovery is done successfully
+```
+
+</details>
+
+The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the GaiaNet documentaton as knowledge base. It is equipped to answer questions about GaiaNet.
+
+```bash
+gaianet init --config gaianet_docs
+``` 
+
+To see a list of pre-set configurations, you can do `gaianet init --help`.
+Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+
+If you need to `init` a node installed in an alternative directory, do this.
+
+```bash
+gaianet init --base $HOME/gaianet.alt
+```
+
+## Start the node
+
+```
+gaianet start
+```
+
+<details><summary> The output should look like below: </summary>
+
+```bash
+[+] Starting Qdrant instance ...
+
+    Qdrant instance started with pid: 39762
+
+[+] Starting LlamaEdge API Server ...
+
+    Run the following command to start the LlamaEdge API Server:
+
+wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q5_K_M.gguf --nn-preload embedding:GGML:AUTO:all-MiniLM-L6-v2-ggml-model-f16.gguf rag-api-server.wasm --model-name Llama-2-7b-chat-hf-Q5_K_M,all-MiniLM-L6-v2-ggml-model-f16 --ctx-size 4096,384 --prompt-template llama-2-chat --qdrant-collection-name default --web-ui ./ --socket-addr 0.0.0.0:8080 --log-prompts --log-stat --rag-prompt "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n"
+
+
+    LlamaEdge API Server started with pid: 39796
+```
+
+</details>
+
+You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+
+```bash
+gaianet start --local-only
+```
+
+You can also start a node installed in an alternative base directory.
+
+```bash
+gaianet start --base $HOME/gaianet.alt
+```
+
+### Stop the node
+
+```
+gaianet stop
+```
+
+<details><summary> The output should look like below: </summary>
+
+```bash
+[+] Stopping Qdrant instance ...
+[+] Stopping API server ...
+```
+
+To force stop the GaiaNet node, use the following command.
+
+```bash
+gaianet stop --force
+```
+
+Stop a node installed in an alternative base directory.
+
+```bash
+gaianet stop --base $HOME/gaianet.alt
+```
+
+</details>
+
+### Update configuration
+
+Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+
+To update the `chat` field, for example, use the following command:
+
+```bash
+gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
+```
+
+To update the `chat_ctx_size` field, for example, use the following command:
+
+```bash
+gaianet config --chat-ctx-size 5120
+```
+
+Below are all options of the `config` subcommand.
+
+```bash
+$ gaianet config --help
+
+Usage: gaianet config [OPTIONS]
+
+Options:
+  --chat-url <val>           Update the url of chat model.
+  --chat-ctx-size <val>      Update the context size of chat model.
+  --embedding-url <val>      Update the url of embedding model.
+  --embedding-ctx-size <val> Update the context size of embedding model.
+  --prompt-template <val>    Update the prompt template of chat model.
+  --port <val>               Update the port of LlamaEdge API Server.
+  --system-prompt <val>      Update the system prompt.
+  --rag-prompt <val>         Update the rag prompt.
+  --reverse-prompt <val>     Update the reverse prompt.
+  --base <path>              The base directory of GaiaNet.
+  --help                     Show this help message
 ```
 
 Have fun!
-
