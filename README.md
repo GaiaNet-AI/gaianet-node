@@ -39,13 +39,6 @@ gaianet stop
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-The default install script requires `sudo` privilege. You must have permission to `sudo` and will be asked your password.
-To install without `sudo` priviledges, you can use the following command. However, if you install without `sudo`, you will use the full path to invoke the CLI command in subsequent steps, like `$HOME/gaianet/gaianet init` etc.
-
-```bash
-curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --unprivileged
-```
-
 <details><summary> The output should look like below: </summary>
 
 ```console
@@ -94,13 +87,18 @@ WasmEdge binaries accessible
 
 </details>
 
+The default install script requires `sudo` privilege. You must have permission to `sudo` and will be asked your password.
+To install without `sudo` priviledges, you can use the following command. However, if you install without `sudo`, you will use the full path to invoke the CLI command in subsequent steps, like `$HOME/gaianet/gaianet init` etc.
+
+```bash
+curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --unprivileged
+```
+
 By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
 
 ```
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
-
-In this case, you will need to pass `--base $HOME/gaianet.alt` to all `gaianet` CLI commands below in order to operate on the node installed in `$HOME/gaianet.alt`.
 
 ## Initialize the node
 
@@ -199,6 +197,8 @@ gaianet stop
 [+] Stopping API server ...
 ```
 
+</details>
+
 To force stop the GaiaNet node, use the following command.
 
 ```bash
@@ -210,8 +210,6 @@ Stop a node installed in an alternative base directory.
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
-
-</details>
 
 ### Update configuration
 
