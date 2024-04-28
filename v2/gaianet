@@ -897,13 +897,21 @@ case $subcommand in
                 init
                 ;;
             paris_guide)
+                printf "[+] Downloading config.json ...\n"
+                config_url="https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/config.json"
+                printf "    Url: $config_url\n"
+                curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    The config.json of Paris Guide is downloaded in $gaianet_base_dir"
+
+                # init
                 init
                 ;;
             mua)
                 printf "[+] Downloading config.json ...\n"
                 config_url="https://raw.githubusercontent.com/alabulei1/test-ports/main/mua/config.json"
-                printf "    Url: $config_url"
+                printf "    Url: $config_url\n"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    The config.json of mua is downloaded in $gaianet_base_dir"
 
                 # init
                 init
@@ -911,8 +919,9 @@ case $subcommand in
             gaia)
                 printf "[+] Downloading config.json ...\n"
                 config_url="https://raw.githubusercontent.com/alabulei1/test-ports/main/gaianet/config.json"
-                printf "    Url: $config_url"
+                printf "    Url: $config_url\n"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    The config.json of gaia is downloaded in $gaianet_base_dir"
 
                 # init
                 init
