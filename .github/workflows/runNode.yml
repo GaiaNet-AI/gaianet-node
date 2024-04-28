@@ -1,4 +1,4 @@
-name: Run a GaiaNet Node
+name: Run a GaiaNet Node v2
 
 on:
   schedule:
@@ -27,10 +27,12 @@ jobs:
         run: |
           chmod +x ./install.sh
           ./install.sh
-      - name: Run start script
+      - name: Initialize
         run: |
-          chmod +x ./start.sh
-          ./start.sh
+          gaianet init
+      - name: Run
+        run: |
+          gaianet start
       - name: Sleep 10 seconds
         run: sleep 10
       - name: Test localhost API
@@ -42,11 +44,11 @@ jobs:
       - name: Test frp API
         run: |
           ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
+          echo $ADDRESS
           curl --fail -X POST https://$ADDRESS.gaianet.xyz/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
-      - name: Run stop script
+      - name: Stop
         run: |
-          chmod +x ./stop.sh
-          ./stop.sh
+          gaianet stop
