@@ -1,10 +1,52 @@
 #!/bin/bash
 
+set -e
+
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
 # We will make sure that the path is setup in case the user runs gaianet immediately after init
 source $HOME/.wasmedge/env
+
+# print in red color
+RED=$'\e[0;31m'
+# print in green color
+GREEN=$'\e[0;32m'
+# print in yellow color
+YELLOW=$'\e[0;33m'
+# No Color
+NC=$'\e[0m'
+
+info() {
+    printf "${GREEN}$1${NC}\n\n"
+}
+
+error() {
+    printf "${RED}$1${NC}\n\n"
+}
+
+warning() {
+    printf "${YELLOW}$1${NC}\n\n"
+}
+
+# download target file to destination. If failed, then exit
+check_curl() {
+    curl --retry 3 --progress-bar -L "$1" -o "$2"
+
+    if [ $? -ne 0 ]; then
+        error "    * Failed to download $1"
+        exit 1
+    fi
+}
+
+check_curl_silent() {
+    curl --retry 3 -s --progress-bar -L "$1" -o "$2"
+
+    if [ $? -ne 0 ]; then
+        error "    * Failed to download $1"
+        exit 1
+    fi
+}
 
 check_base_dir() {
     # Check if $gaianet_base_dir directory exists
@@ -22,10 +64,9 @@ create_collection() {
     qdrant_already_running=false
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            printf "    * A Qdrant instance is already running ...\n"
+            warning "    * A Qdrant instance is already running"
             qdrant_already_running=true
         fi
-        printf "\n"
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         printf "For Windows users, please run this script in WSL.\n"
         exit 1
@@ -41,12 +82,12 @@ create_collection() {
 
         # check if `log` directory exists or not
         if [ ! -d "$gaianet_base_dir/log" ]; then
-            mkdir -p $gaianet_base_dir/log
+            mkdir -p -m777 $gaianet_base_dir/log
         fi
         log_dir=$gaianet_base_dir/log
 
         nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
-        sleep 5
+        sleep 10
         qdrant_pid=$!
     fi
 
@@ -65,7 +106,7 @@ create_collection() {
         -H "Content-Type: application/json")
     status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     if [ "$status" != "ok" ]; then
-        printf "      [Error] Failed to remove the $embedding_collection_name collection. $del_response\n\n"
+        error "      Failed to remove the $embedding_collection_name collection. $del_response"
 
         if [ "$qdrant_already_running" = false ]; then
             kill $qdrant_pid
@@ -77,11 +118,13 @@ create_collection() {
     # 10.1 recover from the given qdrant collection snapshot
     if [ -n "$url_snapshot" ]; then
         printf "    * Download Qdrant collection snapshot ...\n"
-        curl --progress-bar -L $url_snapshot -o default.snapshot
-        printf "\n"
+        check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+        info "      The snapshot is downloaded in $gaianet_base_dir"
 
-        printf "    * Import the Qdrant collection snapshot ...\n\n"
+        printf "    * Import the Qdrant collection snapshot ...\n"
+        printf "      The process may take a few minutes. Please wait ...\n"
         # Import the default.snapshot file
+        cd $gaianet_base_dir
         response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
             -H 'Content-Type:multipart/form-data' \
             -F 'snapshot=@default.snapshot')
@@ -89,9 +132,10 @@ create_collection() {
 
         if echo "$response" | grep -q '"status":"ok"'; then
             rm $gaianet_base_dir/default.snapshot
-            printf "    * Recovery is done successfully\n"
+            info "      Recovery is done!"
         else
             printf "    * [Error] Failed to recover from the collection snapshot. $response \n"
+            error "    * [Error] Failed to recover from the collection snapshot. $response"
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -138,7 +182,7 @@ create_collection() {
 
         if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
             if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-                printf "It appears that the GaiaNet node is running. Please stop it first.\n\n"
+                error "      It appears that the GaiaNet node is running. Please stop it first."
 
                 if [ "$qdrant_already_running" = false ]; then
                     kill $qdrant_pid
@@ -147,7 +191,7 @@ create_collection() {
                 exit 1
             fi
         elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            printf "For Windows users, please run this script in WSL.\n"
+            error "      For Windows users, please run this script in WSL."
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -155,7 +199,7 @@ create_collection() {
 
             exit 1
         else
-            printf "Only support Linux, MacOS and Windows.\n"
+            error "      Only support Linux, MacOS and Windows."
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -190,14 +234,13 @@ create_collection() {
         printf "      The process may take a few minutes. Please wait ...\n\n"
         cd $gaianet_base_dir
         doc_filename=$(basename $url_document)
-        curl -s $url_document -o $doc_filename
+        check_curl_silent $url_document $gaianet_base_dir/$doc_filename
 
         if [[ $doc_filename != *.txt ]] && [[ $doc_filename != *.md ]]; then
-            printf "Error: the document to upload should be a file with 'txt' or 'md' extension.\n"
+            error "The document to upload should be a file with 'txt' or 'md' extension."
 
             # stop the api-server
             if [ -f "$gaianet_base_dir/llamaedge.pid" ]; then
-                # printf "[+] Stopping API server ...\n"
                 kill $(cat $gaianet_base_dir/llamaedge.pid)
                 rm $gaianet_base_dir/llamaedge.pid
             fi
@@ -223,7 +266,7 @@ create_collection() {
         fi
 
         if [ -z "$embedding_response" ]; then
-            printf "    * [Error] Failed to compute embeddings. Exit ...\n"
+            error "      Failed to compute embeddings. Exit."
 
             if [ "$qdrant_already_running" = false ]; then
                 kill $qdrant_pid
@@ -231,13 +274,18 @@ create_collection() {
 
             exit 1
         else
-            printf "    * Embeddings are computed successfully\n"
+            info "    * Embeddings are computed successfully"
         fi
 
     else
-        echo "Please set 'snapshot' or 'document' field in config.json"
+        error "Please set 'snapshot' or 'document' field in config.json. Exit."
+
+        if [ "$qdrant_already_running" = false ]; then
+            kill $qdrant_pid
+        fi
+
+        exit 1
     fi
-    printf "\n"
 
     if [ "$qdrant_already_running" = false ]; then
         # stop qdrant
@@ -250,24 +298,24 @@ init() {
     # download GGUF chat model file to $gaianet_base_dir
     url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
     chat_model=$(basename $url_chat_model)
+    printf "[+] Downloading $chat_model ...\n"
     if [ -f "$gaianet_base_dir/$chat_model" ]; then
-        printf "[+] Using the cached chat model: $chat_model\n"
+        warning "    * Using the cached $chat_model in $gaianet_base_dir"
     else
-        printf "[+] Downloading $chat_model ...\n"
-        curl --retry 3 --progress-bar -L $url_chat_model -o $gaianet_base_dir/$chat_model
+        check_curl $url_chat_model $gaianet_base_dir/$chat_model
+        info "    * $chat_model is downloaded in $gaianet_base_dir"
     fi
-    printf "\n"
 
     # download GGUF embedding model file to $gaianet_base_dir
     url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
     embedding_model=$(basename $url_embedding_model)
+    printf "[+] Downloading $embedding_model ...\n"
     if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-        printf "[+] Using the cached embedding model: $embedding_model\n"
+        warning "    * Using the cached $embedding_model in $gaianet_base_dir"
     else
-        printf "[+] Downloading $embedding_model ...\n\n"
-        curl --retry 3 --progress-bar -L $url_embedding_model -o $gaianet_base_dir/$embedding_model
+        check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
+        info "    * $embedding_model is downloaded in $gaianet_base_dir"
     fi
-    printf "\n"
 
     # create or recover a qdrant collection
     create_collection
@@ -275,14 +323,19 @@ init() {
     # Copy config to dashboard
     if [ ! -f "$gaianet_base_dir/registry.wasm" ] ; then
         printf "[+] Downloading the registry.wasm ...\n"
-        curl -s -L https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm -o $gaianet_base_dir/registry.wasm
+
+        check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
+
         printf "\n"
     fi
     printf "[+] Preparing the dashboard ...\n"
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
     printf "\n"
-    printf "\n>>> To start the GaiaNet node, run the command: gaianet start <<<\n"
+
+    printf "[+] COMPLETED! GaiaNet node is initialized successfully.\n\n"
+
+    info ">>> To start the GaiaNet node, run the command: gaianet start <<<"
 }
 
 # * config subcommand
@@ -340,9 +393,9 @@ start() {
             sleep 2
             qdrant_pid=$!
             echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
-            printf "\n    Qdrant instance started with pid: $qdrant_pid\n\n"
+            info "\n    Qdrant instance started with pid: $qdrant_pid"
         else
-            printf "Qdrant binary not found at $qdrant_executable\n\n"
+            error "    Qdrant binary not found at $qdrant_executable\n\n"
             exit 1
         fi
     fi
@@ -480,7 +533,7 @@ start() {
         # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
         llamaedge_pid=$((llamaedge_pid + 1))
         echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-        printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+        info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
 
     else
         # start LlamaEdge API Server
@@ -488,7 +541,7 @@ start() {
         sleep 2
         llamaedge_pid=$!
         echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-        printf "\n    LlamaEdge API Server started with pid: $llamaedge_pid\n\n"
+        info "    LlamaEdge API Server started with pid: $llamaedge_pid"
     fi
 
     # 3. start gaianet-domain
@@ -499,16 +552,17 @@ start() {
         sleep 2
         gaianet_domain_pid=$!
         echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
-        printf "\n    gaianet-domain started with pid: $gaianet_domain_pid\n"
+        info "    gaianet-domain started with pid: $gaianet_domain_pid"
 
         # Extract the subdomain from frpc.toml
         subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-        printf "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz\n\n"
+        info "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz"
     fi
     if [ "$local_only" -eq 1 ]; then
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
     fi
-    printf "\n>>> To stop Qdrant instance and LlamaEdge API Server, run the command: gaianet stop <<<\n"
+
+    info ">>> To stop Qdrant instance and LlamaEdge API Server, run the command: gaianet stop <<<"
 
     exit 0
 }
@@ -743,51 +797,73 @@ case $subcommand in
             esac
         done
 
+        printf "\n"
+
         # update url of chat model
         if [ -n "$chat_url" ]; then
-            echo "set chat url"
+            printf "[+] Updating the url of chat model ...\n"
+            printf "    * Old url: $(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New url: $chat_url"
+
             # update
             update_config chat $chat_url
         fi
 
         # update context size of chat model
         if [ -n "$chat_ctx_size" ]; then
-            echo "set ctx size"
+            printf "[+] Updating the context size of chat model ...\n"
+            printf "    * Old size: $(awk -F'"' '/"chat_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New size: $chat_ctx_size"
+
             # update
             update_config chat_ctx_size $chat_ctx_size
         fi
 
         # update url of embedding model
         if [ -n "$embedding_url" ]; then
-            echo "set embedding url"
+            printf "[+] Updating the url of embedding model ...\n"
+            printf "    * Old url: $(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New url: $embedding_url"
+
             # update
             update_config embedding $embedding_url
         fi
 
         # update context size of embedding model
         if [ -n "$embedding_ctx_size" ]; then
-            echo "set embedding ctx size"
+            printf "[+] Updating the context size of embedding model ...\n"
+            printf "    * Old size: $(awk -F'"' '/"embedding_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New size: $embedding_ctx_size"
+
             # update
             update_config embedding_ctx_size $embedding_ctx_size
         fi
 
         # update prompt template
         if [ -n "$prompt_template" ]; then
-            echo "set prompt template"
+            printf "[+] Updating the prompt template of chat model ...\n"
+            printf "    * Old template: $(awk -F'"' '/"prompt_template":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New template: $prompt_template"
+
             # update
             update_config prompt_template $prompt_template
         fi
 
         # update port
         if [ -n "$port" ]; then
-            echo "set port"
+            printf "[+] Updating the port of LlamaEdge API Server ...\n"
+            printf "    * Old port: $(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New port: $port"
+
             # update
             update_config llamaedge_port $port
         fi
 
         # update system prompt
         if [ -n "$system_prompt" ]; then
-            echo "set system prompt"
+            printf "[+] Updating the system prompt of chat model ...\n"
+            printf "    * Old port: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New system prompt: $system_prompt"
             # The new value for system_prompt
             new_value="$system_prompt"
 
@@ -795,12 +871,25 @@ case $subcommand in
             new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
             # Update the value of system_prompt in config.json
-            sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            if [ "$(uname)" == "Darwin" ]; then
+                sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                sed -i "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                error "    * For Windows users, please run this script in WSL."
+                exit 1
+            else
+                error "    * Only support Linux, MacOS and Windows."
+                exit 1
+            fi
         fi
 
         # update rag prompt
         if [ -n "$rag_prompt" ]; then
-            echo "set rag prompt"
+            printf "[+] Updating the rag prompt of chat model ...\n"
+            printf "    * Old port: $(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New rag prompt: $rag_prompt"
+
             # The new value for rag_prompt
             new_value="$rag_prompt"
 
@@ -808,8 +897,21 @@ case $subcommand in
             new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
             # Update the value of rag_prompt in config.json
-            sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            if [ "$(uname)" == "Darwin" ]; then
+                sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                sed -i "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                error "    * For Windows users, please run this script in WSL."
+                exit 1
+            else
+                error "    * Only support Linux, MacOS and Windows."
+                exit 1
+            fi
+
         fi
+
+        printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
 
         ;;
 
@@ -843,13 +945,21 @@ case $subcommand in
                 init
                 ;;
             paris_guide)
+                printf "[+] Downloading config.json ...\n"
+                config_url="https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/config.json"
+                printf "    Url: $config_url\n"
+                curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    The config.json of Paris Guide is downloaded in $gaianet_base_dir"
+
+                # init
                 init
                 ;;
             mua)
                 printf "[+] Downloading config.json ...\n"
                 config_url="https://raw.githubusercontent.com/alabulei1/test-ports/main/mua/config.json"
-                printf "    Url: $config_url"
+                printf "    Url: $config_url\n"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    The config.json of mua is downloaded in $gaianet_base_dir"
 
                 # init
                 init
@@ -857,8 +967,9 @@ case $subcommand in
             gaia)
                 printf "[+] Downloading config.json ...\n"
                 config_url="https://raw.githubusercontent.com/alabulei1/test-ports/main/gaianet/config.json"
-                printf "    Url: $config_url"
+                printf "    Url: $config_url\n"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    The config.json of gaia is downloaded in $gaianet_base_dir"
 
                 # init
                 init
@@ -867,8 +978,9 @@ case $subcommand in
                 # if config is a url
                 if [[ $config == http* ]]; then
                     printf "[+] Downloading config.json ...\n"
-                    printf "    Url: $arg\n"
-                    curl --retry 3 --progress-bar -L $arg -o $gaianet_base_dir/config.json
+                    printf "    Url: $config\n"
+                    curl --retry 3 --progress-bar -L $config -o $gaianet_base_dir/config.json
+                    info "    The config.json is downloaded in $gaianet_base_dir"
 
                     # init
                     init
