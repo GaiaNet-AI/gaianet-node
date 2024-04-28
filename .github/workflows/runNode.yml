@@ -27,6 +27,7 @@ jobs:
         run: |
           chmod +x ./install.sh
           ./install.sh
+          gaianet --help
       - name: Initialize
         run: |
           gaianet init

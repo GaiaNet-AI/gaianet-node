@@ -96,7 +96,7 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 
 By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
 
-```
+```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
