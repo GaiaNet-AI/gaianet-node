@@ -25,8 +25,8 @@ jobs:
           cat $GAIANET_DIR/config.json
       - name: Run install script
         run: |
-          chmod +x ./v2/install.sh
-          ./v2/install.sh
+          chmod +x ./install.sh
+          ./install.sh
       - name: Initialize
         run: |
           gaianet init
