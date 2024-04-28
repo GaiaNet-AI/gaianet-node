@@ -930,8 +930,9 @@ case $subcommand in
                 # if config is a url
                 if [[ $config == http* ]]; then
                     printf "[+] Downloading config.json ...\n"
-                    printf "    Url: $arg\n"
-                    curl --retry 3 --progress-bar -L $arg -o $gaianet_base_dir/config.json
+                    printf "    Url: $config\n"
+                    curl --retry 3 --progress-bar -L $config -o $gaianet_base_dir/config.json
+                    info "    The config.json is downloaded in $gaianet_base_dir"
 
                     # init
                     init
