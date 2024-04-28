@@ -797,51 +797,73 @@ case $subcommand in
             esac
         done
 
+        printf "\n"
+
         # update url of chat model
         if [ -n "$chat_url" ]; then
-            echo "set chat url"
+            printf "[+] Updating the url of chat model ...\n"
+            printf "    * Old url: $(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New url: $chat_url"
+
             # update
             update_config chat $chat_url
         fi
 
         # update context size of chat model
         if [ -n "$chat_ctx_size" ]; then
-            echo "set ctx size"
+            printf "[+] Updating the context size of chat model ...\n"
+            printf "    * Old size: $(awk -F'"' '/"chat_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New size: $chat_ctx_size"
+
             # update
             update_config chat_ctx_size $chat_ctx_size
         fi
 
         # update url of embedding model
         if [ -n "$embedding_url" ]; then
-            echo "set embedding url"
+            printf "[+] Updating the url of embedding model ...\n"
+            printf "    * Old url: $(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New url: $embedding_url"
+
             # update
             update_config embedding $embedding_url
         fi
 
         # update context size of embedding model
         if [ -n "$embedding_ctx_size" ]; then
-            echo "set embedding ctx size"
+            printf "[+] Updating the context size of embedding model ...\n"
+            printf "    * Old size: $(awk -F'"' '/"embedding_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New size: $embedding_ctx_size"
+
             # update
             update_config embedding_ctx_size $embedding_ctx_size
         fi
 
         # update prompt template
         if [ -n "$prompt_template" ]; then
-            echo "set prompt template"
+            printf "[+] Updating the prompt template of chat model ...\n"
+            printf "    * Old template: $(awk -F'"' '/"prompt_template":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New template: $prompt_template"
+
             # update
             update_config prompt_template $prompt_template
         fi
 
         # update port
         if [ -n "$port" ]; then
-            echo "set port"
+            printf "[+] Updating the port of LlamaEdge API Server ...\n"
+            printf "    * Old port: $(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New port: $port"
+
             # update
             update_config llamaedge_port $port
         fi
 
         # update system prompt
         if [ -n "$system_prompt" ]; then
-            echo "set system prompt"
+            printf "[+] Updating the system prompt of chat model ...\n"
+            printf "    * Old port: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New system prompt: $system_prompt"
             # The new value for system_prompt
             new_value="$system_prompt"
 
@@ -854,7 +876,10 @@ case $subcommand in
 
         # update rag prompt
         if [ -n "$rag_prompt" ]; then
-            echo "set rag prompt"
+            printf "[+] Updating the rag prompt of chat model ...\n"
+            printf "    * Old port: $(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New rag prompt: $rag_prompt"
+
             # The new value for rag_prompt
             new_value="$rag_prompt"
 
@@ -864,6 +889,8 @@ case $subcommand in
             # Update the value of rag_prompt in config.json
             sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
         fi
+
+        printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
 
         ;;
 
