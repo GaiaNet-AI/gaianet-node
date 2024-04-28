@@ -871,7 +871,17 @@ case $subcommand in
             new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
             # Update the value of system_prompt in config.json
-            sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            if [ "$(uname)" == "Darwin" ]; then
+                sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                sed -i "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                error "    * For Windows users, please run this script in WSL."
+                exit 1
+            else
+                error "    * Only support Linux, MacOS and Windows."
+                exit 1
+            fi
         fi
 
         # update rag prompt
@@ -887,7 +897,18 @@ case $subcommand in
             new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
             # Update the value of rag_prompt in config.json
-            sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            if [ "$(uname)" == "Darwin" ]; then
+                sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                sed -i "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
+            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                error "    * For Windows users, please run this script in WSL."
+                exit 1
+            else
+                error "    * Only support Linux, MacOS and Windows."
+                exit 1
+            fi
+
         fi
 
         printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
