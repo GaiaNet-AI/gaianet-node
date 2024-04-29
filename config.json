@@ -1,8 +1,8 @@
 {
     "address": "",
-    "description": "The default GaiaNet node config with a Llama2-7b-chat model and a Paris tour guide knowledge base.",
-    "chat": "https://huggingface.co/second-state/Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf",
-    "prompt_template": "llama-2-chat",
+    "description": "The default GaiaNet node config with a Phi-3-mini-4k model and a Paris tour guide knowledge base.",
+    "chat": "https://huggingface.co/second-state/Phi-3-mini-4k-instruct-GGUF/resolve/main/Phi-3-mini-4k-instruct-Q5_K_M.gguf",
+    "prompt_template": "phi-3-chat",
     "reverse_prompt": "",
     "chat_ctx_size": "4096",
     "system_prompt": "You are a helpful, respectful and honest assistant. Always answer accurately, while being safe.",
