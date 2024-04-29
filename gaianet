@@ -556,7 +556,9 @@ start() {
 
         # Extract the subdomain from frpc.toml
         subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-        info "    The GaiaNet node is started at: https://$subdomain.gaianet.xyz"
+
+        domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+        info "    The GaiaNet node is started at: https://$subdomain.$domain"
     fi
     if [ "$local_only" -eq 1 ]; then
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
