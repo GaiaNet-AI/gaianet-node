@@ -428,6 +428,8 @@ start() {
     rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
     # parse reverse prompt for chat model
     reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
+    # parse rag policy
+    rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' config.json)
     # parse cli options for embedding model
     url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
     # parse cli options for embedding vector collection name
@@ -487,13 +489,14 @@ start() {
     --model-name $chat_model_stem,$embedding_model_stem \
     --ctx-size $chat_ctx_size,$embedding_ctx_size \
     --prompt-template $prompt_type \
+    --rag-policy $rag_policy \
     --qdrant-collection-name $embedding_collection_name \
     --web-ui ./ \
     --socket-addr 0.0.0.0:$llamaedge_port \
     --log-prompts \
     --log-stat)
 
-    # Add system prompt if it exists
+    # Add rag prompt if it exists
     if [ -n "$rag_prompt" ]; then
         cmd+=("--rag-prompt" "$rag_prompt")
     fi
@@ -690,6 +693,7 @@ show_config_help() {
     printf "  --port <val>               Update the port of LlamaEdge API Server.\n"
     printf "  --system-prompt <val>      Update the system prompt.\n"
     printf "  --rag-prompt <val>         Update the rag prompt.\n"
+    printf "  --rag-policy <val>         Update the rag policy [Possible values: system-message, last-user-message].\n"
     printf "  --reverse-prompt <val>     Update the reverse prompt.\n"
     printf "  --domain <val>             Update the domain of GaiaNet node.\n"
     printf "  --snapshot <url>           Update the Qdrant snapshot.\n"
@@ -739,6 +743,7 @@ case $subcommand in
         port=""
         system_prompt=""
         rag_prompt=""
+        rag_policy=""
         reverse_prompt=""
         domain=""
         snapshot=""
@@ -790,6 +795,12 @@ case $subcommand in
                 --rag-prompt)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         rag_prompt=$2
+                        shift 2
+                    fi
+                    ;;
+                --rag-policy)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        rag_policy=$2
                         shift 2
                     fi
                     ;;
@@ -937,6 +948,16 @@ case $subcommand in
                 exit 1
             fi
 
+        fi
+
+        # update rag policy
+        if [ -n "$rag_policy" ]; then
+            printf "[+] Updating the rag policy of GaiaNet node ...\n"
+            printf "    * Old rag policy: $(awk -F'"' '/"rag_policy":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New rag policy: $rag_policy"
+
+            # update
+            update_config rag_policy $rag_policy
         fi
 
         # update domain
