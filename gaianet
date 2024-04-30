@@ -363,6 +363,9 @@ update_config() {
 start() {
     local_only=$1
     log_dir=$gaianet_base_dir/log
+    if ! [ -d "$log_dir" ]; then
+        mkdir -p -m777 $log_dir
+    fi
 
     # check if config.json exists or not
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
