@@ -136,7 +136,7 @@ The `init` command initializes the node according to the `$HOME/gaianet/config.j
 
 ```bash
 gaianet init --config gaianet_docs
-``` 
+```
 
 To see a list of pre-set configurations, you can do `gaianet init --help`.
 Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
@@ -235,16 +235,18 @@ $ gaianet config --help
 Usage: gaianet config [OPTIONS]
 
 Options:
-  --chat-url <val>           Update the url of chat model.
+  --chat-url <url>           Update the url of chat model.
   --chat-ctx-size <val>      Update the context size of chat model.
-  --embedding-url <val>      Update the url of embedding model.
+  --embedding-url <url>      Update the url of embedding model.
   --embedding-ctx-size <val> Update the context size of embedding model.
   --prompt-template <val>    Update the prompt template of chat model.
   --port <val>               Update the port of LlamaEdge API Server.
   --system-prompt <val>      Update the system prompt.
   --rag-prompt <val>         Update the rag prompt.
   --reverse-prompt <val>     Update the reverse prompt.
-  --base <path>              The base directory of GaiaNet.
+  --domain <val>             Update the domain of GaiaNet node.
+  --snapshot <url>           Update the Qdrant snapshot.
+  --base <path>              The base directory of GaiaNet node.
   --help                     Show this help message
 ```
 

@@ -118,7 +118,14 @@ create_collection() {
     # 10.1 recover from the given qdrant collection snapshot
     if [ -n "$url_snapshot" ]; then
         printf "    * Download Qdrant collection snapshot ...\n"
-        check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+        if [[ $url_snapshot == *.tar.gz ]]; then
+            filename=$(basename $url_snapshot)
+            check_curl $url_snapshot $gaianet_base_dir/$filename
+            tar -xzOf $gaianet_base_dir/$filename > $gaianet_base_dir/default.snapshot
+            rm $gaianet_base_dir/$filename
+        else
+            check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+        fi
         info "      The snapshot is downloaded in $gaianet_base_dir"
 
         printf "    * Import the Qdrant collection snapshot ...\n"
@@ -672,9 +679,9 @@ show_help() {
 show_config_help() {
     printf "Usage: gaianet config [OPTIONS] \n\n"
     printf "Options:\n"
-    printf "  --chat-url <val>           Update the url of chat model.\n"
+    printf "  --chat-url <url>           Update the url of chat model.\n"
     printf "  --chat-ctx-size <val>      Update the context size of chat model.\n"
-    printf "  --embedding-url <val>      Update the url of embedding model.\n"
+    printf "  --embedding-url <url>      Update the url of embedding model.\n"
     printf "  --embedding-ctx-size <val> Update the context size of embedding model.\n"
     printf "  --prompt-template <val>    Update the prompt template of chat model.\n"
     printf "  --port <val>               Update the port of LlamaEdge API Server.\n"
@@ -682,6 +689,7 @@ show_config_help() {
     printf "  --rag-prompt <val>         Update the rag prompt.\n"
     printf "  --reverse-prompt <val>     Update the reverse prompt.\n"
     printf "  --domain <val>             Update the domain of GaiaNet node.\n"
+    printf "  --snapshot <url>           Update the Qdrant snapshot.\n"
     printf "  --base <path>              The base directory of GaiaNet node.\n"
     printf "  --help                     Show this help message\n\n"
 }
@@ -730,6 +738,7 @@ case $subcommand in
         rag_prompt=""
         reverse_prompt=""
         domain=""
+        snapshot=""
 
         while (( "$#" )); do
             case "$1" in
@@ -790,6 +799,12 @@ case $subcommand in
                 --domain)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         domain=$2
+                        shift 2
+                    fi
+                    ;;
+                --snapshot)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        snapshot=$2
                         shift 2
                     fi
                     ;;
@@ -929,6 +944,16 @@ case $subcommand in
 
             # update
             update_config domain $domain
+        fi
+
+        # update url of snapshot
+        if [ -n "$snapshot" ]; then
+            printf "[+] Updating the url of snapshot ...\n"
+            printf "    * Old url: $(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New url: $snapshot"
+
+            # update
+            update_config snapshot $snapshot
         fi
 
         printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
