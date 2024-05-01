@@ -37,8 +37,8 @@ jobs:
       - name: Run
         run: |
           gaianet start
-      - name: Sleep 15 seconds
-        run: sleep 15
+      - name: Sleep 20 seconds
+        run: sleep 20
       - name: Test localhost API
         run: |
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
