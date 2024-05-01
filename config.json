@@ -10,6 +10,8 @@
     "embedding_ctx_size": "384",
     "snapshot": "https://huggingface.co/datasets/gaianet/paris/resolve/main/paris_384_all-minilm-l6-v2_f16.snapshot",
     "embedding_collection_name": "default",
+    "qdrant_limit": "5",
+    "qdrant_score_threshold": "0.5",
     "rag_prompt": "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n",
     "rag_policy": "system-message",
     "domain": "gaianet.network",
