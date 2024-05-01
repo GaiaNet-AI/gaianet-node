@@ -58,7 +58,11 @@ jobs:
       - name: Stop
         run: |
           gaianet stop
+          echo "LOGFILE: start-llamaedge.log\n\n"
           cat ~/gaianet/log/start-llamaedge.log
+          echo "LOGFILE: init-qdrant.log\n\n"
           cat ~/gaianet/log/init-qdrant.log
+          echo "LOGFILE: start-qdrant.log\n\n"
           cat ~/gaianet/log/start-qdrant.log
+          echo "LOGFILE: start-gaianet-domain.log\n\n"
           cat ~/gaianet/log/start-gaianet-domain.log
