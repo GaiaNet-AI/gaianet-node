@@ -445,6 +445,10 @@ start() {
     embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
+    # parse qdrant limit
+    qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' config.json)
+    # parse qdrant score threshold
+    qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' config.json)
 
     if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
@@ -491,6 +495,8 @@ start() {
     --prompt-template $prompt_type \
     --rag-policy $rag_policy \
     --qdrant-collection-name $embedding_collection_name \
+    --qdrant-limit $qdrant_limit \
+    --qdrant-score-threshold $qdrant_score_threshold \
     --web-ui ./ \
     --socket-addr 0.0.0.0:$llamaedge_port \
     --log-prompts \
@@ -685,20 +691,22 @@ show_help() {
 show_config_help() {
     printf "Usage: gaianet config [OPTIONS] \n\n"
     printf "Options:\n"
-    printf "  --chat-url <url>           Update the url of chat model.\n"
-    printf "  --chat-ctx-size <val>      Update the context size of chat model.\n"
-    printf "  --embedding-url <url>      Update the url of embedding model.\n"
-    printf "  --embedding-ctx-size <val> Update the context size of embedding model.\n"
-    printf "  --prompt-template <val>    Update the prompt template of chat model.\n"
-    printf "  --port <val>               Update the port of LlamaEdge API Server.\n"
-    printf "  --system-prompt <val>      Update the system prompt.\n"
-    printf "  --rag-prompt <val>         Update the rag prompt.\n"
-    printf "  --rag-policy <val>         Update the rag policy [Possible values: system-message, last-user-message].\n"
-    printf "  --reverse-prompt <val>     Update the reverse prompt.\n"
-    printf "  --domain <val>             Update the domain of GaiaNet node.\n"
-    printf "  --snapshot <url>           Update the Qdrant snapshot.\n"
-    printf "  --base <path>              The base directory of GaiaNet node.\n"
-    printf "  --help                     Show this help message\n\n"
+    printf "  --chat-url <url>               Update the url of chat model.\n"
+    printf "  --chat-ctx-size <val>          Update the context size of chat model.\n"
+    printf "  --embedding-url <url>          Update the url of embedding model.\n"
+    printf "  --embedding-ctx-size <val>     Update the context size of embedding model.\n"
+    printf "  --prompt-template <val>        Update the prompt template of chat model.\n"
+    printf "  --port <val>                   Update the port of LlamaEdge API Server.\n"
+    printf "  --system-prompt <val>          Update the system prompt.\n"
+    printf "  --rag-prompt <val>             Update the rag prompt.\n"
+    printf "  --rag-policy <val>             Update the rag policy [Possible values: system-message, last-user-message].\n"
+    printf "  --reverse-prompt <val>         Update the reverse prompt.\n"
+    printf "  --domain <val>                 Update the domain of GaiaNet node.\n"
+    printf "  --snapshot <url>               Update the Qdrant snapshot.\n"
+    printf "  --qdrant-limit <val>           Update the max number of result to return.\n"
+    printf "  --qdrant-score-threshold <val> Update the minimal score threshold for the result.\n"
+    printf "  --base <path>                  The base directory of GaiaNet node.\n"
+    printf "  --help                         Show this help message\n\n"
 }
 
 show_init_help() {
@@ -747,6 +755,8 @@ case $subcommand in
         reverse_prompt=""
         domain=""
         snapshot=""
+        qdrant_limit=""
+        qdrant_score_threshold=""
 
         while (( "$#" )); do
             case "$1" in
@@ -819,6 +829,18 @@ case $subcommand in
                 --snapshot)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         snapshot=$2
+                        shift 2
+                    fi
+                    ;;
+                --qdrant-limit)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        qdrant_limit=$2
+                        shift 2
+                    fi
+                    ;;
+                --qdrant-score-threshold)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        qdrant_score_threshold=$2
                         shift 2
                     fi
                     ;;
@@ -978,6 +1000,26 @@ case $subcommand in
 
             # update
             update_config snapshot $snapshot
+        fi
+
+        # update qdrant limit
+        if [ -n "$qdrant_limit" ]; then
+            printf "[+] Updating the qdrant limit ...\n"
+            printf "    * Old limit: $(awk -F'"' '/"qdrant_limit":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New limit: $qdrant_limit"
+
+            # update
+            update_config qdrant_limit $qdrant_limit
+        fi
+
+        # update qdrant score threshold
+        if [ -n "$qdrant_score_threshold" ]; then
+            printf "[+] Updating the qdrant score threshold ...\n"
+            printf "    * Old threshold: $(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New threshold: $qdrant_score_threshold"
+
+            # update
+            update_config qdrant_score_threshold $qdrant_score_threshold
         fi
 
         printf "[+] COMPLETED! The config.json is updated successfully.\n\n"

@@ -229,25 +229,28 @@ gaianet config --chat-ctx-size 5120
 
 Below are all options of the `config` subcommand.
 
-```bash
+```console
 $ gaianet config --help
 
 Usage: gaianet config [OPTIONS]
 
 Options:
-  --chat-url <url>           Update the url of chat model.
-  --chat-ctx-size <val>      Update the context size of chat model.
-  --embedding-url <url>      Update the url of embedding model.
-  --embedding-ctx-size <val> Update the context size of embedding model.
-  --prompt-template <val>    Update the prompt template of chat model.
-  --port <val>               Update the port of LlamaEdge API Server.
-  --system-prompt <val>      Update the system prompt.
-  --rag-prompt <val>         Update the rag prompt.
-  --reverse-prompt <val>     Update the reverse prompt.
-  --domain <val>             Update the domain of GaiaNet node.
-  --snapshot <url>           Update the Qdrant snapshot.
-  --base <path>              The base directory of GaiaNet node.
-  --help                     Show this help message
+  --chat-url <url>               Update the url of chat model.
+  --chat-ctx-size <val>          Update the context size of chat model.
+  --embedding-url <url>          Update the url of embedding model.
+  --embedding-ctx-size <val>     Update the context size of embedding model.
+  --prompt-template <val>        Update the prompt template of chat model.
+  --port <val>                   Update the port of LlamaEdge API Server.
+  --system-prompt <val>          Update the system prompt.
+  --rag-prompt <val>             Update the rag prompt.
+  --rag-policy <val>             Update the rag policy [Possible values: system-message, last-user-message].
+  --reverse-prompt <val>         Update the reverse prompt.
+  --domain <val>                 Update the domain of GaiaNet node.
+  --snapshot <url>               Update the Qdrant snapshot.
+  --qdrant-limit <val>           Update the max number of result to return.
+  --qdrant-score-threshold <val> Update the minimal score threshold for the result.
+  --base <path>                  The base directory of GaiaNet node.
+  --help                         Show this help message
 ```
 
 Have fun!
