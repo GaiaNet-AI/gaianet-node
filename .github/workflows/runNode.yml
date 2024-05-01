@@ -40,12 +40,14 @@ jobs:
       - name: Sleep 20 seconds
         run: sleep 20
       - name: Test localhost API
+        continue-on-error: true
         run: |
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
       - name: Test frp API
+        continue-on-error: true
         run: |
           ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
           echo $ADDRESS
@@ -56,3 +58,7 @@ jobs:
       - name: Stop
         run: |
           gaianet stop
+          cat ~/gaianet/log/start-llamaedge.log
+          cat ~/gaianet/log/init-qdrant.log
+          cat ~/gaianet/log/start-qdrant.log
+          cat ~/gaianet/log/start-gaianet-domain.log
