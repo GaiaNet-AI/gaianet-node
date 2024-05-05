@@ -652,7 +652,7 @@ stop() {
 
 # force stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop_force() {
-    printf "Force stopping WasmEdge, Qdrant and frpc processes ...\n"
+    printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
     pkill -9 wasmedge
     pkill -9 qdrant
     pkill -9 frpc
@@ -1131,14 +1131,8 @@ case $subcommand in
         ;;
 
     stop)
-        force=0
-
         while (( "$#" )); do
             case "$1" in
-                --force)
-                    force=1
-                    shift
-                    ;;
                 --base)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         gaianet_base_dir=$2
@@ -1153,11 +1147,7 @@ case $subcommand in
             esac
         done
 
-        if [ $force -eq 1 ]; then
-            stop_force
-        else
-            stop
-        fi
+        stop_force
 
         ;;
     *)

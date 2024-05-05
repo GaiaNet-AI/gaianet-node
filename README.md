@@ -186,24 +186,17 @@ gaianet start --base $HOME/gaianet.alt
 
 ### Stop the node
 
-```
+```bash
 gaianet stop
 ```
 
 <details><summary> The output should look like below: </summary>
 
 ```bash
-[+] Stopping Qdrant instance ...
-[+] Stopping API server ...
+[+] Stopping WasmEdge, Qdrant and frpc ...
 ```
 
 </details>
-
-To force stop the GaiaNet node, use the following command.
-
-```bash
-gaianet stop --force
-```
 
 Stop a node installed in an alternative base directory.
 
