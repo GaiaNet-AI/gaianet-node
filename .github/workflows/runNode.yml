@@ -30,7 +30,7 @@ jobs:
           gaianet --help
       - name: Use TinyLlama-1.1B-Chat
         run: |
-          gaianet config --chat-url "https://huggingface.co/second-state/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf" --chat-ctx-size 1024 --prompt-template chatml
+          gaianet config --chat-url "https://huggingface.co/second-state/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf" --chat-ctx-size 256 --prompt-template chatml
       - name: Initialize
         run: |
           gaianet init
