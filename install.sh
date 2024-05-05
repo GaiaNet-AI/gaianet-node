@@ -189,20 +189,14 @@ fi
 
 # 4. Install WasmEdge and ggml plugin
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
-if ! command -v wasmedge >/dev/null 2>&1 || [ "$reinstall" -eq 1 ]; then
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
-        source $HOME/.wasmedge/env
-        wasmedge_path=$(which wasmedge)
-        wasmedge_version=$(wasmedge --version)
-        info "    * The $wasmedge_version is installed in $wasmedge_path."
-    else
-        error "    * Failed to install WasmEdge"
-        exit 1
-    fi
-else
+if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
+    source $HOME/.wasmedge/env
     wasmedge_path=$(which wasmedge)
     wasmedge_version=$(wasmedge --version)
-    warning "    * Use the existed $wasmedge_version in $wasmedge_path."
+    info "    * The $wasmedge_version is installed in $wasmedge_path."
+else
+    error "    * Failed to install WasmEdge"
+    exit 1
 fi
 
 # 5. Install Qdrant binary and prepare directories
