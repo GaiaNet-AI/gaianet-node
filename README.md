@@ -1,5 +1,7 @@
 # Run your own GaiaNet node
 
+[GaiaNet Discord server](https://discord.gg/gaianet-ai)
+
 ## Quick start
 
 Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
