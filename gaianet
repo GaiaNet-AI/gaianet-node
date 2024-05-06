@@ -734,6 +734,10 @@ show_stop_help() {
 }
 
 # * main
+if [ $# -eq 0 ]; then
+    show_help
+    exit 0
+fi
 
 subcommand=$1
 shift
@@ -1024,6 +1028,7 @@ case $subcommand in
 
         printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
 
+        exit 0
         ;;
 
     init)
@@ -1155,3 +1160,4 @@ case $subcommand in
         exit 1
 esac
 
+exit 0
