@@ -728,7 +728,6 @@ show_start_help() {
 show_stop_help() {
     printf "Usage: gaianet stop [OPTIONS] \n\n"
     printf "Options:\n"
-    printf "  --force                    Force stop the program.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
     printf "  --help                     Show this help message\n\n"
 }
