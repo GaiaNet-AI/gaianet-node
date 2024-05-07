@@ -653,9 +653,9 @@ stop() {
 # force stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop_force() {
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
-    pkill -9 wasmedge
-    pkill -9 qdrant
-    pkill -9 frpc
+    pkill -9 qdrant || true
+    pkill -9 wasmedge || true
+    pkill -9 frpc || true
 
     qdrant_pid=$gaianet_base_dir/qdrant.pid
     if [ -f $qdrant_pid ]; then
