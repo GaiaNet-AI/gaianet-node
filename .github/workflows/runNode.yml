@@ -36,7 +36,7 @@ jobs:
           gaianet init
       - name: Run
         run: |
-          gaianet start
+          sudo nice -n -10 gaianet start
       - name: Sleep 20 seconds
         run: sleep 20
       - name: Test localhost API
