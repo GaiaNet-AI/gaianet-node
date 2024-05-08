@@ -44,6 +44,7 @@ jobs:
       - name: Test localhost API
         continue-on-error: true
         run: |
+          curl http://localhost:8080
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
