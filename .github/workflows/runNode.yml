@@ -23,10 +23,6 @@ jobs:
       #     sed -i 's|Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf|TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf|g' $GAIANET_DIR/config.json
       #     sed -i 's|llama-2-chat|chatml|g' $GAIANET_DIR/config.json
       #     cat $GAIANET_DIR/config.json
-      # - name: Set Swap Space
-      #   uses: pierotofy/set-swap-space@master
-      #   with:
-      #     swap-size-gb: 10
       - name: Run install script
         run: |
           chmod +x ./install.sh
@@ -34,7 +30,7 @@ jobs:
           gaianet --help
       - name: Use TinyLlama-1.1B-Chat
         run: |
-          gaianet config --chat-url "https://huggingface.co/second-state/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf" --chat-ctx-size 256 --prompt-template chatml
+          gaianet config --chat-url "https://huggingface.co/second-state/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf" --chat-ctx-size 2048 --prompt-template chatml
       - name: Initialize
         run: |
           gaianet init
@@ -43,10 +39,6 @@ jobs:
         run: |
           gaianet start
           sleep 10
-      - name: Sleep 20 seconds
-        run: |
-          sleep 20
-      #     sudo renice -n -19 $(cat $HOME/gaianet/llamaedge.pid)
       - name: Test localhost API
         continue-on-error: true
         run: |
