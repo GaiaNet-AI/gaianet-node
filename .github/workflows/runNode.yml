@@ -48,7 +48,7 @@ jobs:
       - name: Test localhost API
         continue-on-error: true
         run: |
-          curl http://localhost:8080
+          curl http://localhost:6333
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
@@ -56,7 +56,7 @@ jobs:
       - name: Test frp API
         continue-on-error: true
         run: |
-          cat $HOME/gaianet/log/start-llamaedge.log
+          curl http://localhost:6333
           ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
           echo $ADDRESS
           curl http://$ADDRESS.gaianet.network/
@@ -67,6 +67,8 @@ jobs:
       - name: Stop
         run: |
           cat $HOME/gaianet/log/start-llamaedge.log
+          cat $HOME/gaianet/log/init-qdrant.log
+          cat $HOME/gaianet/log/start-qdrant.log
           gaianet stop
           echo "LOGFILE: start-llamaedge.log\n\n"
           cat ~/gaianet/log/start-llamaedge.log
