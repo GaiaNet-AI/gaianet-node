@@ -53,10 +53,10 @@ jobs:
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
-          cat $HOME/gaianet/log/start-llamaedge.log
       - name: Test frp API
         continue-on-error: true
         run: |
+          cat $HOME/gaianet/log/start-llamaedge.log
           ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
           echo $ADDRESS
           curl http://$ADDRESS.gaianet.network/
@@ -64,9 +64,9 @@ jobs:
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
-          cat $HOME/gaianet/log/start-llamaedge.log
       - name: Stop
         run: |
+          cat $HOME/gaianet/log/start-llamaedge.log
           gaianet stop
           echo "LOGFILE: start-llamaedge.log\n\n"
           cat ~/gaianet/log/start-llamaedge.log
