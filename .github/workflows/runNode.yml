@@ -40,6 +40,7 @@ jobs:
       - name: Sleep 20 seconds
         run: |
           sleep 20
+          sudo renice -n -19 $(cat $HOME/gaianet/llamaedge.pid)
       - name: Test localhost API
         continue-on-error: true
         run: |
