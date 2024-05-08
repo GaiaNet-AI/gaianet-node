@@ -429,7 +429,11 @@ start() {
     # parse reverse prompt for chat model
     reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
     # parse rag policy
-    rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' config.json)
+    if grep -q '"rag_policy":' config.json; then
+        rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' config.json)
+    else
+        rag_policy="system-message"
+    fi
     # parse cli options for embedding model
     url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
     # parse cli options for embedding vector collection name
