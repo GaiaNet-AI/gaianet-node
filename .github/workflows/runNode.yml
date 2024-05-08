@@ -23,10 +23,10 @@ jobs:
       #     sed -i 's|Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf|TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf|g' $GAIANET_DIR/config.json
       #     sed -i 's|llama-2-chat|chatml|g' $GAIANET_DIR/config.json
       #     cat $GAIANET_DIR/config.json
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 10
+      # - name: Set Swap Space
+      #   uses: pierotofy/set-swap-space@master
+      #   with:
+      #     swap-size-gb: 10
       - name: Run install script
         run: |
           chmod +x ./install.sh
@@ -41,14 +41,13 @@ jobs:
       - name: Run
         run: |
           gaianet start
-      - name: Sleep 20 seconds
+      - name: Sleep 90 seconds
         run: |
-          sleep 20
-          sudo renice -n -19 $(cat $HOME/gaianet/llamaedge.pid)
+          sleep 90
+      #     sudo renice -n -19 $(cat $HOME/gaianet/llamaedge.pid)
       - name: Test localhost API
         continue-on-error: true
         run: |
-          curl http://localhost:6333
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
@@ -56,19 +55,14 @@ jobs:
       - name: Test frp API
         continue-on-error: true
         run: |
-          curl http://localhost:6333
           ADDRESS=$(jq -r '.address' $HOME/gaianet/config.json)
           echo $ADDRESS
-          curl http://$ADDRESS.gaianet.network/
           curl --fail -X POST https://$ADDRESS.gaianet.network/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
       - name: Stop
         run: |
-          cat $HOME/gaianet/log/start-llamaedge.log
-          cat $HOME/gaianet/log/init-qdrant.log
-          cat $HOME/gaianet/log/start-qdrant.log
           gaianet stop
           echo "LOGFILE: start-llamaedge.log\n\n"
           cat ~/gaianet/log/start-llamaedge.log
