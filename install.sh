@@ -279,13 +279,8 @@ fi
 
 # 6. Download rag-api-server.wasm
 printf "[+] Downloading the rag-api-server.wasm ...\n"
-if [ ! -f "$gaianet_base_dir/rag-api-server.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
-
-    info "    * The rag-api-server.wasm is downloaded in $gaianet_base_dir"
-else
-    warning "    * Use the cached rag-api-server.wasm in $gaianet_base_dir"
-fi
+check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+info "    * The rag-api-server.wasm is downloaded in $gaianet_base_dir"
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
