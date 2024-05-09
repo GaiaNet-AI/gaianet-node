@@ -299,6 +299,8 @@ create_collection() {
         kill $qdrant_pid
     fi
 
+    # sleep for a while to make sure the qdrant instance is stopped
+    sleep 10
 }
 
 init() {
