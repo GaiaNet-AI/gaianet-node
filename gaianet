@@ -307,23 +307,49 @@ init() {
     # download GGUF chat model file to $gaianet_base_dir
     url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
     chat_model=$(basename $url_chat_model)
-    printf "[+] Downloading $chat_model ...\n"
-    if [ -f "$gaianet_base_dir/$chat_model" ]; then
-        warning "    * Using the cached $chat_model in $gaianet_base_dir"
+    if [[ $url_chat_model =~ ^http[s]?://.* ]]; then
+        printf "[+] Downloading $chat_model ...\n"
+        if [ -f "$gaianet_base_dir/$chat_model" ]; then
+            warning "    * Using the cached $chat_model in $gaianet_base_dir"
+        else
+            check_curl $url_chat_model $gaianet_base_dir/$chat_model
+            info "    * $chat_model is downloaded in $gaianet_base_dir"
+        fi
+    elif [[ $url_chat_model =~ .*\.gguf$ ]]; then
+        printf "[+] Using local $chat_model ...\n"
+        if [ -f "$gaianet_base_dir/$chat_model" ]; then
+            warning "    * Found $chat_model in $gaianet_base_dir"
+        else
+            error "    * Not found $chat_model in $gaianet_base_dir. Exit ..."
+            exit 1
+        fi
     else
-        check_curl $url_chat_model $gaianet_base_dir/$chat_model
-        info "    * $chat_model is downloaded in $gaianet_base_dir"
+        error "Error: The 'chat' field in $gaianet_base_dir/config.json should be a url or a gguf model file. Exit ..."
+        exit 1
     fi
 
     # download GGUF embedding model file to $gaianet_base_dir
     url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
     embedding_model=$(basename $url_embedding_model)
-    printf "[+] Downloading $embedding_model ...\n"
-    if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-        warning "    * Using the cached $embedding_model in $gaianet_base_dir"
+    if [[ $url_embedding_model =~ ^http[s]?://.* ]]; then
+        printf "[+] Downloading $embedding_model ...\n"
+        if [ -f "$gaianet_base_dir/$embedding_model" ]; then
+            warning "    * Using the cached $embedding_model in $gaianet_base_dir"
+        else
+            check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
+            info "    * $embedding_model is downloaded in $gaianet_base_dir"
+        fi
+    elif [[ $url_embedding_model =~ .*\.gguf$ ]]; then
+        printf "[+] Using local $embedding_model ...\n"
+        if [ -f "$gaianet_base_dir/$embedding_model" ]; then
+            warning "    * Found $embedding_model in $gaianet_base_dir"
+        else
+            error "    * Not found $embedding_model in $gaianet_base_dir. Exit ..."
+            exit 1
+        fi
     else
-        check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
-        info "    * $embedding_model is downloaded in $gaianet_base_dir"
+        error "Error: The 'embedding' field in $gaianet_base_dir/config.json should be a url or a gguf model file. Exit ..."
+        exit 1
     fi
 
     # create or recover a qdrant collection
