@@ -1,6 +1,18 @@
 # Run your own GaiaNet node
 
-[GaiaNet Discord server](https://discord.gg/gaianet-ai)
+<p align="center">
+  <a href="(https://discord.gg/gaianet-ai">
+    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
+  </a>
+  <a href="https://twitter.com/Gaianet_AI">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
+  </a>
+   <a href="https://www.gaianet.ai/">
+    <img src="https://img.shields.io/website?up_message=Websire&url=https://www.gaianet.ai/" alt="Gaianet website">
+  </a>
+</p>
+
+Like our work? ⭐ Star us! 
 
 ## Quick start
 
