@@ -1,7 +1,7 @@
 # Run your own GaiaNet node
 
 <p align="center">
-  <a href="(https://discord.gg/gaianet-ai">
+  <a href="https://discord.gg/gaianet-ai">
     <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
   </a>
   <a href="https://twitter.com/Gaianet_AI">
