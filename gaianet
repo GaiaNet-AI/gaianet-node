@@ -569,31 +569,91 @@ start() {
         echo '#!/bin/bash' > $gaianet_base_dir/run
         echo $cmd_string >> $gaianet_base_dir/run
         chmod u+x $gaianet_base_dir/run
-
-        # start LlamaEdge API Server with supervise
-        nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
-        sleep 2
-        supervise_pid=$!
-        echo $supervise_pid > $gaianet_base_dir/supervise.pid
-        printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
-
-        # Get the status of the service
-        status=$(svstat $gaianet_base_dir)
-        # Extract the PID from the status
-        llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
-        # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
-        llamaedge_pid=$((llamaedge_pid + 1))
-        echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-        info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
-
-    else
-        # start LlamaEdge API Server
-        nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
-        sleep 2
-        llamaedge_pid=$!
-        echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-        info "    LlamaEdge API Server started with pid: $llamaedge_pid"
     fi
+
+    # start api-server
+    retry_count=0
+    max_retries=3
+    while true; do
+
+        # start api-server
+        if $use_supervise; then
+            # start LlamaEdge API Server with supervise
+            nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+            sleep 2
+            supervise_pid=$!
+            echo $supervise_pid > $gaianet_base_dir/supervise.pid
+            printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
+
+            # Get the status of the service
+            status=$(svstat $gaianet_base_dir)
+            # Extract the PID from the status
+            llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
+            # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
+            llamaedge_pid=$((llamaedge_pid + 1))
+            echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+            info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
+
+        else
+            # start LlamaEdge API Server with nohup
+            nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+            sleep 2
+            llamaedge_pid=$!
+            echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+            info "    LlamaEdge API Server started with pid: $llamaedge_pid"
+        fi
+
+        status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+            -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+            -H 'accept:application/json' \
+            -H 'Content-Type: application/json' \
+            -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+
+        if [ "$status_code" -eq 200 ]; then
+            break
+        else
+            # stop the api-server
+            pkill -9 wasmedge || true
+
+            # stop supervise if it is running
+            if svok $gaianet_base_dir > /dev/null 2>&1; then
+                svc -d $gaianet_base_dir
+                svc -k $gaianet_base_dir
+                svc -x $gaianet_base_dir
+                supervise_pid=$gaianet_base_dir/supervise.pid
+                if [ -f $supervise_pid ]; then
+                    rm $supervise_pid
+                fi
+                rm $gaianet_base_dir/run
+                rm -rf $gaianet_base_dir/supervise
+            fi
+
+            # remove the pid file
+            llamaedge_pid=$gaianet_base_dir/llamaedge.pid
+            if [ -f $llamaedge_pid ]; then
+                rm $llamaedge_pid
+            fi
+
+            sleep 3  # wait for 3 seconds before retrying
+
+            ((retry_count++))
+            if [ $retry_count -ge $((max_retries + 1)) ]; then
+                error "    * Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
+
+                # stop the Qdrant instance
+                pkill -9 qdrant || true
+                qdrant_pid=$gaianet_base_dir/qdrant.pid
+                if [ -f $qdrant_pid ]; then
+                    rm $qdrant_pid
+                fi
+
+                exit 1
+            else
+                error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
+            fi
+        fi
+
+    done
 
     # 3. start gaianet-domain
     if [ "$local_only" -eq 0 ]; then
