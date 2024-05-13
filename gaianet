@@ -647,6 +647,9 @@ start() {
                     rm $qdrant_pid
                 fi
 
+                # wait for 3 seconds before exiting
+                sleep 3
+
                 exit 1
             else
                 error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
