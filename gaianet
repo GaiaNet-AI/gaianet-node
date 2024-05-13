@@ -634,7 +634,7 @@ start() {
                 rm $llamaedge_pid
             fi
 
-            sleep 3  # wait for 3 seconds before retrying
+            sleep 10  # wait for 10 seconds before retrying
 
             ((retry_count++))
             if [ $retry_count -ge $((max_retries + 1)) ]; then
