@@ -279,8 +279,19 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     # disable telemetry in the `config.yaml` file
     printf "    * Disable telemetry\n"
     config_file="$gaianet_base_dir/qdrant/config/config.yaml"
+
     if [ -f "$config_file" ]; then
-        sed -i '' 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
+        if [ "$(uname)" == "Darwin" ]; then
+            sed -i '' 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
+        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            sed -i 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+            error "For Windows users, please run this script in WSL."
+            exit 1
+        else
+            error "Only support Linux, MacOS and Windows(WSL)."
+            exit 1
+        fi
     fi
 
     printf "\n"
