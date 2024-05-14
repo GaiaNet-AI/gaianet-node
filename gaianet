@@ -1009,6 +1009,16 @@ case $subcommand in
             update_config prompt_template $prompt_template
         fi
 
+        # update prompt template
+        if [ -n "$reverse_prompt" ]; then
+            printf "[+] Updating the reverse prompt of chat model ...\n"
+            printf "    * Old template: $(awk -F'"' '/"reverse_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New template: $reverse_prompt"
+
+            # update
+            update_config reverse_prompt $reverse_prompt
+        fi
+
         # update port
         if [ -n "$port" ]; then
             printf "[+] Updating the port of LlamaEdge API Server ...\n"
