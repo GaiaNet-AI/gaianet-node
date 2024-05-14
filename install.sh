@@ -275,6 +275,15 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     rm -rf $qdrant_version
 
     printf "\n"
+
+    # disable telemetry in the `config.yaml` file
+    printf "    * Disable telemetry\n"
+    config_file="$gaianet_base_dir/qdrant/config/config.yaml"
+    if [ -f "$config_file" ]; then
+        sed -i '' 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
+    fi
+
+    printf "\n"
 fi
 
 # 6. Download rag-api-server.wasm
