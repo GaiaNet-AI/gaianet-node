@@ -541,7 +541,7 @@ start() {
 
     # Add reverse prompt if it exists
     if [ -n "$reverse_prompt" ]; then
-        cmd+=("--reverse_prompt" "$reverse_prompt")
+        cmd+=("--reverse-prompt" "$reverse_prompt")
     fi
 
     printf "    Run the following command to start the LlamaEdge API Server:\n\n"
