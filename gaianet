@@ -610,7 +610,9 @@ start() {
             -H 'Content-Type: application/json' \
             -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
 
-        if [ "$status_code" -eq 200 ]; then
+        curl_exit_status=$?
+
+        if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
             break
         else
             # stop the api-server
