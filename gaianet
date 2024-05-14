@@ -621,6 +621,7 @@ start() {
     # command to start LlamaEdge API Server
     cd $gaianet_base_dir
     cmd=(wasmedge --dir .:./dashboard \
+    --env PLUGIN_DEBUG=true \
     --nn-preload default:GGML:AUTO:$chat_model_name \
     --nn-preload embedding:GGML:AUTO:$embedding_model_name \
     rag-api-server.wasm \
