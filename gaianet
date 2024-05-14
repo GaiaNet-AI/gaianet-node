@@ -541,7 +541,7 @@ start() {
 
     # Add reverse prompt if it exists
     if [ -n "$reverse_prompt" ]; then
-        cmd+=("--reverse_prompt" "$reverse_prompt")
+        cmd+=("--reverse-prompt" "$reverse_prompt")
     fi
 
     printf "    Run the following command to start the LlamaEdge API Server:\n\n"
@@ -603,13 +603,16 @@ start() {
             info "    LlamaEdge API Server started with pid: $llamaedge_pid"
         fi
 
+        sleep 10
         status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
             -X POST http://localhost:$llamaedge_port/v1/chat/completions \
             -H 'accept:application/json' \
             -H 'Content-Type: application/json' \
             -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
 
-        if [ "$status_code" -eq 200 ]; then
+        curl_exit_status=$?
+
+        if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
             break
         else
             # stop the api-server
@@ -1006,6 +1009,16 @@ case $subcommand in
 
             # update
             update_config prompt_template $prompt_template
+        fi
+
+        # update prompt template
+        if [ -n "$reverse_prompt" ]; then
+            printf "[+] Updating the reverse prompt of chat model ...\n"
+            printf "    * Old template: $(awk -F'"' '/"reverse_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New template: $reverse_prompt"
+
+            # update
+            update_config reverse_prompt $reverse_prompt
         fi
 
         # update port

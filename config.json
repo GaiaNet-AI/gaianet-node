@@ -3,7 +3,7 @@
     "description": "The default GaiaNet node config with a Phi-3-mini-4k model and a Paris tour guide knowledge base.",
     "chat": "https://huggingface.co/second-state/Phi-3-mini-4k-instruct-GGUF/resolve/main/Phi-3-mini-4k-instruct-Q5_K_M.gguf",
     "prompt_template": "phi-3-chat",
-    "reverse_prompt": "",
+    "reverse_prompt": "<|end|>",
     "chat_ctx_size": "4096",
     "system_prompt": "You are a helpful, respectful and honest assistant. Always answer accurately, while being safe.",
     "embedding": "https://huggingface.co/second-state/All-MiniLM-L6-v2-Embedding-GGUF/resolve/main/all-MiniLM-L6-v2-ggml-model-f16.gguf",
