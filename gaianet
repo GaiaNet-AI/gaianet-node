@@ -56,6 +56,101 @@ check_base_dir() {
     fi
 }
 
+# check the validity of the config.json file
+check_config_options() {
+
+    # check if config.json exists or not
+    if [ ! -f "$gaianet_base_dir/config.json" ]; then
+        error "Not found config.json file in $gaianet_base_dir"
+        exit 1
+    fi
+
+    # check if the `chat` field exists or not
+    if ! grep -q '"chat":' $gaianet_base_dir/config.json; then
+        error "Not found the 'chat' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `prompt_template` field exists or not
+    if ! grep -q '"prompt_template":' $gaianet_base_dir/config.json; then
+        error "Not found the 'prompt_template' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `chat_ctx_size` field exists or not
+    if ! grep -q '"chat_ctx_size":' $gaianet_base_dir/config.json; then
+        error "Not found the 'chat_ctx_size' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `system_prompt` field exists or not
+    if ! grep -q '"system_prompt":' $gaianet_base_dir/config.json; then
+        error "Not found the 'system_prompt' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `embedding` field exists or not
+    if ! grep -q '"embedding":' $gaianet_base_dir/config.json; then
+        error "Not found the 'embedding' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `embedding_ctx_size` field exists or not
+    if ! grep -q '"embedding_ctx_size":' $gaianet_base_dir/config.json; then
+        error "Not found the 'embedding_ctx_size' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `snapshot` field exists or not
+    if ! grep -q '"snapshot":' $gaianet_base_dir/config.json; then
+        error "Not found the 'snapshot' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `embedding_collection_name` field exists or not
+    if ! grep -q '"embedding_collection_name":' $gaianet_base_dir/config.json; then
+        error "Not found the 'embedding_collection_name' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `qdrant_limit` field exists or not
+    if ! grep -q '"qdrant_limit":' $gaianet_base_dir/config.json; then
+        error "Not found the 'qdrant_limit' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `qdrant_score_threshold` field exists or not
+    if ! grep -q '"qdrant_score_threshold":' $gaianet_base_dir/config.json; then
+        error "Not found the 'qdrant_score_threshold' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `rag_prompt` field exists or not
+    if ! grep -q '"rag_prompt":' $gaianet_base_dir/config.json; then
+        error "Not found the 'rag_prompt' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `rag_policy` field exists or not
+    if ! grep -q '"rag_policy":' $gaianet_base_dir/config.json; then
+        error "Not found the 'rag_policy' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `domain` field exists or not
+    if ! grep -q '"domain":' $gaianet_base_dir/config.json; then
+        error "Not found the 'domain' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `llamaedge_port` field exists or not
+    if ! grep -q '"llamaedge_port":' $gaianet_base_dir/config.json; then
+        error "Not found the 'llamaedge_port' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+}
+
 # create or recover a qdrant collection
 create_collection() {
     printf "[+] Creating 'default' collection in the Qdrant instance ...\n"
@@ -303,7 +398,15 @@ create_collection() {
     sleep 10
 }
 
+# * init subcommand
+
 init() {
+
+    # check if config.json exists or not
+    printf "[+] Checking the config.json file ...\n"
+    check_config_options
+    printf "\n"
+
     # download GGUF chat model file to $gaianet_base_dir
     url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
     chat_model=$(basename $url_chat_model)
@@ -396,10 +499,9 @@ start() {
     fi
 
     # check if config.json exists or not
-    if [ ! -f "$gaianet_base_dir/config.json" ]; then
-        printf "config.json file not found in $gaianet_base_dir\n"
-        exit 1
-    fi
+    printf "[+] Checking the config.json file ...\n"
+    check_config_options
+    printf "\n"
 
     # check if supervise is installed or not
     use_supervise=true
@@ -688,7 +790,7 @@ start() {
 
 # * stop subcommand
 
-# stop the Qdrant instance, rag-api-server, and gaianet-domain
+# deprecated: stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop() {
     # Check if "gaianet" directory exists in $HOME
     if [ ! -d "$gaianet_base_dir" ]; then
