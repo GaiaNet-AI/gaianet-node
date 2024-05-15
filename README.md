@@ -8,11 +8,18 @@
     <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
   </a>
    <a href="https://www.gaianet.ai/">
-    <img src="https://img.shields.io/website?up_message=Websire&url=https://www.gaianet.ai/" alt="Gaianet website">
+    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
   </a>
 </p>
 
+
+
+[[Japanese](README-ja.md)] | We need your help to translate this README into your native language.
+
+
 Like our work? ⭐ Star us! 
+
+---
 
 ## Quick start
 
