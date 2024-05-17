@@ -65,6 +65,12 @@ check_config_options() {
         exit 1
     fi
 
+    # check if the `address` field exists or not
+    if ! grep -q '"address":' $gaianet_base_dir/config.json; then
+        error "Not found the 'address' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
     # check if the `chat` field exists or not
     if ! grep -q '"chat":' $gaianet_base_dir/config.json; then
         error "Not found the 'chat' field in $gaianet_base_dir/config.json\n"
@@ -875,6 +881,37 @@ stop_force() {
     exit 0
 }
 
+# * info subcommand
+
+# show device_id and node_id
+show_info() {
+    # check the validity of the config.json file
+    check_config_options
+
+    # print node_id
+    node_id=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
+    if [ -z "$node_id" ]; then
+        warning "Node id is not assigned. Please run 'gaianet init' command first."
+    else
+        info "Node ID: $node_id"
+    fi
+
+    frpc_toml=$gaianet_base_dir/gaianet-domain/frpc.toml
+    # check if frpc.toml exists or not
+    if [ ! -f "$frpc_toml" ]; then
+        error "Not found frpc.toml file in $gaianet_base_dir/gaianet-domain"
+        exit 1
+    fi
+    # print device_id
+    device_id=$(grep 'metadatas.deviceId' "$frpc_toml" | awk -F' = ' '{print $2}' | tr -d '"')
+    if [ -z "$device_id" ]; then
+        warning "Devide id is not assigned. Please run 'gaianet init' command first."
+    else
+        info "Device ID: $device_id"
+    fi
+
+}
+
 # * help option
 
 show_help() {
@@ -883,7 +920,8 @@ show_help() {
     printf "  config             Update the configuration.\n"
     printf "  init               Initialize the GaiaNet node.\n"
     printf "  run|start          Start the GaiaNet node.\n"
-    printf "  stop               Stop the GaiaNet node.\n\n"
+    printf "  stop               Stop the GaiaNet node.\n"
+    printf "  info               Show the device_id and node_id.\n\n"
     printf "Options:\n"
     printf "  --help             Show this help message\n\n"
 }
@@ -927,6 +965,13 @@ show_start_help() {
 
 show_stop_help() {
     printf "Usage: gaianet stop [OPTIONS] \n\n"
+    printf "Options:\n"
+    printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --help                     Show this help message\n\n"
+}
+
+show_info_help() {
+    printf "Usage: gaianet info [OPTIONS] \n\n"
     printf "Options:\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
     printf "  --help                     Show this help message\n\n"
@@ -1362,6 +1407,26 @@ case $subcommand in
         done
 
         stop_force
+
+        ;;
+    info)
+        while (( "$#" )); do
+            case "$1" in
+                --base)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        gaianet_base_dir=$2
+                        shift 2
+                        check_base_dir
+                    fi
+                    ;;
+                *)
+                    show_info_help
+                    exit 1
+                    ;;
+            esac
+        done
+
+        show_info
 
         ;;
     *)
