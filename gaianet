@@ -205,6 +205,19 @@ create_collection() {
     # remove the collection if it exists
     del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
         -H "Content-Type: application/json")
+
+    curl_exit_status=$?
+
+    if [ $curl_exit_status -ne 0 ]; then
+        error "      Failed to remove the $embedding_collection_name collection. Exit."
+
+        if [ "$qdrant_already_running" = false ]; then
+            kill $qdrant_pid
+        fi
+
+        exit 1
+    fi
+
     status=$(echo "$del_response" | grep -o '"status":"[^"]*"' | cut -d':' -f2 | tr -d '"')
     if [ "$status" != "ok" ]; then
         error "      Failed to remove the $embedding_collection_name collection. $del_response"
