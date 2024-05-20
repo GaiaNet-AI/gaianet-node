@@ -694,14 +694,34 @@ start() {
         --log-prompts \
         --log-stat)
 
+        if $use_supervise; then
+            cmd_string=""
+            for i in "${cmd[@]}"; do
+                if [[ $i == *" "* ]]; then
+                    cmd_string+=\""$i"\"
+                else
+                    cmd_string+="$i"
+                fi
+                cmd_string+=" "
+            done
+        fi
+
         # Add rag prompt if it exists
         if [ -n "$rag_prompt" ]; then
             cmd+=("--rag-prompt" "$rag_prompt")
+
+            if $use_supervise; then
+                cmd_string+="--rag-prompt \"$rag_prompt\" "
+            fi
         fi
 
         # Add reverse prompt if it exists
         if [ -n "$reverse_prompt" ]; then
             cmd+=("--reverse-prompt" "$reverse_prompt")
+
+            if $use_supervise; then
+                cmd_string+="--reverse-prompt \"$reverse_prompt\" "
+            fi
         fi
 
         printf "    Run the following command to start the LlamaEdge API Server:\n\n"
@@ -715,15 +735,15 @@ start() {
         printf "\n\n"
 
         if $use_supervise; then
-            cmd_string=""
-            for i in "${cmd[@]}"; do
-                if [[ $i == *" "* ]]; then
-                    cmd_string+=\""$i"\"
-                else
-                    cmd_string+="$i"
-                fi
-                cmd_string+=" "
-            done
+            # cmd_string=""
+            # for i in "${cmd[@]}"; do
+            #     if [[ $i == *" "* ]]; then
+            #         cmd_string+=\""$i"\"
+            #     else
+            #         cmd_string+="$i"
+            #     fi
+            #     cmd_string+=" "
+            # done
 
             # create `run` file for supervise
             echo '#!/bin/bash' > $gaianet_base_dir/run
@@ -876,9 +896,25 @@ start() {
         --log-prompts \
         --log-stat)
 
+        if $use_supervise; then
+            cmd_string=""
+            for i in "${cmd[@]}"; do
+                if [[ $i == *" "* ]]; then
+                    cmd_string+=\""$i"\"
+                else
+                    cmd_string+="$i"
+                fi
+                cmd_string+=" "
+            done
+        fi
+
         # Add reverse prompt if it exists
         if [ -n "$reverse_prompt" ]; then
             cmd+=("--reverse-prompt" "$reverse_prompt")
+
+            if $use_supervise; then
+                cmd_string+="--reverse-prompt \"$reverse_prompt\" "
+            fi
         fi
 
         printf "    Run the following command to start the LlamaEdge API Server:\n\n"
@@ -892,16 +928,6 @@ start() {
         printf "\n\n"
 
         if $use_supervise; then
-            cmd_string=""
-            for i in "${cmd[@]}"; do
-                if [[ $i == *" "* ]]; then
-                    cmd_string+=\""$i"\"
-                else
-                    cmd_string+="$i"
-                fi
-                cmd_string+=" "
-            done
-
             # create `run` file for supervise
             echo '#!/bin/bash' > $gaianet_base_dir/run
             echo $cmd_string >> $gaianet_base_dir/run
@@ -920,7 +946,7 @@ start() {
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
-                printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
+                info "    Daemotools-Supervise started with pid: $supervise_pid"
 
                 # Get the status of the service
                 status=$(svstat $gaianet_base_dir)
@@ -929,7 +955,7 @@ start() {
                 # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
                 llamaedge_pid=$((llamaedge_pid + 1))
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-                info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
+                info "    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
 
             else
                 # start LlamaEdge API Server with nohup
@@ -952,9 +978,6 @@ start() {
             if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
                 break
             else
-                # stop the api-server
-                pkill -9 wasmedge || true
-
                 # stop supervise if it is running
                 if svok $gaianet_base_dir > /dev/null 2>&1; then
                     svc -d $gaianet_base_dir
@@ -967,6 +990,9 @@ start() {
                     rm $gaianet_base_dir/run
                     rm -rf $gaianet_base_dir/supervise
                 fi
+
+                # stop the api-server
+                pkill -9 wasmedge || true
 
                 # remove the pid file
                 llamaedge_pid=$gaianet_base_dir/llamaedge.pid
@@ -1084,6 +1110,22 @@ stop() {
 # force stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop_force() {
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
+
+    if command -v supervise &> /dev/null; then
+        # stop supervise if it is running
+        if svok $gaianet_base_dir > /dev/null 2>&1; then
+            svc -d $gaianet_base_dir
+            svc -k $gaianet_base_dir
+            svc -x $gaianet_base_dir
+            supervise_pid=$gaianet_base_dir/supervise.pid
+            if [ -f $supervise_pid ]; then
+                rm $supervise_pid
+            fi
+            rm $gaianet_base_dir/run
+            rm -rf $gaianet_base_dir/supervise
+        fi
+    fi
+
     pkill -9 qdrant || true
     pkill -9 wasmedge || true
     pkill -9 frpc || true
