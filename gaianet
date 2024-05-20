@@ -17,6 +17,11 @@ YELLOW=$'\e[0;33m'
 # No Color
 NC=$'\e[0m'
 
+# Mac OS requires this hack in order to run qdrant reliablly
+if [ "$(uname)" == "Darwin" ]; then
+    ulimit -n 10000
+fi
+
 info() {
     printf "${GREEN}$1${NC}\n\n"
 }
