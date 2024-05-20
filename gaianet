@@ -713,16 +713,6 @@ start() {
         printf "\n\n"
 
         if $use_supervise; then
-            # cmd_string=""
-            # for i in "${cmd[@]}"; do
-            #     if [[ $i == *" "* ]]; then
-            #         cmd_string+=\""$i"\"
-            #     else
-            #         cmd_string+="$i"
-            #     fi
-            #     cmd_string+=" "
-            # done
-
             # create `run` file for supervise
             echo '#!/bin/bash' > $gaianet_base_dir/run
             echo $cmd_string >> $gaianet_base_dir/run
