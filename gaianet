@@ -479,8 +479,11 @@ init() {
         exit 1
     fi
 
-    # create or recover a qdrant collection
-    create_collection
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    if [ -n "$snapshot" ]; then
+        # create or recover a qdrant collection
+        create_collection
+    fi
 
     # Copy config to dashboard
     if [ ! -f "$gaianet_base_dir/registry.wasm" ] ; then
@@ -506,8 +509,14 @@ update_config() {
     new_value=$2
     file=$gaianet_base_dir/config.json
     bak=$gaianet_base_dir/config.json.bak
+
     # update in place
-    sed -i.bak -e "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" $file
+    if [ -z "$new_value" ]; then
+        sed -i.bak -e "s/\(\"$key\":\s*\).*\,/\1\"$new_value\",/" $file
+    else
+        sed -i.bak -e "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" $file
+    fi
+
     # remove backup file
     rm $bak
 }
@@ -533,259 +542,435 @@ start() {
         use_supervise=false
     fi
 
-    # 1. start a Qdrant instance
-    printf "[+] Starting Qdrant instance ...\n"
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    if [ -n "$snapshot" ]; then
+        # 1. start a Qdrant instance
+        printf "[+] Starting Qdrant instance ...\n"
 
-    qdrant_already_running=false
-    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-            qdrant_already_running=true
-        fi
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
-        exit 1
-    else
-        printf "Only support Linux, MacOS and Windows.\n"
-        exit 1
-    fi
-
-    if [ "$qdrant_already_running" = false ]; then
-        qdrant_executable="$gaianet_base_dir/bin/qdrant"
-        if [ -f "$qdrant_executable" ]; then
-            cd $gaianet_base_dir/qdrant
-            nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
-            sleep 2
-            qdrant_pid=$!
-            echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
-            info "\n    Qdrant instance started with pid: $qdrant_pid"
-        else
-            error "    Qdrant binary not found at $qdrant_executable\n\n"
-            exit 1
-        fi
-    fi
-
-    # 2. start a LlamaEdge instance
-    printf "[+] Starting LlamaEdge API Server ...\n\n"
-
-    # parse cli options for chat model
-    cd $gaianet_base_dir
-    url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
-    # gguf filename
-    chat_model_name=$(basename $url_chat_model)
-    # stem part of the filename
-    chat_model_stem=$(basename "$chat_model_name" .gguf)
-    # parse context size for chat model
-    chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
-    # parse prompt type for chat model
-    prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
-    # parse system prompt for chat model
-    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
-    # parse reverse prompt for chat model
-    reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-    # parse rag policy
-    if grep -q '"rag_policy":' config.json; then
-        rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' config.json)
-    else
-        rag_policy="system-message"
-    fi
-    # parse cli options for embedding model
-    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
-    # parse cli options for embedding vector collection name
-    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
-    if [[ -z "$embedding_collection_name" ]]; then
-        embedding_collection_name="default"
-    fi
-    # gguf filename
-    embedding_model_name=$(basename $url_embedding_model)
-    # stem part of the filename
-    embedding_model_stem=$(basename "$embedding_model_name" .gguf)
-    # parse context size for embedding model
-    embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
-    # parse port for LlamaEdge API Server
-    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
-    # parse qdrant limit
-    qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' config.json)
-    # parse qdrant score threshold
-    qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' config.json)
-
-    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-            printf "    Port $llamaedge_port is in use. Exit ...\n\n"
-
-            # stop the qdrant instance
-            if [ "$qdrant_already_running" = false ]; then
-
-                # stop the Qdrant instance
-                qdrant_pid=$gaianet_base_dir/qdrant.pid
-                if [ -f $qdrant_pid ]; then
-                    printf "    Stopping Qdrant instance ...\n"
-                    kill -9 $(cat $qdrant_pid)
-                    rm $qdrant_pid
-                fi
-
+        qdrant_already_running=false
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+                qdrant_already_running=true
             fi
-
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+            printf "For Windows users, please run this script in WSL.\n"
+            exit 1
+        else
+            printf "Only support Linux, MacOS and Windows.\n"
             exit 1
         fi
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        printf "For Windows users, please run this script in WSL.\n"
-        exit 1
-    else
-        printf "Only support Linux, MacOS and Windows.\n"
-        exit 1
-    fi
 
-    cd $gaianet_base_dir
-    llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
-    if [ ! -f "$llamaedge_wasm" ]; then
-        printf "LlamaEdge wasm not found at $llamaedge_wasm\n"
-        exit 1
-    fi
-
-    # command to start LlamaEdge API Server
-    cd $gaianet_base_dir
-    cmd=(wasmedge --dir .:./dashboard \
-    --nn-preload default:GGML:AUTO:$chat_model_name \
-    --nn-preload embedding:GGML:AUTO:$embedding_model_name \
-    rag-api-server.wasm \
-    --model-name $chat_model_stem,$embedding_model_stem \
-    --ctx-size $chat_ctx_size,$embedding_ctx_size \
-    --prompt-template $prompt_type \
-    --rag-policy $rag_policy \
-    --qdrant-collection-name $embedding_collection_name \
-    --qdrant-limit $qdrant_limit \
-    --qdrant-score-threshold $qdrant_score_threshold \
-    --web-ui ./ \
-    --socket-addr 0.0.0.0:$llamaedge_port \
-    --log-prompts \
-    --log-stat)
-
-    # Add rag prompt if it exists
-    if [ -n "$rag_prompt" ]; then
-        cmd+=("--rag-prompt" "$rag_prompt")
-    fi
-
-    # Add reverse prompt if it exists
-    if [ -n "$reverse_prompt" ]; then
-        cmd+=("--reverse-prompt" "$reverse_prompt")
-    fi
-
-    printf "    Run the following command to start the LlamaEdge API Server:\n\n"
-    for i in "${cmd[@]}"; do
-        if [[ $i == *" "* ]]; then
-            printf "\"%s\" " "$i"
-        else
-            printf "%s " "$i"
-        fi
-    done
-    printf "\n\n"
-
-    if $use_supervise; then
-        cmd_string=""
-        for i in "${cmd[@]}"; do
-            if [[ $i == *" "* ]]; then
-                cmd_string+=\""$i"\"
+        if [ "$qdrant_already_running" = false ]; then
+            qdrant_executable="$gaianet_base_dir/bin/qdrant"
+            if [ -f "$qdrant_executable" ]; then
+                cd $gaianet_base_dir/qdrant
+                nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
+                sleep 2
+                qdrant_pid=$!
+                echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
+                info "\n    Qdrant instance started with pid: $qdrant_pid"
             else
-                cmd_string+="$i"
+                error "    Qdrant binary not found at $qdrant_executable\n\n"
+                exit 1
             fi
-            cmd_string+=" "
-        done
-
-        # create `run` file for supervise
-        echo '#!/bin/bash' > $gaianet_base_dir/run
-        echo $cmd_string >> $gaianet_base_dir/run
-        chmod u+x $gaianet_base_dir/run
-    fi
-
-    # start api-server
-    retry_count=0
-    max_retries=3
-    while true; do
-
-        # start api-server
-        if $use_supervise; then
-            # start LlamaEdge API Server with supervise
-            nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
-            sleep 2
-            supervise_pid=$!
-            echo $supervise_pid > $gaianet_base_dir/supervise.pid
-            printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
-
-            # Get the status of the service
-            status=$(svstat $gaianet_base_dir)
-            # Extract the PID from the status
-            llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
-            # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
-            llamaedge_pid=$((llamaedge_pid + 1))
-            echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-            info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
-
-        else
-            # start LlamaEdge API Server with nohup
-            nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
-            sleep 2
-            llamaedge_pid=$!
-            echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-            info "    LlamaEdge API Server started with pid: $llamaedge_pid"
         fi
 
-        sleep 10
-        status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-            -X POST http://localhost:$llamaedge_port/v1/chat/completions \
-            -H 'accept:application/json' \
-            -H 'Content-Type: application/json' \
-            -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+        # 2. start rag-api-server
+        printf "[+] Starting LlamaEdge API Server ...\n\n"
 
-        curl_exit_status=$?
-
-        if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
-            break
+        # parse cli options for chat model
+        cd $gaianet_base_dir
+        url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
+        # gguf filename
+        chat_model_name=$(basename $url_chat_model)
+        # stem part of the filename
+        chat_model_stem=$(basename "$chat_model_name" .gguf)
+        # parse context size for chat model
+        chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
+        # parse prompt type for chat model
+        prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
+        # parse system prompt for chat model
+        rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
+        # parse reverse prompt for chat model
+        reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
+        # parse rag policy
+        if grep -q '"rag_policy":' config.json; then
+            rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' config.json)
         else
-            # stop the api-server
-            pkill -9 wasmedge || true
+            rag_policy="system-message"
+        fi
+        # parse cli options for embedding model
+        url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+        # parse cli options for embedding vector collection name
+        embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+        if [[ -z "$embedding_collection_name" ]]; then
+            embedding_collection_name="default"
+        fi
+        # gguf filename
+        embedding_model_name=$(basename $url_embedding_model)
+        # stem part of the filename
+        embedding_model_stem=$(basename "$embedding_model_name" .gguf)
+        # parse context size for embedding model
+        embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
+        # parse port for LlamaEdge API Server
+        llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
+        # parse qdrant limit
+        qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' config.json)
+        # parse qdrant score threshold
+        qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' config.json)
 
-            # stop supervise if it is running
-            if svok $gaianet_base_dir > /dev/null 2>&1; then
-                svc -d $gaianet_base_dir
-                svc -k $gaianet_base_dir
-                svc -x $gaianet_base_dir
-                supervise_pid=$gaianet_base_dir/supervise.pid
-                if [ -f $supervise_pid ]; then
-                    rm $supervise_pid
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+                printf "    Port $llamaedge_port is in use. Exit ...\n\n"
+
+                # stop the qdrant instance
+                if [ "$qdrant_already_running" = false ]; then
+
+                    # stop the Qdrant instance
+                    qdrant_pid=$gaianet_base_dir/qdrant.pid
+                    if [ -f $qdrant_pid ]; then
+                        printf "    Stopping Qdrant instance ...\n"
+                        kill -9 $(cat $qdrant_pid)
+                        rm $qdrant_pid
+                    fi
+
                 fi
-                rm $gaianet_base_dir/run
-                rm -rf $gaianet_base_dir/supervise
-            fi
-
-            # remove the pid file
-            llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-            if [ -f $llamaedge_pid ]; then
-                rm $llamaedge_pid
-            fi
-
-            sleep 10  # wait for 10 seconds before retrying
-
-            ((retry_count++))
-            if [ $retry_count -ge $((max_retries + 1)) ]; then
-                error "    * Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
-
-                # stop the Qdrant instance
-                pkill -9 qdrant || true
-                qdrant_pid=$gaianet_base_dir/qdrant.pid
-                if [ -f $qdrant_pid ]; then
-                    rm $qdrant_pid
-                fi
-
-                # wait for 3 seconds before exiting
-                sleep 3
 
                 exit 1
-            else
-                error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
             fi
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+            printf "For Windows users, please run this script in WSL.\n"
+            exit 1
+        else
+            printf "Only support Linux, MacOS and Windows.\n"
+            exit 1
         fi
 
-    done
+        cd $gaianet_base_dir
+        llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
+        if [ ! -f "$llamaedge_wasm" ]; then
+            error "Not found rag-api-server.wasm at $$gaianet_base_dir"
+            exit 1
+        fi
+
+        # command to start LlamaEdge API Server
+        cd $gaianet_base_dir
+        cmd=(wasmedge --dir .:./dashboard \
+        --nn-preload default:GGML:AUTO:$chat_model_name \
+        --nn-preload embedding:GGML:AUTO:$embedding_model_name \
+        rag-api-server.wasm \
+        --model-name $chat_model_stem,$embedding_model_stem \
+        --ctx-size $chat_ctx_size,$embedding_ctx_size \
+        --batch-size $chat_ctx_size,$embedding_ctx_size \
+        --prompt-template $prompt_type \
+        --rag-policy $rag_policy \
+        --qdrant-collection-name $embedding_collection_name \
+        --qdrant-limit $qdrant_limit \
+        --qdrant-score-threshold $qdrant_score_threshold \
+        --web-ui ./ \
+        --socket-addr 0.0.0.0:$llamaedge_port \
+        --log-prompts \
+        --log-stat)
+
+        # Add rag prompt if it exists
+        if [ -n "$rag_prompt" ]; then
+            cmd+=("--rag-prompt" "$rag_prompt")
+        fi
+
+        # Add reverse prompt if it exists
+        if [ -n "$reverse_prompt" ]; then
+            cmd+=("--reverse-prompt" "$reverse_prompt")
+        fi
+
+        printf "    Run the following command to start the LlamaEdge API Server:\n\n"
+        for i in "${cmd[@]}"; do
+            if [[ $i == *" "* ]]; then
+                printf "\"%s\" " "$i"
+            else
+                printf "%s " "$i"
+            fi
+        done
+        printf "\n\n"
+
+        if $use_supervise; then
+            cmd_string=""
+            for i in "${cmd[@]}"; do
+                if [[ $i == *" "* ]]; then
+                    cmd_string+=\""$i"\"
+                else
+                    cmd_string+="$i"
+                fi
+                cmd_string+=" "
+            done
+
+            # create `run` file for supervise
+            echo '#!/bin/bash' > $gaianet_base_dir/run
+            echo $cmd_string >> $gaianet_base_dir/run
+            chmod u+x $gaianet_base_dir/run
+        fi
+
+        # start api-server
+        retry_count=0
+        max_retries=3
+        while true; do
+
+            # start api-server
+            if $use_supervise; then
+                # start LlamaEdge API Server with supervise
+                nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                sleep 2
+                supervise_pid=$!
+                echo $supervise_pid > $gaianet_base_dir/supervise.pid
+                printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
+
+                # Get the status of the service
+                status=$(svstat $gaianet_base_dir)
+                # Extract the PID from the status
+                llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
+                # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
+                llamaedge_pid=$((llamaedge_pid + 1))
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
+
+            else
+                # start LlamaEdge API Server with nohup
+                nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                sleep 2
+                llamaedge_pid=$!
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                info "    LlamaEdge API Server started with pid: $llamaedge_pid"
+            fi
+
+            sleep 10
+            status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+                -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                -H 'accept:application/json' \
+                -H 'Content-Type: application/json' \
+                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+
+            curl_exit_status=$?
+
+            if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+                break
+            else
+                # stop the api-server
+                pkill -9 wasmedge || true
+
+                # stop supervise if it is running
+                if svok $gaianet_base_dir > /dev/null 2>&1; then
+                    svc -d $gaianet_base_dir
+                    svc -k $gaianet_base_dir
+                    svc -x $gaianet_base_dir
+                    supervise_pid=$gaianet_base_dir/supervise.pid
+                    if [ -f $supervise_pid ]; then
+                        rm $supervise_pid
+                    fi
+                    rm $gaianet_base_dir/run
+                    rm -rf $gaianet_base_dir/supervise
+                fi
+
+                # remove the pid file
+                llamaedge_pid=$gaianet_base_dir/llamaedge.pid
+                if [ -f $llamaedge_pid ]; then
+                    rm $llamaedge_pid
+                fi
+
+                sleep 10  # wait for 10 seconds before retrying
+
+                ((retry_count++))
+                if [ $retry_count -ge $((max_retries + 1)) ]; then
+                    error "    * Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
+
+                    # stop the Qdrant instance
+                    pkill -9 qdrant || true
+                    qdrant_pid=$gaianet_base_dir/qdrant.pid
+                    if [ -f $qdrant_pid ]; then
+                        rm $qdrant_pid
+                    fi
+
+                    # wait for 3 seconds before exiting
+                    sleep 3
+
+                    exit 1
+                else
+                    error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
+                fi
+            fi
+
+        done
+
+    else
+
+        # 2. start rag-api-server
+        printf "[+] Starting LlamaEdge API Server ...\n\n"
+
+        # parse cli options for chat model
+        cd $gaianet_base_dir
+        url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
+        # gguf filename
+        chat_model_name=$(basename $url_chat_model)
+        # stem part of the filename
+        chat_model_stem=$(basename "$chat_model_name" .gguf)
+        # parse context size for chat model
+        chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
+        # parse prompt type for chat model
+        prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
+        # parse reverse prompt for chat model
+        reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
+        # parse port for LlamaEdge API Server
+        llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
+        # check port
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+                error "    Port $llamaedge_port is in use. Exit ..."
+                exit 1
+            fi
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+            error "For Windows users, please run this script in WSL. Exit ..."
+            exit 1
+        else
+            error "Only support Linux, MacOS and Windows. Exit ..."
+            exit 1
+        fi
+
+        cd $gaianet_base_dir
+        llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+        if [ ! -f "$llamaedge_wasm" ]; then
+            error "Not found llama-api-server.wasm in $gaianet_base_dir\n"
+            exit 1
+        fi
+
+        # command to start LlamaEdge API Server
+        cd $gaianet_base_dir
+        cmd=(wasmedge --dir .:./dashboard \
+        --nn-preload default:GGML:AUTO:$chat_model_name \
+        llama-api-server.wasm \
+        --model-name $chat_model_stem \
+        --ctx-size $chat_ctx_size \
+        --batch-size $chat_ctx_size \
+        --prompt-template $prompt_type \
+        --web-ui ./ \
+        --socket-addr 0.0.0.0:$llamaedge_port \
+        --log-prompts \
+        --log-stat)
+
+        # Add reverse prompt if it exists
+        if [ -n "$reverse_prompt" ]; then
+            cmd+=("--reverse-prompt" "$reverse_prompt")
+        fi
+
+        printf "    Run the following command to start the LlamaEdge API Server:\n\n"
+        for i in "${cmd[@]}"; do
+            if [[ $i == *" "* ]]; then
+                printf "\"%s\" " "$i"
+            else
+                printf "%s " "$i"
+            fi
+        done
+        printf "\n\n"
+
+        if $use_supervise; then
+            cmd_string=""
+            for i in "${cmd[@]}"; do
+                if [[ $i == *" "* ]]; then
+                    cmd_string+=\""$i"\"
+                else
+                    cmd_string+="$i"
+                fi
+                cmd_string+=" "
+            done
+
+            # create `run` file for supervise
+            echo '#!/bin/bash' > $gaianet_base_dir/run
+            echo $cmd_string >> $gaianet_base_dir/run
+            chmod u+x $gaianet_base_dir/run
+        fi
+
+        # start api-server
+        retry_count=0
+        max_retries=3
+        while true; do
+
+            # start api-server
+            if $use_supervise; then
+                # start LlamaEdge API Server with supervise
+                nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                sleep 2
+                supervise_pid=$!
+                echo $supervise_pid > $gaianet_base_dir/supervise.pid
+                printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
+
+                # Get the status of the service
+                status=$(svstat $gaianet_base_dir)
+                # Extract the PID from the status
+                llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
+                # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
+                llamaedge_pid=$((llamaedge_pid + 1))
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                info "\n    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
+
+            else
+                # start LlamaEdge API Server with nohup
+                nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                sleep 2
+                llamaedge_pid=$!
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                info "    LlamaEdge API Server started with pid: $llamaedge_pid"
+            fi
+
+            sleep 10
+            status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+                -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                -H 'accept:application/json' \
+                -H 'Content-Type: application/json' \
+                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+
+            curl_exit_status=$?
+
+            if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+                break
+            else
+                # stop the api-server
+                pkill -9 wasmedge || true
+
+                # stop supervise if it is running
+                if svok $gaianet_base_dir > /dev/null 2>&1; then
+                    svc -d $gaianet_base_dir
+                    svc -k $gaianet_base_dir
+                    svc -x $gaianet_base_dir
+                    supervise_pid=$gaianet_base_dir/supervise.pid
+                    if [ -f $supervise_pid ]; then
+                        rm $supervise_pid
+                    fi
+                    rm $gaianet_base_dir/run
+                    rm -rf $gaianet_base_dir/supervise
+                fi
+
+                # remove the pid file
+                llamaedge_pid=$gaianet_base_dir/llamaedge.pid
+                if [ -f $llamaedge_pid ]; then
+                    rm $llamaedge_pid
+                fi
+
+                sleep 10  # wait for 10 seconds before retrying
+
+                ((retry_count++))
+                if [ $retry_count -ge $((max_retries + 1)) ]; then
+                    error "    * Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
+
+                    # wait for 3 seconds before exiting
+                    sleep 3
+
+                    exit 1
+                else
+                    error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
+                fi
+            fi
+
+        done
+
+    fi
+
 
     # 3. start gaianet-domain
     if [ "$local_only" -eq 0 ]; then
@@ -1020,7 +1205,7 @@ case $subcommand in
         rag_policy=""
         reverse_prompt=""
         domain=""
-        snapshot=""
+        snapshot="placeholder"
         qdrant_limit=""
         qdrant_score_threshold=""
 
@@ -1093,7 +1278,13 @@ case $subcommand in
                     fi
                     ;;
                 --snapshot)
-                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                    new_value=$2
+                    # Check if new_value is empty
+                    if [ -z "$new_value" ]; then
+                        echo "empty string"
+                        snapshot=""
+                        shift 2
+                    elif [ ${2:0:1} != "-" ]; then
                         snapshot=$2
                         shift 2
                     fi
@@ -1269,7 +1460,7 @@ case $subcommand in
         fi
 
         # update url of snapshot
-        if [ -n "$snapshot" ]; then
+        if [ -z "$snapshot" ] || [ "$snapshot" != "placeholder" ]; then
             printf "[+] Updating the url of snapshot ...\n"
             printf "    * Old url: $(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)\n"
             info "    * New url: $snapshot"
