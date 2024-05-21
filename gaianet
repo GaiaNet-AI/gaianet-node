@@ -495,6 +495,28 @@ init() {
     wasmedge --dir .:. registry.wasm
     printf "\n"
 
+    printf "[+] Preparing the GaiaNet domain ...\n"
+    # Update frpc.toml
+    address=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
+    domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
+    ip_address=$(dig +short a.$domain | tr -d '\n')
+
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sed_i_cmd="sed -i"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        sed_i_cmd="sed -i ''"
+    else
+        echo "Unsupported OS"
+        exit 1
+    fi
+
+    $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+    $sed_i_cmd "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+    $sed_i_cmd "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+    $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+    printf "\n"
+
     printf "[+] COMPLETED! GaiaNet node is initialized successfully.\n\n"
 
     info ">>> To start the GaiaNet node, run the command: gaianet start <<<"
