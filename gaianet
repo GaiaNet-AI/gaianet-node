@@ -512,7 +512,7 @@ update_config() {
 
     # update in place
     if [ -z "$new_value" ]; then
-        sed -i.bak -e "s/\(\"$key\":\s*\).*\,/\1\"$new_value\",/" $file
+        sed -i.bak -e "s/\(\"$key\": \s*\).*\,/\1\"$new_value\",/" $file
     else
         sed -i.bak -e "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" $file
     fi
@@ -1313,7 +1313,6 @@ case $subcommand in
                     new_value=$2
                     # Check if new_value is empty
                     if [ -z "$new_value" ]; then
-                        echo "empty string"
                         snapshot=""
                         shift 2
                     elif [ ${2:0:1} != "-" ]; then
@@ -1422,7 +1421,7 @@ case $subcommand in
         # update system prompt
         if [ -n "$system_prompt" ]; then
             printf "[+] Updating the system prompt of chat model ...\n"
-            printf "    * Old port: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            printf "    * Old system prompt: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
             info "    * New system prompt: $system_prompt"
             # The new value for system_prompt
             new_value="$system_prompt"
