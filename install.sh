@@ -189,7 +189,7 @@ fi
 
 # 4. Install WasmEdge and ggml plugin
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
-if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
+if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5; then
     source $HOME/.wasmedge/env
     wasmedge_path=$(which wasmedge)
     wasmedge_version=$(wasmedge --version)
