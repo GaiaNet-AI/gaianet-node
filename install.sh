@@ -189,7 +189,7 @@ fi
 
 # 4. Install WasmEdge and ggml plugin
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
-if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s; then
+if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5; then
     source $HOME/.wasmedge/env
     wasmedge_path=$(which wasmedge)
     wasmedge_version=$(wasmedge --version)
@@ -298,9 +298,10 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
 fi
 
 # 6. Download rag-api-server.wasm
-printf "[+] Downloading the rag-api-server.wasm ...\n"
+printf "[+] Downloading LlamaEdge API server ...\n"
 check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
-info "    * The rag-api-server.wasm is downloaded in $gaianet_base_dir"
+check_curl https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+info "    * The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
 
 # 7. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
