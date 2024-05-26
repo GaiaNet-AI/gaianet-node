@@ -3,7 +3,7 @@
     "description": "The default GaiaNet node config with a Phi-3-mini-4k model and a Paris tour guide knowledge base.",
     "chat": "https://huggingface.co/gaianet/Phi-3-mini-4k-instruct-GGUF/resolve/main/Phi-3-mini-4k-instruct-Q5_K_M.gguf",
     "prompt_template": "phi-3-chat",
-    "reverse_prompt": "<|end|>",
+    "reverse_prompt": "",
     "chat_ctx_size": "4096",
     "system_prompt": "You are a helpful, respectful and honest assistant. Always answer accurately, while being safe.",
     "embedding": "https://huggingface.co/gaianet/All-MiniLM-L6-v2-Embedding-GGUF/resolve/main/all-MiniLM-L6-v2-ggml-model-f16.gguf",
@@ -14,6 +14,6 @@
     "qdrant_score_threshold": "0.5",
     "rag_prompt": "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n",
     "rag_policy": "system-message",
-    "domain": "gaianet.network",
+    "domain": "us.gaianet.network",
     "llamaedge_port": "8080"
 }
