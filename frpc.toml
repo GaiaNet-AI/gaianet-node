@@ -1,10 +1,10 @@
-serverAddr = "gaianet.network"
+serverAddr = ""
 serverPort = 7000
 metadatas.deviceId = ""
 
 [[proxies]]
-name = "{your_subdomain}.gaianet.network"
+name = ""
 type = "http"
 localPort = 8080
 #remotePort = 80
-subdomain = "{your_subdomain}"
+subdomain = ""
