@@ -101,14 +101,6 @@ WasmEdge binaries accessible
 
 </details>
 
-デフォルトのインストールスクリプトは `sudo` 権限が必要です。`sudo` の権限があり、パスワードを求められます。
-`sudo` 権限なしでインストールする場合は、以下のコマンドを使用できます。ただし、`sudo` なしでインストールする場合は、後続のステップでCLIコマンドを実行する際に完全なパスを使用する必要があります。
-
-
-```
-curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --unprivileged
-```
-
 
 デフォルトでは `$HOME/gaianet` ディレクトリにインストールされますが、別のディレク
 

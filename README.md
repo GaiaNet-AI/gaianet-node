@@ -17,7 +17,7 @@
 [[Japanese](README-ja.md)] | We need your help to translate this README into your native language.
 
 
-Like our work? ⭐ Star us! 
+Like our work? ⭐ Star us!
 
 ---
 
@@ -107,13 +107,6 @@ WasmEdge binaries accessible
 ```
 
 </details>
-
-The default install script requires `sudo` privilege. You must have permission to `sudo` and will be asked your password.
-To install without `sudo` priviledges, you can use the following command. However, if you install without `sudo`, you will use the full path to invoke the CLI command in subsequent steps, like `$HOME/gaianet/gaianet init` etc.
-
-```bash
-curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --unprivileged
-```
 
 By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
 
