@@ -419,8 +419,44 @@ find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc
 
 printf "[+] COMPLETED! The gaianet node has been installed successfully.\n\n"
 
-printf "Your node ID is $subdomain. Please register it in your portal account to receive awards!\n\n"
+info "Your node ID is $subdomain. Please register it in your portal account to receive awards!"
 
-info ">>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. Run the command: gaianet init <<<"
+# Command to append
+cmd='export PATH="$HOME/gaianet/bin:$PATH"'
+
+shell="${SHELL#${SHELL%/*}/}"
+shell_rc=".""$shell""rc"
+
+# Check if the shell is zsh or bash
+if [[ $shell == *'zsh'* ]]; then
+    # If zsh, append to .zprofile
+    if ! grep -Fxq "$cmd" $HOME/.zprofile
+    then
+        echo "$cmd" >> $HOME/.zprofile
+    fi
+
+    # If zsh, append to .zshrc
+    if ! grep -Fxq "$cmd" $HOME/.zshrc
+    then
+        echo "$cmd" >> $HOME/.zshrc
+    fi
+
+elif [[ $shell == *'bash'* ]]; then
+
+    # If bash, append to .bash_profile
+    if ! grep -Fxq "$cmd" $HOME/.bash_profile
+    then
+        echo "$cmd" >> $HOME/.bash_profile
+    fi
+
+    # If bash, append to .bashrc
+    if ! grep -Fxq "$cmd" $HOME/.bashrc
+    then
+        echo "$cmd" >> $HOME/.bashrc
+    fi
+fi
+
+info ">>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. To initialize the GaiaNet node, you need to\n>>> * Run the command 'source $HOME/$shell_rc' to make the gaianet CLI tool available in the current shell;\n>>> * Run the command 'gaianet init' to initialize the GaiaNet node."
+
 
 exit 0
