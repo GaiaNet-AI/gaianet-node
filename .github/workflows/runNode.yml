@@ -26,8 +26,8 @@ jobs:
       - name: Run install script
         run: |
           chmod +x ./install.sh
-          ./install.sh
-          source ~/.bashrc
+          bash install.sh
+          source $HOME/.bashrc
           gaianet --help
       - name: Use TinyLlama-1.1B-Chat
         run: |
