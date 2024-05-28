@@ -144,7 +144,7 @@ bin_dir=$gaianet_base_dir/bin
 
 # 1. Install `gaianet` CLI tool.
 printf "[+] Installing gaianet CLI tool ...\n"
-check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $bin_dir
+check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $bin_dir/gaianet
 chmod u+x $bin_dir/gaianet
 info "    * gaianet CLI tool is installed in $bin_dir"
 
