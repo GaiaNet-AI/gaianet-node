@@ -1,66 +1,46 @@
-# Run your own GaiaNet node
+# 运行自己的 GaiaNet 节点
 
-<p align="center">
-  <a href="https://discord.gg/gaianet-ai">
-    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
-  </a>
-  <a href="https://twitter.com/Gaianet_AI">
-    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
-  </a>
-   <a href="https://www.gaianet.ai/">
-    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
-  </a>
-</p>
+## 快速入门
 
-
-
-[[Japanese](README-ja.md)] [[Chinese](README-cn.md)] | We need your help to translate this README into your native language.
-
-
-Like our work? ⭐ Star us!
-
----
-
-## Quick start
-
-Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
+在 Mac、Linux 或 Windows WSL 上只需一行命令即可安装默认节点软件栈。
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
+初始化节点。这将下载 `$HOME/gaianet/config.json` 文件中指定的模型文件和矢量数据库文件，由于文件较大，可能需要几分钟时间。
 
 ```bash
 gaianet init
 ```
 
-Start the node.
+启动节点。
 
 ```bash
 gaianet start
 ```
 
-The script prints the official node address on the console as follows.
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+脚本会在控制台上显示官方节点地址，如下所示。
+
+您可以打开浏览器访问该 URL，查看节点信息并与节点上的人工智能代理聊天。
 
 ```
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
 ```
 
-To stop the node, you can run the following script.
+要停止节点，可以运行以下脚本。
 
 ```bash
 gaianet stop
 ```
 
-## Install guide
+## 安装指南
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 输出结果应如下所示： </summary>
 
 ```console
 Password:
@@ -108,19 +88,19 @@ WasmEdge binaries accessible
 
 </details>
 
-By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+默认情况下，它会安装到 `$HOME/gaianet` 目录中。您也可以选择安装在其他目录下。
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Initialize the node
+## 初始化节点
 
 ```
 gaianet init
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 输出结果应如下所示： </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -146,28 +126,29 @@ gaianet init
 
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the GaiaNet documentaton as knowledge base. It is equipped to answer questions about GaiaNet.
+`init` 命令根据 `$HOME/gaianet/config.json` 文件初始化节点。您可以使用我们的一些预设配置。例如，下面的命令初始化了一个以 GaiaNet 文档为知识库的节点，它可以回答与 GaiaNet 有关的问题。
 
 ```bash
 gaianet init --config gaianet_docs
 ```
 
-To see a list of pre-set configurations, you can do `gaianet init --help`.
-Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+要查看预设配置列表，可以执行 `gaianet init --help` 命令。
 
-If you need to `init` a node installed in an alternative directory, do this.
+除了像 `gaianet_docs` 这样的预设配置外，您还可以向 `config.json` 传递一个 URL，以便将节点初始化为你想要的状态。
+
+如果需要 `init` 安装在其他目录下的节点，可以这样做：
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Start the node
+## 启动节点
 
 ```
 gaianet start
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 输出结果应如下所示： </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -186,25 +167,25 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+您可以在本地启动节点。它只能通过 `localhost` 访问，而不能通过 GaiaNet 域的公共 URL 访问。
 
 ```bash
 gaianet start --local-only
 ```
 
-You can also start a node installed in an alternative base directory.
+您也可以启动安装在其他目录下的节点。
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Stop the node
+### 停止节点
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 输出结果应如下所示： </summary>
 
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
@@ -212,29 +193,29 @@ gaianet stop
 
 </details>
 
-Stop a node installed in an alternative base directory.
+停止安装在其他目录下的节点。
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
-### Update configuration
+### 更新配置
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+使用 `gaianet config` 子命令可以更新 `config.json` 文件中定义的字段。更新配置后，必须再次运行 `gaianet init` 。
 
-To update the `chat` field, for example, use the following command:
+例如，要更新 `chat` 字段，请使用以下命令：
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
-To update the `chat_ctx_size` field, for example, use the following command:
+例如，要更新 `chat_ctx_size` 字段，请使用以下命令：
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Below are all options of the `config` subcommand.
+以下是 `config` 子命令的所有选项。
 
 ```console
 $ gaianet config --help
@@ -260,4 +241,4 @@ Options:
   --help                         Show this help message
 ```
 
-Have fun!
+玩得开心！
