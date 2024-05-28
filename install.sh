@@ -199,8 +199,10 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
 
             tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
-
             info "      The Qdrant binary is downloaded in $bin_dir"
+        else
+            error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+            exit 1
         fi
 
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
@@ -218,8 +220,10 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
 
             tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
-
             info "      The Qdrant binary is downloaded in $bin_dir"
+        else
+            error " * Unsupported architecture: $target, only support x86_64 and aarch64 on Linux"
+            exit 1
         fi
 
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -337,6 +341,9 @@ if [ "$(uname)" == "Darwin" ]; then
         rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
 
         info "      gaianet-domain is downloaded in $gaianet_base_dir"
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        exit 1
     fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
@@ -355,6 +362,9 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
 
         info "      gaianet-domain is downloaded in $gaianet_base_dir"
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on Linux"
+        exit 1
     fi
 
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
