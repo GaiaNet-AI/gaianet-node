@@ -897,9 +897,7 @@ start() {
         --batch-size $chat_ctx_size,$embedding_ctx_size \
         --prompt-template $prompt_type,embedding \
         --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat)
+        --socket-addr 0.0.0.0:$llamaedge_port)
 
         if $use_supervise; then
             cmd_string=""
