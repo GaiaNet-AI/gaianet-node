@@ -135,39 +135,18 @@ if [ ! -d "$gaianet_base_dir/log" ]; then
 fi
 log_dir=$gaianet_base_dir/log
 
-# 1. Install `gaianet` CLI tool.
-if [ "$unprivileged" -eq 0 ]; then
-    for BINDIR in /usr/local/bin /usr/bin; do
-        echo $PATH | grep -q $BINDIR && break || continue
-    done
-    # Check if the script is running as root. If not, it checks if `sudo` is available.
-    # If `sudo` is available, it sets the `SUDO` variable to "sudo". If `sudo` is not available, it prints an error message and exists.
-    SUDO=
-    if [ "$(id -u)" -ne 0 ]; then
-        # check if a command is available on the system
-        if ! command -v sudo >/dev/null; then
-            printf "[ERROR] This script requires superuser permissions. Please re-run as root or make sure that you can sudo.\n"
-        fi
-
-        SUDO="sudo"
-    fi
-    # create the directory specified by $BINDIR with root ownership and 755 permissions. The first thing the script asks is the sudo password.
-    $SUDO install -o0 -g0 -m755 -d $BINDIR
-
-    printf "[+] Installing gaianet CLI tool ...\n"
-    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $gaianet_base_dir/gaianet
-
-    # copy the `gaianet` file to $BINDIR with root ownership and 755 permissions.
-    $SUDO install -o0 -g0 -m755 $gaianet_base_dir/gaianet $BINDIR/gaianet
-    # remove the downloaded `gaianet` file
-    rm $gaianet_base_dir/gaianet
-    info "    * gaianet CLI tool is installed in $BINDIR/gaianet"
-else
-    printf "[+] Installing gaianet CLI tool ...\n"
-    check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $gaianet_base_dir/gaianet
-    chmod +x ./gaianet
-    info "    * gaianet CLI tool is installed in $gaianet_base_dir/gaianet"
+# Check if "$gaianet_base_dir/bin" directory exists
+if [ ! -d "$gaianet_base_dir/bin" ]; then
+    # If not, create it
+    mkdir -p -m777 $gaianet_base_dir/bin
 fi
+bin_dir=$gaianet_base_dir/bin
+
+# 1. Install `gaianet` CLI tool.
+printf "[+] Installing gaianet CLI tool ...\n"
+check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $bin_dir
+chmod u+x $bin_dir/gaianet
+info "    * gaianet CLI tool is installed in $bin_dir"
 
 # 2. Download default `config.json`
 printf "[+] Downloading default config file ...\n"
@@ -200,11 +179,7 @@ else
 fi
 
 # 5. Install Qdrant binary and prepare directories
-# Check if "$gaianet_base_dir/bin" directory exists
-if [ ! -d "$gaianet_base_dir/bin" ]; then
-    # If not, create it
-    mkdir -p -m777 $gaianet_base_dir/bin
-fi
+
 # 5.1 Inatall Qdrant binary
 printf "[+] Installing Qdrant binary...\n"
 if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
@@ -214,18 +189,18 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
         if [ "$target" = "x86_64" ]; then
             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
+            tar -xzf $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
 
-            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
+            info "      The Qdrant binary is downloaded in $bin_dir"
 
         elif [ "$target" = "arm64" ]; then
             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $gaianet_base_dir/bin
+            tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
 
-            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
+            info "      The Qdrant binary is downloaded in $bin_dir"
         fi
 
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
@@ -233,18 +208,18 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
         if [ "$target" = "x86_64" ]; then
             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
+            tar -xzf $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
 
-            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
+            info "      The Qdrant binary is downloaded in $bin_dir"
 
         elif [ "$target" = "aarch64" ]; then
             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $gaianet_base_dir/bin
+            tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
 
-            info "      The Qdrant binary is downloaded in $gaianet_base_dir/bin"
+            info "      The Qdrant binary is downloaded in $bin_dir"
         fi
 
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
