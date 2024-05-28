@@ -422,7 +422,7 @@ printf "[+] COMPLETED! The gaianet node has been installed successfully.\n\n"
 info "Your node ID is $subdomain. Please register it in your portal account to receive awards!"
 
 # Command to append
-cmd='export PATH="$HOME/gaianet/bin:$PATH"'
+cmd="export PATH=\"$bin_dir:\$PATH\""
 
 shell="${SHELL#${SHELL%/*}/}"
 shell_rc=".""$shell""rc"
