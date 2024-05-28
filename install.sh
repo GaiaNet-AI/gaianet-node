@@ -37,7 +37,7 @@ function print_usage {
     printf "  --config <Url>: specify a url to the config file\n"
     printf "  --base <Path>: specify a path to the gaianet base directory\n"
     printf "  --reinstall: install and download all required deps\n"
-    printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
+    # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
     printf "  --help: Print usage\n"
 }
 
@@ -58,10 +58,10 @@ while [[ $# -gt 0 ]]; do
             reinstall=1
             shift
             ;;
-        --unprivileged)
-            unprivileged=1
-            shift
-            ;;
+        # --unprivileged)
+        #     unprivileged=1
+        #     shift
+        #     ;;
         --help)
             print_usage
             exit 0
