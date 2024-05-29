@@ -4,7 +4,7 @@
     "chat": "https://huggingface.co/gaianet/Phi-3-mini-4k-instruct-GGUF/resolve/main/Phi-3-mini-4k-instruct-Q5_K_M.gguf",
     "prompt_template": "phi-3-chat",
     "reverse_prompt": "",
-    "chat_ctx_size": "4096",
+    "chat_ctx_size": "2048",
     "system_prompt": "You are a helpful, respectful and honest assistant. Always answer accurately, while being safe.",
     "embedding": "https://huggingface.co/gaianet/All-MiniLM-L6-v2-Embedding-GGUF/resolve/main/all-MiniLM-L6-v2-ggml-model-f16.gguf",
     "embedding_ctx_size": "384",
