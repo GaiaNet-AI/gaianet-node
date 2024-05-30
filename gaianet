@@ -340,7 +340,7 @@ create_collection() {
         --nn-preload default:GGML:AUTO:$chat_model_name \
         --nn-preload embedding:GGML:AUTO:$embedding_model_name \
         rag-api-server.wasm \
-        --prompt-template $prompt_type,embedding \
+        --prompt-template $prompt_type \
         --model-name $chat_model_stem,$embedding_model_stem \
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --qdrant-collection-name $embedding_collection_name \
@@ -685,7 +685,7 @@ start() {
         --model-name $chat_model_stem,$embedding_model_stem \
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --batch-size $chat_ctx_size,$embedding_ctx_size \
-        --prompt-template $prompt_type,embedding \
+        --prompt-template $prompt_type \
         --rag-policy $rag_policy \
         --qdrant-collection-name $embedding_collection_name \
         --qdrant-limit $qdrant_limit \
