@@ -1,70 +1,59 @@
-# Run your own GaiaNet node
+# Kendi GaiaNet düğümünüzü çalıştırın
 
-[README in Turkish (Türkçe)](README.tr.md)
-
-<p align="center">
-  <a href="https://discord.gg/gaianet-ai">
-    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
+<p align=“center”>
+  <a href=“https://discord.gg/gaianet-ai”>
+    <img src=“https://img.shields.io/badge/chat-Discord-7289DA?logo=discord” alt=“GaiaNet Discord”>
   </a>
-  <a href="https://twitter.com/Gaianet_AI">
-    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
+  <a href=“https://twitter.com/Gaianet_AI”>
+    <img src=“https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white” alt=“GaiaNet Twitter”>
   </a>
-   <a href="https://www.gaianet.ai/">
-    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
+   <a href=“https://www.gaianet.ai/”>
+    <img src=“https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/” alt=“Gaianet website”>
   </a>
 </p>
 
+## Hızlı başlangıç
 
-
-[[Japanese](README-ja.md)] [[Chinese](README-cn.md)] | We need your help to translate this README into your native language.
-
-
-Like our work? ⭐ Star us!
-
----
-
-## Quick start
-
-Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
+Mac, Linux veya Windows WSL'de tek bir komut satırıyla varsayılan düğüm yazılım yığınını yükleyin.
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
+Düğümü başlatın. Bu işlem `$HOME/gaianet/config.json` dosyasında belirtilen model dosyalarını ve vektör veritabanı dosyalarını indirecektir ve dosyalar büyük olduğu için birkaç dakika sürebilir.
 
 ```bash
 gaianet init
 ```
 
-Start the node.
+Düğümü başlatın.
 
 ```bash
 gaianet start
 ```
 
-The script prints the official node address on the console as follows.
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+Kod, resmi düğüm adresini konsola aşağıdaki gibi yazdırır.
+Düğüm bilgilerini görmek için bu URL'ye bir tarayıcı açabilir ve ardından düğümdeki AI aracısı ile sohbet edebilirsiniz.
 
 ```
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
 ```
 
-To stop the node, you can run the following script.
+Düğümü durdurmak için aşağıdaki komut dosyasını çalıştırabilirsiniz.
 
 ```bash
 gaianet stop
 ```
 
-## Install guide
+## Kurulum kılavuzu
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
 
-```console
+```
 Password:
 
 [+] Downloading default config file ...
@@ -110,19 +99,19 @@ WasmEdge binaries accessible
 
 </details>
 
-By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+Varsayılan olarak `$HOME/gaianet` dizinine yüklenir. Alternatif bir dizine yüklemeyi de seçebilirsiniz.
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Initialize the node
+## Düğümü başlatın
 
 ```
 gaianet init
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -145,31 +134,30 @@ gaianet init
 
     * Recovery is done successfully
 ```
-
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the GaiaNet documentaton as knowledge base. It is equipped to answer questions about GaiaNet.
+init` komutu düğümü `$HOME/gaianet/config.json` dosyasına göre başlatır. Önceden ayarlanmış konfigürasyonlarımızdan bazılarını kullanabilirsiniz. Örneğin, aşağıdaki komut bilgi tabanı olarak GaiaNet dokümantasyonuna sahip bir düğümü başlatır. GaiaNet hakkındaki soruları cevaplamak için donatılmıştır.
 
 ```bash
 gaianet init --config gaianet_docs
 ```
 
-To see a list of pre-set configurations, you can do `gaianet init --help`.
-Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+Önceden ayarlanmış yapılandırmaların bir listesini görmek için `gaianet init --help` yapabilirsiniz.
+gaianet_docs` gibi önceden ayarlanmış yapılandırmaların yanı sıra, düğümün istediğiniz duruma başlatılması için kendi `config.json` dosyanıza bir URL de iletebilirsiniz.
 
-If you need to `init` a node installed in an alternative directory, do this.
+Alternatif bir dizinde kurulu bir düğümü `init` etmeniz gerekiyorsa, bunu yapın.
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Start the node
+## Düğümü başlat
 
 ```
 gaianet start
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -188,25 +176,25 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+Düğümü yerel kullanım için başlatabilirsiniz. Yalnızca `localhost` üzerinden erişilebilir olacak ve GaiaNet etki alanının genel URL'lerinden hiçbirinde bulunmayacaktır.
 
 ```bash
 gaianet start --local-only
 ```
 
-You can also start a node installed in an alternative base directory.
+Alternatif bir temel dizinde yüklü bir düğümü de başlatabilirsiniz.
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Stop the node
+### Düğümü durdur
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
 
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
@@ -214,37 +202,37 @@ gaianet stop
 
 </details>
 
-Stop a node installed in an alternative base directory.
+Alternatif bir temel dizinde yüklü bir düğümü durdurun.
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
-### Update configuration
+### Yapılandırmayı güncelle
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+gaianet config` alt komutunu kullanarak `config.json` dosyasında tanımlanan anahtar alanları güncelleyebilirsiniz. Konfigürasyonu güncelledikten sonra `gaianet init` komutunu tekrar çalıştırmalısınız.
 
-To update the `chat` field, for example, use the following command:
+Örneğin `chat` alanını güncellemek için aşağıdaki komutu kullanın:
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
-To update the `chat_ctx_size` field, for example, use the following command:
+Örneğin `chat_ctx_size` alanını güncellemek için aşağıdaki komutu kullanın:
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Below are all options of the `config` subcommand.
+Aşağıda `config` alt komutunun tüm seçenekleri yer almaktadır.
 
 ```console
 $ gaianet config --help
 
-Usage: gaianet config [OPTIONS]
+Kullanım: gaianet config [SEÇENEKLER]
 
-Options:
-  --chat-url <url>               Update the url of chat model.
+Seçenekler:
+--chat-url <url>               Update the url of chat model.
   --chat-ctx-size <val>          Update the context size of chat model.
   --embedding-url <url>          Update the url of embedding model.
   --embedding-ctx-size <val>     Update the context size of embedding model.
@@ -262,4 +250,4 @@ Options:
   --help                         Show this help message
 ```
 
-Have fun!
+İyi eğlenceler!
