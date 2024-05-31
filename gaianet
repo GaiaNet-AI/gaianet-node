@@ -345,12 +345,7 @@ create_collection() {
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --qdrant-collection-name $embedding_collection_name \
         --web-ui ./dashboard \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat"
-
-        # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
-        # printf "    %s\n\n" "$cmd"
+        --socket-addr 0.0.0.0:$llamaedge_port"
 
         nohup $cmd > $log_dir/init-qdrant-gen-collection.log 2>&1 &
         sleep 5
@@ -690,9 +685,7 @@ start() {
         --qdrant-limit $qdrant_limit \
         --qdrant-score-threshold $qdrant_score_threshold \
         --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat)
+        --socket-addr 0.0.0.0:$llamaedge_port)
 
         if $use_supervise; then
             cmd_string=""
@@ -898,9 +891,7 @@ start() {
         --batch-size $chat_ctx_size,$embedding_ctx_size \
         --prompt-template $prompt_type,embedding \
         --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat)
+        --socket-addr 0.0.0.0:$llamaedge_port)
 
         if $use_supervise; then
             cmd_string=""
