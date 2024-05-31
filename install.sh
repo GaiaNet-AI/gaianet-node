@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="main"
+repo_branch="feat-add-logging"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
