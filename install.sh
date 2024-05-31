@@ -324,7 +324,7 @@ if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
     mkdir -p -m777 $gaianet_base_dir/gaianet-domain
 fi
 cd $gaianet_base_dir
-gaianet_domain_version="v0.1.0-alpha.1"
+gaianet_domain_version="v0.1.1"
 printf "    * Download gaianet-domain binary\n"
 if [ "$(uname)" == "Darwin" ]; then
     if [ "$target" = "x86_64" ]; then
@@ -397,15 +397,6 @@ fi
 # Read domain from config.json
 gaianet_domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
 
-# Resolve the IP address of the domain
-ip_address=$(dig +short a.$gaianet_domain | tr -d '\n')
-
-# Check if the IP address was resolved correctly
-if [ -z "$ip_address" ]; then
-    error "Failed to resolve the IP address of the domain."
-    exit 1
-fi
-
 # Replace the serverAddr & subdomain in frpc.toml
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sed_i_cmd="sed -i"
@@ -420,7 +411,7 @@ fi
 device_id="device-$(openssl rand -hex 12)"
 
 $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$ip_address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 $sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 
