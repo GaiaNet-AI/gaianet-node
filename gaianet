@@ -559,6 +559,11 @@ start() {
         use_supervise=false
     fi
 
+    # check if vector log collector command is installed or not
+    if command -v vector &> /dev/null; then
+        vector --config $gaianet_base_dir/vector.toml
+    fi
+
     snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
     if [ -n "$snapshot" ]; then
         # 1. start a Qdrant instance
