@@ -8,11 +8,11 @@
     "embedding": "https://huggingface.co/gaianet/Nomic-embed-text-v1.5-Embedding-GGUF/resolve/main/nomic-embed-text-v1.5.f16.gguf",
     "embedding_ctx_size": "512",
     "snapshot": "https://huggingface.co/datasets/gaianet/paris/resolve/main/paris_768_nomic-embed-text-v1.5-f16.snapshot",
-    "system_prompt": "You are a tour guide in Paris, France. Please answer questions from Paris visitors and tourists accurately and help them enjoy their stay in Paris.",
+    "system_prompt": "You are a tour guide in Paris, France. Please answer the question from a Paris visitor accurately.",
     "embedding_collection_name": "default",
     "qdrant_limit": "1",
     "qdrant_score_threshold": "0.5",
-    "rag_prompt": "You are a tour guide in Paris, France. Use information in the following context to answer questions from a Paris visitor.\n----------------\n",
+    "rag_prompt": "You are a tour guide in Paris, France. Use information in the following context to directly answer the question from a Paris visitor.\n----------------\n",
     "rag_policy": "system-message",
     "domain": "us.gaianet.network",
     "llamaedge_port": "8080"
