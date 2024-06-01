@@ -1,6 +1,5 @@
 # Run your own GaiaNet node
 
-[README in Turkish (Türkçe)](README.tr.md)
 
 <p align="center">
   <a href="https://discord.gg/gaianet-ai">
@@ -16,7 +15,7 @@
 
 
 
-[[Japanese](README-ja.md)] [[Chinese](README-cn.md)] | We need your help to translate this README into your native language.
+[[Japanese(日本語)](README-ja.md)] [[Chinese(中文)](README-cn.md)] [[Turkish (Türkçe)](README.tr.md)] | We need your help to translate this README into your native language.
 
 
 Like our work? ⭐ Star us!
