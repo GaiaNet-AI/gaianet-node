@@ -15,7 +15,7 @@
 
 
 
-[[Japanese(日本語)](README-ja.md)] [[Chinese(中文)](README-cn.md)] [[Turkish (Türkçe)](README.tr.md)] | We need your help to translate this README into your native language.
+[Japanese(日本語)](README-ja.md) [Chinese(中文)](README-cn.md) [Turkish (Türkçe)](README.tr.md) | We need your help to translate this README into your native language.
 
 
 Like our work? ⭐ Star us!
@@ -46,7 +46,7 @@ The script prints the official node address on the console as follows.
 You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
 
 ```
-... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
 To stop the node, you can run the following script.
@@ -64,8 +64,6 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 <details><summary> The output should look like below: </summary>
 
 ```console
-Password:
-
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -147,10 +145,10 @@ gaianet init
 
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the GaiaNet documentaton as knowledge base. It is equipped to answer questions about GaiaNet.
+The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the llama-3 8B model with a London guidebook as knowledge base.
 
 ```bash
-gaianet init --config gaianet_docs
+gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
 To see a list of pre-set configurations, you can do `gaianet init --help`.

@@ -1,5 +1,17 @@
 # 运行自己的 GaiaNet 节点
 
+<p align="center">
+  <a href="https://discord.gg/gaianet-ai">
+    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
+  </a>
+  <a href="https://twitter.com/Gaianet_AI">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
+  </a>
+   <a href="https://www.gaianet.ai/">
+    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
+  </a>
+</p>
+
 ## 快速入门
 
 在 Mac、Linux 或 Windows WSL 上只需一行命令即可安装默认节点软件栈。
@@ -43,8 +55,6 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 <details><summary> 输出结果应如下所示： </summary>
 
 ```console
-Password:
-
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -126,10 +136,10 @@ gaianet init
 
 </details>
 
-`init` 命令根据 `$HOME/gaianet/config.json` 文件初始化节点。您可以使用我们的一些预设配置。例如，下面的命令初始化了一个以 GaiaNet 文档为知识库的节点，它可以回答与 GaiaNet 有关的问题。
+`init` 命令根据 `$HOME/gaianet/config.json` 文件初始化节点。您可以使用我们的一些预设配置。例如，下面的命令初始化了一个用 llama-3 8B 模型加上伦敦旅游指南作为知识库的节点。
 
 ```bash
-gaianet init --config gaianet_docs
+gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
 要查看预设配置列表，可以执行 `gaianet init --help` 命令。

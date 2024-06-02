@@ -54,8 +54,6 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 <details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
 
 ```
-Password:
-
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -136,10 +134,10 @@ gaianet init
 ```
 </details>
 
-init` komutu düğümü `$HOME/gaianet/config.json` dosyasına göre başlatır. Önceden ayarlanmış konfigürasyonlarımızdan bazılarını kullanabilirsiniz. Örneğin, aşağıdaki komut bilgi tabanı olarak GaiaNet dokümantasyonuna sahip bir düğümü başlatır. GaiaNet hakkındaki soruları cevaplamak için donatılmıştır.
+init` komutu düğümü `$HOME/gaianet/config.json` dosyasına göre başlatır. Önceden ayarlanmış konfigürasyonlarımızdan bazılarını kullanabilirsiniz.
 
 ```bash
-gaianet init --config gaianet_docs
+gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
 Önceden ayarlanmış yapılandırmaların bir listesini görmek için `gaianet init --help` yapabilirsiniz.

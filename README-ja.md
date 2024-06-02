@@ -1,5 +1,17 @@
 # 自分のGaiaNetノードを実行する
 
+<p align="center">
+  <a href="https://discord.gg/gaianet-ai">
+    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
+  </a>
+  <a href="https://twitter.com/Gaianet_AI">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
+  </a>
+   <a href="https://www.gaianet.ai/">
+    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
+  </a>
+</p>
+
 ## クイックスタート
 
 Mac、Linux、またはWindows WSLで、一行のコマンドでデフォルトのノードソフトウェアスタックをインストールします。
@@ -55,8 +67,6 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 
 
 ```
-Password:
-
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -148,11 +158,11 @@ gaianet init
 
 </details>
 
-`init` コマンドは、`$HOME/gaianet/config.json` ファイルに従ってノードを初期化します。GaiaNetのドキュメントを知識ベースとして使用するノードを初期化するためのコマンドは以下の通りです。
+`init` コマンドは、`$HOME/gaianet/config.json` ファイルに従ってノードを初期化します。
 
 
 ```
-gaianet init --config gaianet_docs
+gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
 
