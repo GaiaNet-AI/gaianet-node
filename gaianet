@@ -559,11 +559,6 @@ start() {
         use_supervise=false
     fi
 
-    # check if vector log collector command is installed or not
-    if command -v vector &> /dev/null; then
-        vector --config $gaianet_base_dir/vector.toml
-    fi
-
     snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
     if [ -n "$snapshot" ]; then
         # 1. start a Qdrant instance
@@ -747,7 +742,7 @@ start() {
             # start api-server
             if $use_supervise; then
                 # start LlamaEdge API Server with supervise
-                nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
@@ -764,7 +759,7 @@ start() {
 
             else
                 # start LlamaEdge API Server with nohup
-                nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
                 sleep 2
                 llamaedge_pid=$!
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -944,7 +939,7 @@ start() {
             # start api-server
             if $use_supervise; then
                 # start LlamaEdge API Server with supervise
-                nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
@@ -961,7 +956,7 @@ start() {
 
             else
                 # start LlamaEdge API Server with nohup
-                nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
                 sleep 2
                 llamaedge_pid=$!
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -1132,6 +1127,7 @@ stop_force() {
 
     pkill -9 qdrant || true
     pkill -9 wasmedge || true
+    pkill -9 vector || true
     pkill -9 frpc || true
 
     qdrant_pid=$gaianet_base_dir/qdrant.pid
@@ -1142,6 +1138,11 @@ stop_force() {
     llamaedge_pid=$gaianet_base_dir/llamaedge.pid
     if [ -f $llamaedge_pid ]; then
         rm $llamaedge_pid
+    fi
+
+    vector_pid=$gaianet_base_dir/vector.pid
+    if [ -f $vector_pid ]; then
+        rm $vector_pid
     fi
 
     gaianet_domain_pid=$gaianet_base_dir/gaianet-domain.pid
