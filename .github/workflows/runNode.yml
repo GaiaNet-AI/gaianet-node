@@ -14,7 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install apt packages
-        run: sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
+          bash -c "$(curl -L https://setup.vector.dev)"
+          sudo apt-get install vector
+
       # - name: Use TinyLlama instead of Llama-2-7B
       #   run: |
       #     GAIANET_DIR=$HOME/gaianet
@@ -23,6 +27,7 @@ jobs:
       #     sed -i 's|Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf|TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf|g' $GAIANET_DIR/config.json
       #     sed -i 's|llama-2-chat|chatml|g' $GAIANET_DIR/config.json
       #     cat $GAIANET_DIR/config.json
+
       - name: Run install script
         run: |
           chmod +x ./install.sh
