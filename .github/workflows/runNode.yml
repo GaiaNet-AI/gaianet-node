@@ -44,7 +44,7 @@ jobs:
       - name: Run
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
-          gaianet start --local-log
+          gaianet start
           sleep 10
       - name: Test localhost API
         continue-on-error: true
