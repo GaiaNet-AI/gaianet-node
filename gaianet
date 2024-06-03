@@ -18,7 +18,7 @@ YELLOW=$'\e[0;33m'
 NC=$'\e[0m'
 
 # Mac OS requires this hack in order to run qdrant reliablly
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     ulimit -n 10000
 fi
 
