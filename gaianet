@@ -21,6 +21,9 @@ NC=$'\e[0m'
 # 0: disable local log storage
 # 1: enable local log storage
 local_log_storage=0
+if ! command -v vector > /dev/null 2>&1; then
+    local_log_storage=1
+fi
 
 # Mac OS requires this hack in order to run qdrant reliablly
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
