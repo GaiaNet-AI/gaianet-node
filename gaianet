@@ -17,6 +17,11 @@ YELLOW=$'\e[0;33m'
 # No Color
 NC=$'\e[0m'
 
+# flag to enable local log storage
+# 0: disable local log storage
+# 1: enable local log storage
+local_log_storage=0
+
 # Mac OS requires this hack in order to run qdrant reliablly
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     ulimit -n 10000
@@ -742,7 +747,11 @@ start() {
             # start api-server
             if $use_supervise; then
                 # start LlamaEdge API Server with supervise
-                nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                fi
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
@@ -759,7 +768,11 @@ start() {
 
             else
                 # start LlamaEdge API Server with nohup
-                nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                fi
                 sleep 2
                 llamaedge_pid=$!
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -939,7 +952,11 @@ start() {
             # start api-server
             if $use_supervise; then
                 # start LlamaEdge API Server with supervise
-                nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                fi
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
@@ -956,7 +973,11 @@ start() {
 
             else
                 # start LlamaEdge API Server with nohup
-                nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                fi
                 sleep 2
                 llamaedge_pid=$!
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -1127,7 +1148,9 @@ stop_force() {
 
     pkill -9 qdrant || true
     pkill -9 wasmedge || true
-    pkill -9 vector || true
+    if [ "$local_log_storage" -eq 0 ]; then
+        pkill -9 vector || true
+    fi
     pkill -9 frpc || true
 
     qdrant_pid=$gaianet_base_dir/qdrant.pid
@@ -1231,6 +1254,7 @@ show_start_help() {
     printf "Usage: gaianet start|run [OPTIONS] \n\n"
     printf "Options:\n"
     printf "  --local-only               Start the program in local mode.\n"
+    printf "  --local-log                Enable the local log storage.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
     printf "  --help                     Show this help message\n\n"
 }
@@ -1646,6 +1670,10 @@ case $subcommand in
             case "$1" in
                 --local-only)
                     local=1
+                    shift
+                    ;;
+                --local-log)
+                    local_log_storage=1
                     shift
                     ;;
                 --base)
