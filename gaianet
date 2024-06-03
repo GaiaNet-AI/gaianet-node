@@ -783,6 +783,7 @@ start() {
             curl_exit_status=$?
 
             if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+                tail -2 $log_dir/start-llamaedge.log
                 break
             else
                 # stop the api-server
@@ -980,6 +981,7 @@ start() {
             curl_exit_status=$?
 
             if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+                tail -2 $log_dir/start-llamaedge.log
                 break
             else
                 # stop supervise if it is running
