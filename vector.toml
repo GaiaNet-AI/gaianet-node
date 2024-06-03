@@ -1,20 +1,23 @@
 
-[sources.api_server]
+[api]
+enabled = false
+
+[sources.api_server_logs]
 type = "stdin"
 
 # [sinks.console]
-# inputs = ["llamaedge_api_server"]
+# inputs = ["api_server_logs"]
 # target = "stdout"
 # type = "console"
 # encoding.codec = "json"
 
 [sinks.log_file]
 type = "file"
-inputs = ["api_server"]
+inputs = ["api_server_logs"]
 path = "log/gaianet-api-server.log"
 encoding.codec = "json"
 
 # [sinks.aws_s3]
 # type = "aws_s3"
-# inputs = [ "llamaedge_api_server" ]
+# inputs = [ "api_server_logs" ]
 # bucket = "my-bucket"
