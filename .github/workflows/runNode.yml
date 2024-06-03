@@ -16,8 +16,6 @@ jobs:
       - name: Install apt packages
         run: |
           sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
-          bash -c "$(curl -L https://setup.vector.dev)"
-          sudo apt-get install vector
 
       # - name: Use TinyLlama instead of Llama-2-7B
       #   run: |
@@ -46,7 +44,7 @@ jobs:
       - name: Run
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
-          gaianet start
+          gaianet start --local-log
           sleep 10
       - name: Test localhost API
         continue-on-error: true
