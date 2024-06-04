@@ -19,7 +19,7 @@ config_url=""
 # path to the gaianet base directory
 gaianet_base_dir="$HOME/gaianet"
 # qdrant binary
-qdrant_version="v1.9.0"
+qdrant_version="v1.9.4"
 # tmp directory
 tmp_dir="/tmp"
 # specific CUDA enabled GGML plugin
