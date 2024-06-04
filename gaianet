@@ -753,7 +753,7 @@ start() {
                 if [ "$local_log_storage" -eq 1 ]; then
                     nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
                 else
-                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
                 fi
                 sleep 2
                 supervise_pid=$!
@@ -774,7 +774,7 @@ start() {
                 if [ "$local_log_storage" -eq 1 ]; then
                     nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
                 else
-                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
                 fi
                 sleep 2
                 llamaedge_pid=$!
@@ -958,7 +958,7 @@ start() {
                 if [ "$local_log_storage" -eq 1 ]; then
                     nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
                 else
-                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
                 fi
                 sleep 2
                 supervise_pid=$!
@@ -979,7 +979,7 @@ start() {
                 if [ "$local_log_storage" -eq 1 ]; then
                     nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
                 else
-                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-llamaedge.log 2>&1 &
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
                 fi
                 sleep 2
                 llamaedge_pid=$!
