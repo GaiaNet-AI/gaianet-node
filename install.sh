@@ -182,7 +182,16 @@ if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
     info "    * The nodeid.json is downloaded in $gaianet_base_dir"
 fi
 
-# 4. Download vector config file
+# 4. Install vector and download vector config file
+if ! command -v vector &> /dev/null; then
+    printf "[+] Installing vector ...\n"
+    if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=0.38.0 bash -s -- -y; then
+        info "    * The vector is installed."
+    else
+        error "    * Failed to install vector"
+        exit 1
+    fi
+fi
 if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
     printf "[+] Downloading vector config file ...\n"
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/vector.toml $gaianet_base_dir/vector.toml
