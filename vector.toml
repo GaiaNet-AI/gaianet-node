@@ -14,7 +14,7 @@ type = "stdin"
 [sinks.log_file]
 type = "file"
 inputs = ["api_server_logs"]
-path = "log/gaianet-api-server.log"
+path = "log/start-llamaedge.log"
 encoding.codec = "json"
 
 # [sinks.aws_s3]
