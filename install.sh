@@ -24,6 +24,8 @@ qdrant_version="v1.9.4"
 tmp_dir="/tmp"
 # specific CUDA enabled GGML plugin
 ggmlcuda=""
+# 0: disable vector, 1: enable vector
+enable_vector=0
 
 # print in red color
 RED=$'\e[0;31m'
@@ -44,6 +46,7 @@ function print_usage {
     printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: /tmp]\n"
     printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
+    printf "  --enable-vector:   Install vector log aggregator\n"
     printf "  --help             Print usage\n"
 }
 
@@ -78,6 +81,10 @@ while [[ $# -gt 0 ]]; do
         #     unprivileged=1
         #     shift
         #     ;;
+        --enable-vector)
+            enable_vector=1
+            shift
+            ;;
         --help)
             print_usage
             exit 0
@@ -183,20 +190,24 @@ if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
 fi
 
 # 4. Install vector and download vector config file
-if ! command -v vector &> /dev/null; then
-    printf "[+] Installing vector ...\n"
-    if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=0.38.0 bash -s -- -y; then
-        info "    * The vector is installed."
-    else
-        error "    * Failed to install vector"
-        exit 1
+if [ "$enable_vector" -eq 1 ]; then
+    # Check if vector is installed
+    if ! command -v vector &> /dev/null; then
+        printf "[+] Installing vector ...\n"
+        if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=0.38.0 bash -s -- -y; then
+            info "    * The vector is installed."
+        else
+            error "    * Failed to install vector"
+            exit 1
+        fi
     fi
-fi
-if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
-    printf "[+] Downloading vector config file ...\n"
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/vector.toml $gaianet_base_dir/vector.toml
+    # Check if vector.toml exists
+    if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
+        printf "[+] Downloading vector config file ...\n"
+        check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/vector.toml $gaianet_base_dir/vector.toml
 
-    info "    * The vector.toml is downloaded in $gaianet_base_dir"
+        info "    * The vector.toml is downloaded in $gaianet_base_dir"
+    fi
 fi
 
 # 5. Install WasmEdge and ggml plugin
