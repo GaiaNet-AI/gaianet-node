@@ -17,14 +17,6 @@ YELLOW=$'\e[0;33m'
 # No Color
 NC=$'\e[0m'
 
-# flag to enable local log storage
-# 0: disable local log storage
-# 1: enable local log storage
-local_log_storage=0
-if ! command -v vector > /dev/null 2>&1; then
-    local_log_storage=1
-fi
-
 # Mac OS requires this hack in order to run qdrant reliablly
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     ulimit -n 10000
@@ -554,6 +546,11 @@ start() {
     log_dir=$gaianet_base_dir/log
     if ! [ -d "$log_dir" ]; then
         mkdir -p -m777 $log_dir
+    fi
+
+    local_log_storage=1
+    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
+        local_log_storage=0
     fi
 
     # check if config.json exists or not
@@ -1132,6 +1129,11 @@ stop() {
 
 # force stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop_force() {
+    local_log_storage=1
+    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
+        local_log_storage=0
+    fi
+
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
 
     if command -v supervise &> /dev/null; then
@@ -1257,7 +1259,6 @@ show_start_help() {
     printf "Usage: gaianet start|run [OPTIONS] \n\n"
     printf "Options:\n"
     printf "  --local-only               Start the program in local mode.\n"
-    printf "  --local-log                Enable the local log storage.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
     printf "  --help                     Show this help message\n\n"
 }
@@ -1673,10 +1674,6 @@ case $subcommand in
             case "$1" in
                 --local-only)
                     local=1
-                    shift
-                    ;;
-                --local-log)
-                    local_log_storage=1
                     shift
                     ;;
                 --base)
