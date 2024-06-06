@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  workflow_dispatch: # manual trigger release
+    inputs:
+      create_release:
+        description: 'Create new release'
+        required: true
+        type: boolean
+      release_version:
+        description: "Version (e.g. 1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone project
+        id: checkout
+        uses: actions/checkout@v3
+
+      - name: Calculate checksum
+        id: checksum
+        run: |
+          sha256sum gaianet > SHA256SUM
+
+          echo "Debug info(SHA256SUM):"
+          cat SHA256SUM
+
+      - name: Tag and release names
+        id: tag_and_release_names
+        run: |
+          echo "tag_name=${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
+          echo "release_name=GaiaNet-Node CLI Tool ${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
+
+      - name: Create Release and Upload Release Asset
+        if: ${{ github.event.inputs.create_release == 'true' && github.ref == 'refs/heads/main'}}
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.tag_and_release_names.outputs.release_name }}
+          tag_name: ${{ steps.tag_and_release_names.outputs.tag_name }}
+          body: TODO New Release.
+          draft: true
+          prerelease: true
+          files: |
+            gaianet
+            SHA256SUM
