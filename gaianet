@@ -1225,6 +1225,7 @@ show_help() {
     printf "  stop               Stop the GaiaNet node.\n"
     printf "  info               Show the device_id and node_id.\n\n"
     printf "Options:\n"
+    printf "  --version          Show the version of GaiaNet CLI Tool.\n"
     printf "  --help             Show this help message\n\n"
 }
 
