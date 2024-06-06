@@ -2,6 +2,8 @@
 
 set -e
 
+version="v0.1.0"
+
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
@@ -1289,6 +1291,9 @@ shift
 case $subcommand in
     --help)
         show_help
+        ;;
+    --version)
+        echo "GaiaNet CLI Tool $version"
         ;;
     config)
         chat_ctx_size=""
