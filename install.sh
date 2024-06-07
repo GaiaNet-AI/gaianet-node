@@ -334,7 +334,7 @@ if [ "$(uname)" == "Darwin" ]; then
         rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
 
         info "      gaianet-domain is downloaded in $gaianet_base_dir"
-    elif [ "$target" = "arm64" ]; then
+    elif [ "$target" = "arm64" ] || [ "$target" = "aarch64" ]; then
         check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
 
         tar -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
@@ -355,7 +355,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
 
         info "      gaianet-domain is downloaded in $gaianet_base_dir"
-    elif [ "$target" = "arm64" ]; then
+    elif [ "$target" = "arm64" ] || [ "$target" = "aarch64" ]; then
         check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
 
         tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
