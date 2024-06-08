@@ -262,7 +262,6 @@ create_collection() {
             rm $gaianet_base_dir/default.snapshot
             info "      Recovery is done!"
         else
-            printf "    * [Error] Failed to recover from the collection snapshot. $response \n"
             error "    * [Error] Failed to recover from the collection snapshot. $response"
 
             if [ "$qdrant_already_running" = false ]; then
