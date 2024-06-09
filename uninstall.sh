@@ -65,8 +65,7 @@ fi
 # 2. Remove the gaianet base directory
 if [ -d "$gaianet_base_dir" ]; then
     printf "[+] Removing the gaianet base directory ...\n"
-    # rm -rf $gaianet_base_dir
-    bash $gaianet_base_dir/cleanup.sh
+    rm -rf $gaianet_base_dir
     printf "\n"
 fi
 
