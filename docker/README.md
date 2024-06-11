@@ -5,7 +5,7 @@
 First, start a Docker container for the node. It will print running logs from the GaiaNet node in this terminal. For now, since the GaiaNet node is not yet started, you will see no message on the terminal. That is normal.
 
 ```
-docker run --rm -p 8080:8080 --name gaianet secondstate/gaianet
+docker run --rm -p 8080:8080 --name gaianet secondstate/gaianet:latest
 ```
 
 Next, open another terminal and run the `gaianet` commands in the container.
@@ -34,13 +34,13 @@ docker container stop gaianet
 ## Build your own Docker image locally
 
 ```
-docker build --tag secondstate/gaianet .
+docker build . --tag secondstate/gaianet Dockerfile
 ```
 
 Cross-platform build.
 
 ```
-docker buildx build --platform linux/arm64,linux/amd64 --tag secondstate/gaianet:latest .
+docker buildx build . --platform linux/arm64,linux/amd64 --tag secondstate/gaianet:latest Dockerfile
 ```
 
 Publish to Docker hub.
