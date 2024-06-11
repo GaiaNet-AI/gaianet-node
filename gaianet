@@ -280,23 +280,36 @@ create_collection() {
 
         # parse cli options for chat model
         cd $gaianet_base_dir
+
         url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
         # gguf filename
         chat_model_name=$(basename $url_chat_model)
-        # stem part of the filename
-        chat_model_stem=$(basename "$chat_model_name" .gguf)
+        # Directly attempt to extract "chat_name" and fallback to extracting from "chat" if empty
+        chat_name=$(grep '"chat_name":' config.json | sed -E 's/.*"chat_name": *"([^"]*)".*/\1/')
+        if [ -z "$chat_name" ]; then
+            chat_model_stem=$(basename "${url_chat_model%.*}")
+        else
+            chat_model_stem=$chat_name
+        fi
+
         # parse context size for chat model
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse prompt type for chat model
         prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
         # parse reverse prompt for chat model
         reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-        # parse cli options for embedding model
+
         url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
         # gguf filename
         embedding_model_name=$(basename $url_embedding_model)
-        # stem part of the filename
-        embedding_model_stem=$(basename "$embedding_model_name" .gguf)
+        # Directly attempt to extract "embedding_name" and fallback to extracting from "embedding" if empty
+        embedding_name=$(grep '"embedding_name":' config.json | sed -E 's/.*"embedding_name": *"([^"]*)".*/\1/')
+        if [ -z "$embedding_name" ]; then
+            embedding_model_stem=$(basename "${url_embedding_model%.*}")
+        else
+            embedding_model_stem=$embedding_name
+        fi
+
         # parse context size for embedding model
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse cli options for embedding vector collection name
@@ -603,11 +616,18 @@ start() {
 
         # parse cli options for chat model
         cd $gaianet_base_dir
+
         url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
         # gguf filename
         chat_model_name=$(basename $url_chat_model)
-        # stem part of the filename
-        chat_model_stem=$(basename "$chat_model_name" .gguf)
+        # Directly attempt to extract "chat_name" and fallback to extracting from "chat" if empty
+        chat_name=$(grep '"chat_name":' config.json | sed -E 's/.*"chat_name": *"([^"]*)".*/\1/')
+        if [ -z "$chat_name" ]; then
+            chat_model_stem=$(basename "${url_chat_model%.*}")
+        else
+            chat_model_stem=$chat_name
+        fi
+
         # parse context size for chat model
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse prompt type for chat model
@@ -622,17 +642,23 @@ start() {
         else
             rag_policy="system-message"
         fi
-        # parse cli options for embedding model
+
         url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+        # gguf filename
+        embedding_model_name=$(basename $url_embedding_model)
+        # Directly attempt to extract "embedding_name" and fallback to extracting from "embedding" if empty
+        embedding_name=$(grep '"embedding_name":' config.json | sed -E 's/.*"embedding_name": *"([^"]*)".*/\1/')
+        if [ -z "$embedding_name" ]; then
+            embedding_model_stem=$(basename "${url_embedding_model%.*}")
+        else
+            embedding_model_stem=$embedding_name
+        fi
+
         # parse cli options for embedding vector collection name
         embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
         if [[ -z "$embedding_collection_name" ]]; then
             embedding_collection_name="default"
         fi
-        # gguf filename
-        embedding_model_name=$(basename $url_embedding_model)
-        # stem part of the filename
-        embedding_model_stem=$(basename "$embedding_model_name" .gguf)
         # parse context size for embedding model
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse port for LlamaEdge API Server
@@ -847,28 +873,41 @@ start() {
 
         # parse cli options for chat model
         cd $gaianet_base_dir
+
         url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
         # gguf filename
         chat_model_name=$(basename $url_chat_model)
-        # stem part of the filename
-        chat_model_stem=$(basename "$chat_model_name" .gguf)
+        # Directly attempt to extract "chat_name" and fallback to extracting from "chat" if empty
+        chat_name=$(grep '"chat_name":' config.json | sed -E 's/.*"chat_name": *"([^"]*)".*/\1/')
+        if [ -z "$chat_name" ]; then
+            chat_model_stem=$(basename "${url_chat_model%.*}")
+        else
+            chat_model_stem=$chat_name
+        fi
+
         # parse context size for chat model
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse prompt type for chat model
         prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
         # parse reverse prompt for chat model
         reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-        # parse cli options for embedding model
+
         url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
+        # gguf filename
+        embedding_model_name=$(basename $url_embedding_model)
+        # Directly attempt to extract "embedding_name" and fallback to extracting from "embedding" if empty
+        embedding_name=$(grep '"embedding_name":' config.json | sed -E 's/.*"embedding_name": *"([^"]*)".*/\1/')
+        if [ -z "$embedding_name" ]; then
+            embedding_model_stem=$(basename "${url_embedding_model%.*}")
+        else
+            embedding_model_stem=$embedding_name
+        fi
+
         # parse cli options for embedding vector collection name
         embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
         if [[ -z "$embedding_collection_name" ]]; then
             embedding_collection_name="default"
         fi
-        # gguf filename
-        embedding_model_name=$(basename $url_embedding_model)
-        # stem part of the filename
-        embedding_model_stem=$(basename "$embedding_model_name" .gguf)
         # parse context size for embedding model
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse port for LlamaEdge API Server
