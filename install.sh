@@ -20,6 +20,10 @@ config_url=""
 gaianet_base_dir="$HOME/gaianet"
 # qdrant binary
 qdrant_version="v1.9.0"
+# tmp directory
+tmp_dir="/tmp"
+# specific CUDA enabled GGML plugin
+ggmlcuda=""
 
 # print in red color
 RED=$'\e[0;31m'
@@ -34,11 +38,13 @@ function print_usage {
     printf "Usage:\n"
     printf "  ./install.sh [Options]\n\n"
     printf "Options:\n"
-    printf "  --config <Url>: specify a url to the config file\n"
-    printf "  --base <Path>: specify a path to the gaianet base directory\n"
-    printf "  --reinstall: install and download all required deps\n"
+    printf "  --config <Url>     Specify a url to the config file\n"
+    printf "  --base <Path>      Specify a path to the gaianet base directory\n"
+    printf "  --reinstall        Install and download all required deps\n"
+    printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: /tmp]\n"
+    printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
-    printf "  --help: Print usage\n"
+    printf "  --help             Print usage\n"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -56,6 +62,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         --reinstall)
             reinstall=1
+            shift
+            ;;
+        --tmpdir)
+            tmp_dir="$2"
+            shift
+            shift
+            ;;
+        --ggmlcuda)
+            ggmlcuda="$2"
+            shift
             shift
             ;;
         # --unprivileged)
@@ -168,14 +184,31 @@ fi
 
 # 4. Install WasmEdge and ggml plugin
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
-if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5; then
-    source $HOME/.wasmedge/env
-    wasmedge_path=$(which wasmedge)
-    wasmedge_version=$(wasmedge --version)
-    info "    * The $wasmedge_version is installed in $wasmedge_path."
+if [ -n "$ggmlcuda" ]; then
+    if [ "$ggmlcuda" != "11" ] && [ "$ggmlcuda" != "12" ]; then
+        error "Invalid argument to '--ggmlcuda' option. Possible values: 11, 12."
+        exit 1
+    fi
+
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
+        source $HOME/.wasmedge/env
+        wasmedge_path=$(which wasmedge)
+        wasmedge_version=$(wasmedge --version)
+        info "    * The $wasmedge_version is installed in $wasmedge_path."
+    else
+        error "    * Failed to install WasmEdge"
+        exit 1
+    fi
 else
-    error "    * Failed to install WasmEdge"
-    exit 1
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --tmpdir=$tmp_dir; then
+        source $HOME/.wasmedge/env
+        wasmedge_path=$(which wasmedge)
+        wasmedge_version=$(wasmedge --version)
+        info "    * The $wasmedge_version is installed in $wasmedge_path."
+    else
+        error "    * Failed to install WasmEdge"
+        exit 1
+    fi
 fi
 
 # 5. Install Qdrant binary and prepare directories
