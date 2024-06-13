@@ -342,7 +342,7 @@ printf "[+] Downloading LlamaEdge API server ...\n"
 # check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
 # check_curl https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
-check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/0.6.4/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/0.6.5/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
 check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/0.11.3/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
 info "    * The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
