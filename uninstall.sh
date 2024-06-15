@@ -69,6 +69,12 @@ if [ -d "$gaianet_base_dir" ]; then
     printf "\n"
 fi
 
+if [ -f "/usr/local/bin/gaianet" ]; then
+    printf "[+] Removing gaianet binary from /usr/local/bin ...\n"
+    sudo rm "/usr/local/bin/gaianet"
+    printf "\n"
+fi
+
 
 # 3. Remove WasmEdge
 if command -v wasmedge > /dev/null 2>&1; then
