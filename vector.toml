@@ -1,0 +1,33 @@
+
+[api]
+enabled = false
+
+[sources.api_server_logs]
+type = "stdin"
+
+# [sinks.console]
+# inputs = ["api_server_logs"]
+# target = "stdout"
+# type = "console"
+# encoding.codec = "json"
+
+[sinks.log_file]
+type = "file"
+inputs = ["api_server_logs"]
+path = "log/start-llamaedge.log"
+encoding.codec = "json"
+
+# The following is a sample configuration for a AWS S3 sink.
+# Reference: https://vector.dev/docs/reference/configuration/sinks/aws_s3/
+# [sinks.aws_s3]
+# type = "aws_s3"
+# inputs = [ "api_server_logs" ]
+# bucket = "my-bucket"
+
+# The following is a sample configuration for a Kafka sink.
+# Reference: https://vector.dev/docs/reference/configuration/sinks/kafka/
+# [sinks.my_kafka]
+# type = "kafka"
+# inputs = [ "my-source-or-transform-id" ]
+# bootstrap_servers = "10.14.22.123:9092,10.14.23.332:9092"
+# topic = "topic-1234"

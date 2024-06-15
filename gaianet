@@ -2,6 +2,8 @@
 
 set -e
 
+version="v0.1.0"
+
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
@@ -260,7 +262,6 @@ create_collection() {
             rm $gaianet_base_dir/default.snapshot
             info "      Recovery is done!"
         else
-            printf "    * [Error] Failed to recover from the collection snapshot. $response \n"
             error "    * [Error] Failed to recover from the collection snapshot. $response"
 
             if [ "$qdrant_already_running" = false ]; then
@@ -345,12 +346,7 @@ create_collection() {
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --qdrant-collection-name $embedding_collection_name \
         --web-ui ./dashboard \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat"
-
-        # printf "    Run the following command to start the LlamaEdge API Server:\n\n"
-        # printf "    %s\n\n" "$cmd"
+        --socket-addr 0.0.0.0:$llamaedge_port"
 
         nohup $cmd > $log_dir/init-qdrant-gen-collection.log 2>&1 &
         sleep 5
@@ -553,6 +549,11 @@ start() {
         mkdir -p -m777 $log_dir
     fi
 
+    local_log_storage=1
+    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
+        local_log_storage=0
+    fi
+
     # check if config.json exists or not
     printf "[+] Checking the config.json file ...\n"
     check_config_options
@@ -690,9 +691,7 @@ start() {
         --qdrant-limit $qdrant_limit \
         --qdrant-score-threshold $qdrant_score_threshold \
         --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat)
+        --socket-addr 0.0.0.0:$llamaedge_port)
 
         if $use_supervise; then
             cmd_string=""
@@ -749,7 +748,11 @@ start() {
             # start api-server
             if $use_supervise; then
                 # start LlamaEdge API Server with supervise
-                nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
+                fi
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
@@ -766,7 +769,11 @@ start() {
 
             else
                 # start LlamaEdge API Server with nohup
-                nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
+                fi
                 sleep 2
                 llamaedge_pid=$!
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -898,9 +905,7 @@ start() {
         --batch-size $chat_ctx_size,$embedding_ctx_size \
         --prompt-template $prompt_type,embedding \
         --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port \
-        --log-prompts \
-        --log-stat)
+        --socket-addr 0.0.0.0:$llamaedge_port)
 
         if $use_supervise; then
             cmd_string=""
@@ -948,7 +953,11 @@ start() {
             # start api-server
             if $use_supervise; then
                 # start LlamaEdge API Server with supervise
-                nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
+                fi
                 sleep 2
                 supervise_pid=$!
                 echo $supervise_pid > $gaianet_base_dir/supervise.pid
@@ -965,7 +974,11 @@ start() {
 
             else
                 # start LlamaEdge API Server with nohup
-                nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                if [ "$local_log_storage" -eq 1 ]; then
+                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                else
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
+                fi
                 sleep 2
                 llamaedge_pid=$!
                 echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
@@ -1117,6 +1130,11 @@ stop() {
 
 # force stop the Qdrant instance, rag-api-server, and gaianet-domain
 stop_force() {
+    local_log_storage=1
+    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
+        local_log_storage=0
+    fi
+
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
 
     if command -v supervise &> /dev/null; then
@@ -1136,6 +1154,9 @@ stop_force() {
 
     pkill -9 qdrant || true
     pkill -9 wasmedge || true
+    if [ "$local_log_storage" -eq 0 ]; then
+        pkill -9 vector || true
+    fi
     pkill -9 frpc || true
 
     qdrant_pid=$gaianet_base_dir/qdrant.pid
@@ -1146,6 +1167,11 @@ stop_force() {
     llamaedge_pid=$gaianet_base_dir/llamaedge.pid
     if [ -f $llamaedge_pid ]; then
         rm $llamaedge_pid
+    fi
+
+    vector_pid=$gaianet_base_dir/vector.pid
+    if [ -f $vector_pid ]; then
+        rm $vector_pid
     fi
 
     gaianet_domain_pid=$gaianet_base_dir/gaianet-domain.pid
@@ -1198,6 +1224,7 @@ show_help() {
     printf "  stop               Stop the GaiaNet node.\n"
     printf "  info               Show the device_id and node_id.\n\n"
     printf "Options:\n"
+    printf "  --version          Show the version of GaiaNet CLI Tool.\n"
     printf "  --help             Show this help message\n\n"
 }
 
@@ -1264,6 +1291,9 @@ shift
 case $subcommand in
     --help)
         show_help
+        ;;
+    --version)
+        echo "GaiaNet CLI Tool $version"
         ;;
     config)
         chat_ctx_size=""

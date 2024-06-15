@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="main"
+repo_branch="feat-add-logging"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -19,11 +19,13 @@ config_url=""
 # path to the gaianet base directory
 gaianet_base_dir="$HOME/gaianet"
 # qdrant binary
-qdrant_version="v1.9.0"
+qdrant_version="v1.9.4"
 # tmp directory
 tmp_dir="/tmp"
 # specific CUDA enabled GGML plugin
 ggmlcuda=""
+# 0: disable vector, 1: enable vector
+enable_vector=0
 
 # print in red color
 RED=$'\e[0;31m'
@@ -44,6 +46,7 @@ function print_usage {
     printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: /tmp]\n"
     printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
+    printf "  --enable-vector:   Install vector log aggregator\n"
     printf "  --help             Print usage\n"
 }
 
@@ -78,6 +81,10 @@ while [[ $# -gt 0 ]]; do
         #     unprivileged=1
         #     shift
         #     ;;
+        --enable-vector)
+            enable_vector=1
+            shift
+            ;;
         --help)
             print_usage
             exit 0
@@ -182,7 +189,28 @@ if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
     info "    * The nodeid.json is downloaded in $gaianet_base_dir"
 fi
 
-# 4. Install WasmEdge and ggml plugin
+# 4. Install vector and download vector config file
+if [ "$enable_vector" -eq 1 ]; then
+    # Check if vector is installed
+    if ! command -v vector &> /dev/null; then
+        printf "[+] Installing vector ...\n"
+        if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=0.38.0 bash -s -- -y; then
+            info "    * The vector is installed."
+        else
+            error "    * Failed to install vector"
+            exit 1
+        fi
+    fi
+    # Check if vector.toml exists
+    if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
+        printf "[+] Downloading vector config file ...\n"
+        check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/vector.toml $gaianet_base_dir/vector.toml
+
+        info "    * The vector.toml is downloaded in $gaianet_base_dir"
+    fi
+fi
+
+# 5. Install WasmEdge and ggml plugin
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
 if [ -n "$ggmlcuda" ]; then
     if [ "$ggmlcuda" != "11" ] && [ "$ggmlcuda" != "12" ]; then
@@ -211,9 +239,9 @@ else
     fi
 fi
 
-# 5. Install Qdrant binary and prepare directories
+# 6. Install Qdrant binary and prepare directories
 
-# 5.1 Inatall Qdrant binary
+# 6.1 Inatall Qdrant binary
 printf "[+] Installing Qdrant binary...\n"
 if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
     printf "    * Download Qdrant binary\n"
@@ -271,7 +299,7 @@ else
     warning "    * Use the cached Qdrant binary in $gaianet_base_dir/bin"
 fi
 
-# 5.2 Init qdrant directory
+# 6.2 Init qdrant directory
 if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "    * Initialize Qdrant directory\n"
     mkdir -p -m777 $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
@@ -309,13 +337,17 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "\n"
 fi
 
-# 6. Download rag-api-server.wasm
+# 7. Download rag-api-server.wasm
 printf "[+] Downloading LlamaEdge API server ...\n"
-check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
-check_curl https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+# check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+# check_curl https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+
+check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/0.6.6/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/0.11.3/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+
 info "    * The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
 
-# 7. Download dashboard to $gaianet_base_dir
+# 8. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
     echo "tar could not be found, please install it."
     exit 1
@@ -336,7 +368,7 @@ else
     warning "    * Use the cached dashboard in $gaianet_base_dir"
 fi
 
-# 8. Generate node ID and copy config to dashboard
+# 9. Generate node ID and copy config to dashboard
 printf "[+] Generating node ID ...\n"
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "    * Download registry.wasm\n"
@@ -350,7 +382,7 @@ cd $gaianet_base_dir
 wasmedge --dir .:. registry.wasm
 printf "\n"
 
-# 9. Install gaianet-domain
+# 10. Install gaianet-domain
 printf "[+] Installing gaianet-domain...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
@@ -413,7 +445,7 @@ printf "    * Install frpc binary\n"
 cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 info "      frpc binary is installed in $gaianet_base_dir/bin"
 
-# 10. Download frpc.toml, generate a subdomain and print it
+# 11. Download frpc.toml, generate a subdomain and print it
 printf "    * Download frpc.toml\n"
 check_curl_silent https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
 info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
