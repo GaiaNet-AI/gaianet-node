@@ -9,6 +9,7 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
+version="v0.1.0"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -84,6 +85,10 @@ while [[ $# -gt 0 ]]; do
         --enable-vector)
             enable_vector=1
             shift
+            ;;
+        --version)
+            echo "Gaianet-node Installer $version"
+            exit 0
             ;;
         --help)
             print_usage
