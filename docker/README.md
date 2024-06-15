@@ -1,52 +1,93 @@
 # Docker support
 
-## Start a node
+> For Nvidia devices: replace the `latest` tag with `cuda12` or `cuda11`. If you need to build the images yourself, replace `Dockerfile` with `Dockerfile.cuda12` or `Dockerfile.cuda11`.
 
-First, start a Docker container for the node. It will print running logs from the GaiaNet node in this terminal. For now, since the GaiaNet node is not yet started, you will see no message on the terminal. That is normal.
+## Quick start
 
-```
-docker run --rm -p 8080:8080 --name gaianet secondstate/gaianet:latest
-```
-
-Next, open another terminal and run the `gaianet` commands in the container.
+Start a Docker container for the node. It will print running logs from the GaiaNet node in this terminal. 
 
 ```
-docker exec -it gaianet /root/gaianet/bin/gaianet init
-docker exec -it gaianet /root/gaianet/bin/gaianet start
+docker run --name gaianet \
+  -p 8080:8080 \
+  -v $(pwd)/qdrant_storage:/root/gaianet/qdrant/storage:z \
+  secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest
 ```
 
-If you do not have sufficient memory allocated for your Docker image, you might try a smaller model.
+The node is ready when it shows `The GaiaNet node is started at: https://...` on the console.
+You can go to that URL from your browser to interact with the GaiaNet node.
+
+The docker image contains the LLM and embedding models required by the node. However, the vector
+collection snapshot (i.e., knowledge base) is downloaded and imported at the time when the node
+starts up. That is because the knowledge based could be updated frequently. The `qdrant_storage`
+directory on the host machine stores the vector database content.
+
+## Stop and re-start
+
+You can stop and re-start the node as follows. Every time you re-start, it will re-initailize the vector
+collection (knowledge base).
 
 ```
-docker exec -it gaianet /root/gaianet/bin/gaianet stop
-docker exec -it gaianet /root/gaianet/bin/gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/qwen-1.5-1.8b-chat/config.json
-docker exec -it gaianet /root/gaianet/bin/gaianet start
+docker stop gaianet
+docker start gaianet
 ```
 
-Once it starts, go to the web URL provided by the GaiaNet node and you can interact with it through the chatbot UI. You should also be able to see running logs from the first terminal where you started the container.
-
-## Stop the node
+You can also delete the node if you no longer needs it.
 
 ```
-docker container stop gaianet
+docker stop gaianet
+docker rm gaianet
 ```
 
-## Build your own Docker image locally
+## Build a node image locally
+
+Each GaiaNet is defined by a `config.json` file. It defines the node's required
+LLM and embedding models, model parameters,
+prompts, and vector snapshots (e.g., knowledge base). 
+The following command builds a Docker image with two platforms 
+for a node based on the specified `config.json` file.
 
 ```
-docker build . --tag secondstate/gaianet Dockerfile
+docker buildx build . --platform linux/arm64,linux/amd64 \
+  --tag secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest -f Dockerfile \
+  --build-arg CONFIG_URL=https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/config.json
 ```
 
-Cross-platform build.
+You can publish your node for other people to use it.
 
 ```
-docker buildx build . --platform linux/arm64,linux/amd64 --tag secondstate/gaianet:latest Dockerfile
+docker push secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest
 ```
 
-Publish to Docker hub.
+## Make changes to the node
+
+As we discussed, the node is defined by `config.json`. You can start a node, and then update its `config.json`
+by copying your own `config.json` into the container.
 
 ```
-docker login
-docker push secondstate/gaianet:latest
+docker cp /local/path/to/config.json gaianet:/root/gaianet/config.json
+```
+
+THen, restart the node for the new `config.json` to take effect.
+
+```
+docker stop gaianet
+docker start gaianet
+```
+
+## Change the node ID
+
+You can update the node ID (Ethereum address) associated with the node. Start the node and copy the `nodeid.json`
+file, as well as the keystore file defined in `nodeid.json` into the container.
+
+```
+docker cp /local/path/to/nodeid.json gaianet:/root/gaianet/nodeid.json
+docker cp /local/path/to/1234-abcd-key-store gaianet:/root/gaianet/1234-abcd-key-store
+```
+
+THen, restart the node for the new address and keystore to take effect.
+
+```
+docker stop gaianet
+docker start gaianet
 ```
 
