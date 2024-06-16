@@ -1,10 +1,14 @@
 # Docker support
 
-> For Nvidia devices: replace the `latest` tag with `cuda12` or `cuda11`. If you need to build the images yourself, replace `Dockerfile` with `Dockerfile.cuda12` or `Dockerfile.cuda11`.
+You can run all the commands in this document without any change on any machine with the latest Docker and at least 8GB of RAM available to the container.
+By default, the container uses the CPU to peform computations, which could be slow for large LLMs. For GPUs,
+
+* Mac: Everything here works on [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/). However, the Apple GPU cores will not be available inside Docker containers until [WebGPU is supported by Docker](https://github.com/LlamaEdge/LlamaEdge/blob/main/docker/webgpu.md) later in 2024.
+* Windows and Linux with Nvidia GPU: You will need to install [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installation) for Docker. In the instructions below, replace the `latest` tag with `cuda12` or `cuda11` to use take advantage of the GPU. If you need to build the images yourself, replace `Dockerfile` with `Dockerfile.cuda12` or `Dockerfile.cuda11`.
 
 ## Quick start
 
-Start a Docker container for the node. It will print running logs from the GaiaNet node in this terminal. 
+Start a Docker container for the GaiaNet node. It will print running logs from the GaiaNet node in this terminal. 
 
 ```
 docker run --name gaianet \
@@ -29,6 +33,15 @@ collection (knowledge base).
 ```
 docker stop gaianet
 docker start gaianet
+```
+
+NOTE: When you restart the node, the log messages will no longer be printed to the console.
+You will need to wait for a few minutes before the restarted node comes back online. You can still see
+the logs by logging into the container as follows.
+
+```
+docker exec -it gaianet /bin/bash
+tail -f /root/gaianet/log/start-llamaedge.log
 ```
 
 You can also delete the node if you no longer needs it.
@@ -60,14 +73,17 @@ docker push secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest
 
 ## Make changes to the node
 
-As we discussed, the node is defined by `config.json`. You can start a node, and then update its `config.json`
-by copying your own `config.json` into the container.
+You can update the configuration parameters of the node, such as context size for the models, by
+executing the `config` command on the `gaianet` program inside the container.
+For example, the following command changes the chat LLM's context size to 8192 tokens.
 
 ```
-docker cp /local/path/to/config.json gaianet:/root/gaianet/config.json
+docker exec -it gaianet /root/gaianet/bin/gaianet config --chat-ctx-size 8192
 ```
 
-THen, restart the node for the new `config.json` to take effect.
+Then, restart the node for the new configuration to take effect.
+You will need to wait for a few minutes for the server to start again, or you can monitor
+the log files inside the container as discussed above.
 
 ```
 docker stop gaianet
