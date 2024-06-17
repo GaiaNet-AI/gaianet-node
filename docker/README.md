@@ -14,7 +14,7 @@ Start a Docker container for the GaiaNet node. It will print running logs from t
 docker run --name gaianet \
   -p 8080:8080 \
   -v $(pwd)/qdrant_storage:/root/gaianet/qdrant/storage:z \
-  secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest
+  gaianet/phi-3-mini-instruct-4k_paris:latest
 ```
 
 The node is ready when it shows `The GaiaNet node is started at: https://...` on the console.
@@ -61,14 +61,14 @@ for a node based on the specified `config.json` file.
 
 ```
 docker buildx build . --platform linux/arm64,linux/amd64 \
-  --tag secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest -f Dockerfile \
+  --tag gaianet/phi-3-mini-instruct-4k_paris:latest -f Dockerfile \
   --build-arg CONFIG_URL=https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/config.json
 ```
 
 You can publish your node for other people to use it.
 
 ```
-docker push secondstate/gaianet-phi-3-mini-instruct-4k_paris:latest
+docker push gaianet/phi-3-mini-instruct-4k_paris:latest
 ```
 
 ## Make changes to the node
