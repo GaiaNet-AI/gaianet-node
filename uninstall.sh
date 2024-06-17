@@ -5,6 +5,8 @@ set -e
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
+version="v0.1.0"
+
 # print in red color
 RED=$'\e[0;31m'
 # print in green color
@@ -28,10 +30,11 @@ warning() {
 
 function print_usage {
     printf "Usage:\n"
-    printf "  ./install.sh [Options]\n\n"
+    printf "  ./uninstall.sh [Options]\n\n"
     printf "Options:\n"
-    printf "  --base <Path>: specify a path to the gaianet base directory\n"
-    printf "  --help: Print usage\n"
+    printf "  --base <Path>     Specify a path to the gaianet base directory\n"
+    printf "  --version         Print version\n"
+    printf "  --help            Print usage\n"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -41,6 +44,10 @@ while [[ $# -gt 0 ]]; do
             gaianet_base_dir="$2"
             shift
             shift
+            ;;
+        --version)
+            echo "Gaianet-node Uninstaller $version"
+            exit 0
             ;;
         --help)
             print_usage

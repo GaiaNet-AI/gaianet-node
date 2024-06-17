@@ -48,6 +48,7 @@ function print_usage {
     printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
     printf "  --enable-vector:   Install vector log aggregator\n"
+    printf "  --version          Print version\n"
     printf "  --help             Print usage\n"
 }
 
