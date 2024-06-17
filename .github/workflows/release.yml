@@ -8,7 +8,7 @@ on:
         required: true
         type: boolean
       release_version:
-        description: "Version (e.g. 1.0.0)"
+        description: "Version (e.g. 0.1.0)"
         required: true
         type: string
 
@@ -24,6 +24,8 @@ jobs:
         id: checksum
         run: |
           sha256sum gaianet > SHA256SUM
+          sha256sum install.sh >> SHA256SUM
+          sha256sum uninstall.sh >> SHA256SUM
 
           echo "Debug info(SHA256SUM):"
           cat SHA256SUM
@@ -44,5 +46,7 @@ jobs:
           draft: true
           prerelease: true
           files: |
+            install.sh
+            uninstall.sh
             gaianet
             SHA256SUM
