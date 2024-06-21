@@ -572,6 +572,10 @@ start() {
     check_config_options
     printf "\n"
 
+    # sync the config.json to dashboard/config_pub.json
+    cd $gaianet_base_dir
+    wasmedge --dir .:. registry.wasm
+
     # check if supervise is installed or not
     use_supervise=true
     if ! command -v supervise &> /dev/null; then
