@@ -369,7 +369,7 @@ if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
         rm -rf $gaianet_base_dir/gaianet-node
     fi
 
-    check_curl https://github.com/GaiaNet-AI/chatbot-ui/releases/download/$dashboard_version/dashboard.tar.gz $gaianet_base_dir/dashboard.tar.gz
+    check_curl https://github.com/GaiaNet-AI/chatbot-ui/releases/download/v3.1/dashboard.tar.gz $gaianet_base_dir/dashboard.tar.gz
 
     tar xzf $gaianet_base_dir/dashboard.tar.gz -C $gaianet_base_dir
     rm -rf $gaianet_base_dir/dashboard.tar.gz
