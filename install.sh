@@ -10,6 +10,11 @@ cwd=$(pwd)
 
 repo_branch="main"
 version="v0.1.0"
+rag_api_server_version="0.6.6"
+llama_api_server_version="0.11.3"
+ggml_bn="b3075"
+vector_version="0.38.0"
+dashboard_version="v3.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -200,7 +205,7 @@ if [ "$enable_vector" -eq 1 ]; then
     # Check if vector is installed
     if ! command -v vector &> /dev/null; then
         printf "[+] Installing vector ...\n"
-        if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=0.38.0 bash -s -- -y; then
+        if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=$vector_version bash -s -- -y; then
             info "    * The vector is installed."
         else
             error "    * Failed to install vector"
@@ -224,7 +229,7 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --ggmlbn=$ggml_bn --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
@@ -234,7 +239,7 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 else
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --tmpdir=$tmp_dir; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --ggmlbn=$ggml_bn --tmpdir=$tmp_dir; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
@@ -348,8 +353,8 @@ printf "[+] Downloading LlamaEdge API server ...\n"
 # check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
 # check_curl https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
-check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/0.6.6/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
-check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/0.11.3/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/$rag_api_server_version/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
 info "    * The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
 
@@ -364,7 +369,7 @@ if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
         rm -rf $gaianet_base_dir/gaianet-node
     fi
 
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/dashboard.tar.gz $gaianet_base_dir/dashboard.tar.gz
+    check_curl https://github.com/GaiaNet-AI/chatbot-ui/releases/download/$dashboard_version/dashboard.tar.gz $gaianet_base_dir/dashboard.tar.gz
 
     tar xzf $gaianet_base_dir/dashboard.tar.gz -C $gaianet_base_dir
     rm -rf $gaianet_base_dir/dashboard.tar.gz
