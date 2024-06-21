@@ -52,7 +52,7 @@ jobs:
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
-            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}]}'
       - name: Test frp API
         continue-on-error: true
         run: |
@@ -61,7 +61,7 @@ jobs:
           curl --fail -X POST https://$ADDRESS.$DOMAIN/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
-            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}]}'
       - name: Stop
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
