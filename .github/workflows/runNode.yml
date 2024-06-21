@@ -17,25 +17,12 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
 
-      # - name: Use TinyLlama instead of Llama-2-7B
-      #   run: |
-      #     GAIANET_DIR=$HOME/gaianet
-      #     mkdir -p $GAIANET_DIR
-      #     cp config.json $GAIANET_DIR/config.json
-      #     sed -i 's|Llama-2-7B-Chat-GGUF/resolve/main/Llama-2-7b-chat-hf-Q5_K_M.gguf|TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf|g' $GAIANET_DIR/config.json
-      #     sed -i 's|llama-2-chat|chatml|g' $GAIANET_DIR/config.json
-      #     cat $GAIANET_DIR/config.json
-
       - name: Run install script
         run: |
           chmod +x ./install.sh
           ./install.sh
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet --help
-      - name: Use TinyLlama-1.1B-Chat
-        run: |
-          export PATH=$HOME/gaianet/bin:$PATH
-          gaianet config --chat-url "https://huggingface.co/second-state/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0-Q5_K_M.gguf" --chat-ctx-size 2048 --prompt-template chatml
       - name: Initialize
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
@@ -52,7 +39,7 @@ jobs:
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
-            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}]}'
       - name: Test frp API
         continue-on-error: true
         run: |
@@ -61,7 +48,7 @@ jobs:
           curl --fail -X POST https://$ADDRESS.$DOMAIN/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
-            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}], "model":"TinyLlama-1.1B-Chat-v1.0-Q5_K_M"}'
+            -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}]}'
       - name: Stop
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
