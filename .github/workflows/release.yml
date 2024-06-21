@@ -34,7 +34,7 @@ jobs:
         id: tag_and_release_names
         run: |
           echo "tag_name=${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
-          echo "release_name=GaiaNet-Node CLI Tool ${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
+          echo "release_name=GaiaNet-Node v${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
 
       - name: Create Release and Upload Release Asset
         if: ${{ github.event.inputs.create_release == 'true' && github.ref == 'refs/heads/main'}}
