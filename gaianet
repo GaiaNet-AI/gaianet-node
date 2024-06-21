@@ -572,7 +572,7 @@ start() {
     check_config_options
     printf "\n"
 
-    # sync dashboard/config_pub.json
+    # sync the config.json to dashboard/config_pub.json
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
 
