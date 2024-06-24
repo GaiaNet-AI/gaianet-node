@@ -9,7 +9,7 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
-version="v0.1.0"
+version="0.1.0"
 rag_api_server_version="0.6.6"
 llama_api_server_version="0.11.3"
 ggml_bn="b3075"
@@ -93,7 +93,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --version)
-            echo "Gaianet-node Installer $version"
+            echo "Gaianet-node Installer v$version"
             exit 0
             ;;
         --help)
@@ -178,7 +178,8 @@ bin_dir=$gaianet_base_dir/bin
 
 # 1. Install `gaianet` CLI tool.
 printf "[+] Installing gaianet CLI tool ...\n"
-check_curl https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/$repo_branch/gaianet $bin_dir/gaianet
+check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
+
 chmod u+x $bin_dir/gaianet
 info "    * gaianet CLI tool is installed in $bin_dir"
 
