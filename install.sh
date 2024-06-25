@@ -460,7 +460,7 @@ info "      frpc binary is installed in $gaianet_base_dir/bin"
 # 11. Download frpc.toml, generate a subdomain and print it
 printf "    * Download frpc.toml\n"
 
-check_curl_silent check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
+check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
 
 info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
 
