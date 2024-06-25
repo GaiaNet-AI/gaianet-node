@@ -24,6 +24,10 @@ jobs:
         id: checksum
         run: |
           sha256sum gaianet > SHA256SUM
+          sha256sum config.json >> SHA256SUM
+          sha256sum nodeid.json >> SHA256SUM
+          sha256sum frpc.toml >> SHA256SUM
+          sha256sum vector.toml >> SHA256SUM
           sha256sum install.sh >> SHA256SUM
           sha256sum uninstall.sh >> SHA256SUM
 
@@ -49,4 +53,8 @@ jobs:
             install.sh
             uninstall.sh
             gaianet
+            config.json
+            nodeid.json
+            frpc.toml
+            vector.toml
             SHA256SUM
