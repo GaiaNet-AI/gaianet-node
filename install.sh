@@ -9,7 +9,7 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
-version="0.1.0"
+version="0.1.1"
 rag_api_server_version="0.6.6"
 llama_api_server_version="0.11.3"
 ggml_bn="b3075"
