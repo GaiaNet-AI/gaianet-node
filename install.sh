@@ -186,7 +186,7 @@ info "    * gaianet CLI tool is installed in $bin_dir"
 # 2. Download default `config.json`
 printf "[+] Downloading default config file ...\n"
 if [ ! -f "$gaianet_base_dir/config.json" ]; then
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/config.json $gaianet_base_dir/config.json
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
 
     info "    * The default config file is downloaded in $gaianet_base_dir"
 else
@@ -196,7 +196,7 @@ fi
 # 3. download nodeid.json
 if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
     printf "[+] Downloading nodeid.json ...\n"
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/nodeid.json $gaianet_base_dir/nodeid.json
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
 
     info "    * The nodeid.json is downloaded in $gaianet_base_dir"
 fi
@@ -216,7 +216,8 @@ if [ "$enable_vector" -eq 1 ]; then
     # Check if vector.toml exists
     if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
         printf "[+] Downloading vector config file ...\n"
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/vector.toml $gaianet_base_dir/vector.toml
+
+        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/vector.toml $gaianet_base_dir/vector.toml
 
         info "    * The vector.toml is downloaded in $gaianet_base_dir"
     fi
@@ -458,7 +459,9 @@ info "      frpc binary is installed in $gaianet_base_dir/bin"
 
 # 11. Download frpc.toml, generate a subdomain and print it
 printf "    * Download frpc.toml\n"
-check_curl_silent https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
+
+check_curl_silent check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
+
 info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
 
 # Read address from config.json as node subdomain
