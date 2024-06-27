@@ -2,7 +2,12 @@
 
 set -e
 
-version="v0.1.0"
+# version of CLI tool
+version="0.1.2"
+
+# version of the GaiaNet node
+# Note that the version should kept same as the version of installer
+installer_version="0.1.2"
 
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
@@ -351,6 +356,7 @@ create_collection() {
         # command to start LlamaEdge API Server
         cd $gaianet_base_dir
         cmd="wasmedge --dir .:. \
+        --env NODE_VERSION=$installer_version \
         --nn-preload default:GGML:AUTO:$chat_model_name \
         --nn-preload embedding:GGML:AUTO:$embedding_model_name \
         rag-api-server.wasm \
@@ -709,6 +715,7 @@ start() {
         # command to start LlamaEdge API Server
         cd $gaianet_base_dir
         cmd=(wasmedge --dir .:./dashboard \
+        --env NODE_VERSION=$installer_version \
         --nn-preload default:GGML:AUTO:$chat_model_name \
         --nn-preload embedding:GGML:AUTO:$embedding_model_name \
         rag-api-server.wasm \
@@ -940,6 +947,7 @@ start() {
         # command to start LlamaEdge API Server
         cd $gaianet_base_dir
         cmd=(wasmedge --dir .:./dashboard \
+        --env NODE_VERSION=$installer_version \
         --nn-preload default:GGML:AUTO:$chat_model_name \
         --nn-preload embedding:GGML:AUTO:$embedding_model_name \
         llama-api-server.wasm \
@@ -1104,7 +1112,7 @@ start() {
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
     fi
 
-    info ">>> To stop Qdrant instance and LlamaEdge API Server, run the command: gaianet stop <<<"
+    info ">>> To stop the GaiaNet node, run the command: gaianet stop <<<"
 
     exit 0
 }
@@ -1336,7 +1344,7 @@ case $subcommand in
         show_help
         ;;
     --version)
-        echo "GaiaNet CLI Tool $version"
+        echo "GaiaNet CLI Tool v$version"
         ;;
     config)
         chat_ctx_size=""
