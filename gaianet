@@ -818,6 +818,8 @@ start() {
             fi
 
             sleep 10
+
+            info "    Verify the LlamaEdge API Server. Please wait seconds ..."
             status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
                 -X POST http://localhost:$llamaedge_port/v1/chat/completions \
                 -H 'accept:application/json' \
@@ -1037,6 +1039,7 @@ start() {
             fi
 
             sleep 10
+            info "    Verify the LlamaEdge API Server. Please wait seconds ..."
             status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
                 -X POST http://localhost:$llamaedge_port/v1/chat/completions \
                 -H 'accept:application/json' \
