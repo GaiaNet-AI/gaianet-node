@@ -29,6 +29,8 @@ Install the default node software stack with a single line of command on Mac, Li
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
+Then, follow the prompt on your screen to set up the environment path. The command line will begin with `source`.
+
 Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
 
 ```bash
