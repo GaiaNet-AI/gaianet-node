@@ -18,6 +18,8 @@ dashboard_version="v3.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
+# 0: do not upgrade, 1: upgrade
+upgrade=0
 # 0: must be root or sudo, 1: regular unprivileged user
 unprivileged=0
 # url to the config file
@@ -49,6 +51,7 @@ function print_usage {
     printf "  --config <Url>     Specify a url to the config file\n"
     printf "  --base <Path>      Specify a path to the gaianet base directory\n"
     printf "  --reinstall        Install and download all required deps\n"
+    printf "  --upgrade          Upgrade the gaianet node\n"
     printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: /tmp]\n"
     printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
@@ -72,6 +75,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --reinstall)
             reinstall=1
+            shift
+            ;;
+        --upgrade)
+            upgrade=1
             shift
             ;;
         --tmpdir)
@@ -151,10 +158,32 @@ EOF
 
 printf "\n\n"
 
-# if need to reinstall, remove the $gaianet_base_dir directory
-if [ "$reinstall" -eq 1 ] && [ -d "$gaianet_base_dir" ]; then
-    printf "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
-    rm -rf $gaianet_base_dir
+# If need to upgrade, remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
+# If need to reinstall, remove the $gaianet_base_dir directory
+if [ -d "$gaianet_base_dir" ]; then
+    if [ "$upgrade" -eq 1 ]; then
+        printf "[+] Upgrading the existing $gaianet_base_dir directory ...\n\n"
+
+        if [ ! -d "$gaianet_base_dir/backup" ]; then
+            mkdir -p "$gaianet_base_dir/backup"
+        fi
+
+        # backup keystore file
+        keystore_filename=$(grep '"keystore":' $gaianet_base_dir/nodeid.json | awk -F'"' '{print $4}')
+        mv $gaianet_base_dir/$keystore_filename $gaianet_base_dir/backup/
+
+        # backup the existing config.json, nodeid.json and frpc.toml
+        mv $gaianet_base_dir/config.json $gaianet_base_dir/backup/
+        mv $gaianet_base_dir/nodeid.json $gaianet_base_dir/backup/
+        mv $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/backup/
+
+        # remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
+        find "$gaianet_base_dir" -mindepth 1 -not -name 'backup' -not -path '*/backup/*' -exec rm -rf {} +
+
+    elif [ "$reinstall" -eq 1 ]; then
+        printf "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
+        rm -rf $gaianet_base_dir
+    fi
 fi
 
 # Check if $gaianet_base_dir directory exists
@@ -184,21 +213,50 @@ chmod u+x $bin_dir/gaianet
 info "    * gaianet CLI tool is installed in $bin_dir"
 
 # 2. Download default `config.json`
-printf "[+] Downloading default config file ...\n"
-if [ ! -f "$gaianet_base_dir/config.json" ]; then
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
+if [ "$upgrade" -eq 1 ]; then
+    printf "[+] Recovering config.json ...\n"
 
-    info "    * The default config file is downloaded in $gaianet_base_dir"
+    if [ -f "$gaianet_base_dir/backup/config.json" ]; then
+        cp $gaianet_base_dir/backup/config.json $gaianet_base_dir/config.json
+
+        if ! grep -q '"chat_batch_size":' $gaianet_base_dir/config.json; then
+            # Prepend the field to the beginning of the JSON object
+            sed -i '' '2i\
+            "chat_batch_size": "512",
+            ' $gaianet_base_dir/config.json
+        fi
+
+        if ! grep -q '"embedding_batch_size":' $gaianet_base_dir/config.json; then
+            # Prepend the field to the beginning of the JSON object
+            sed -i '' '2i\
+            "embedding_batch_size": "512",
+            ' $gaianet_base_dir/config.json
+        fi
+
+        info "    * The config.json is recovered in $gaianet_base_dir"
+    else
+        error "    * Failed to recover the config.json. Reason: the config.json does not exist in $gaianet_base_dir/backup/."
+        exit 1
+    fi
+
 else
-    warning "    * Use the cached config file in $gaianet_base_dir"
-fi
+    printf "[+] Downloading default config.json ...\n"
 
-# 3. download nodeid.json
-if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
-    printf "[+] Downloading nodeid.json ...\n"
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+    if [ ! -f "$gaianet_base_dir/config.json" ]; then
+        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
 
-    info "    * The nodeid.json is downloaded in $gaianet_base_dir"
+        info "    * The default config file is downloaded in $gaianet_base_dir"
+    else
+        warning "    * Use the cached config file in $gaianet_base_dir"
+    fi
+
+    # 3. download nodeid.json
+    if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
+        printf "[+] Downloading nodeid.json ...\n"
+        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+
+        info "    * The nodeid.json is downloaded in $gaianet_base_dir"
+    fi
 fi
 
 # 4. Install vector and download vector config file
@@ -380,21 +438,47 @@ else
     warning "    * Use the cached dashboard in $gaianet_base_dir"
 fi
 
-# 9. Generate node ID and copy config to dashboard
-printf "[+] Generating node ID ...\n"
+# 9. Download registry.wasm
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "    * Download registry.wasm\n"
+    printf "[+] Downloading registry.wasm ...\n"
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
-    info "      The registry.wasm is downloaded in $gaianet_base_dir"
+    info "    * The registry.wasm is downloaded in $gaianet_base_dir"
 else
     warning "    * Use the cached registry.wasm in $gaianet_base_dir"
 fi
-printf "    * Generate node ID\n"
-cd $gaianet_base_dir
-wasmedge --dir .:. registry.wasm
-printf "\n"
 
-# 10. Install gaianet-domain
+# 10. Generate node ID
+if [ "$upgrade" -eq 1 ]; then
+    printf "[+] Recovering node ID ...\n"
+
+    # recover the keystore file
+    if [ -f "$gaianet_base_dir/backup/$keystore_filename" ]; then
+        cp $gaianet_base_dir/backup/$keystore_filename $gaianet_base_dir/
+        info "    * The keystore file is recovered in $gaianet_base_dir"
+    else
+        error "Failed to recover the keystore file. Reason: the keystore file does not exist in $gaianet_base_dir/backup/."
+        exit 1
+    fi
+
+    # recover the nodeid.json
+    if [ -f "$gaianet_base_dir/backup/nodeid.json" ]; then
+        cp $gaianet_base_dir/backup/nodeid.json $gaianet_base_dir/nodeid.json
+        info "    * The node ID is recovered in $gaianet_base_dir"
+    else
+        error "Failed to recover the node ID. Reason: the nodeid.json does not exist in $gaianet_base_dir/backup/."
+        exit 1
+    fi
+
+else
+    printf "[+] Generating node ID ...\n"
+    cd $gaianet_base_dir
+    wasmedge --dir .:. registry.wasm
+    printf "\n"
+fi
+
+# * todo: recover the nodeid.json and config.json
+
+# 11. Install gaianet-domain
 printf "[+] Installing gaianet-domain...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
@@ -452,17 +536,27 @@ else
     exit 1
 fi
 
-# Copy frpc from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
+# Copy frpc binary from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
 printf "    * Install frpc binary\n"
-cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
+mv $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 info "      frpc binary is installed in $gaianet_base_dir/bin"
 
-# 11. Download frpc.toml, generate a subdomain and print it
-printf "    * Download frpc.toml\n"
-
-check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
-
-info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
+# 12. Download frpc.toml, generate a subdomain and print it
+if [ "$upgrade" -eq 1 ]; then
+    # recover the frpc.toml
+    if [ -f "$gaianet_base_dir/backup/frpc.toml" ]; then
+        printf "    * Recover frpc.toml\n"
+        cp $gaianet_base_dir/backup/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
+        info "      frpc.toml is recovered in $gaianet_base_dir/gaianet-domain"
+    else
+        error "Failed to recover the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/backup/."
+        exit 1
+    fi
+else
+    printf "    * Download frpc.toml\n"
+    check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
+    info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
+fi
 
 # Read address from config.json as node subdomain
 subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
