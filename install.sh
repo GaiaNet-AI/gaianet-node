@@ -162,23 +162,72 @@ printf "\n\n"
 # If need to reinstall, remove the $gaianet_base_dir directory
 if [ -d "$gaianet_base_dir" ]; then
     if [ "$upgrade" -eq 1 ]; then
-        printf "[+] Upgrading the existing $gaianet_base_dir directory ...\n\n"
+
+        # check version
+        current_version=$(gaianet --version)
+        if [ "GaiaNet CLI Tool v$version" = "$current_version" ]; then
+            info "The current version ($current_version) is the same as the target version (GaiaNet CLI Tool v$version). Skip the upgrade process."
+            exit 0
+
+        else
+            read -p "The gaianet node will be upgraded to v$version. It is stongly recommended to (1) STOP the running node and (2) backup $gaianet_base_dir directory before continue the upgrade process. Continue? (y/n): " answer
+            case $answer in
+                [Yy]* ) printf "\n";;
+                [Nn]* ) printf "Exiting upgrade process.\n"; exit;;
+                * ) printf "Please answer y or n.\n"; exit;;
+            esac
+        fi
+
+        printf "[+] Performing backup before upgrading to v$version ...\n\n"
 
         if [ ! -d "$gaianet_base_dir/backup" ]; then
+            printf "    * Create $gaianet_base_dir/backup\n"
             mkdir -p "$gaianet_base_dir/backup"
         fi
 
         # backup keystore file
         keystore_filename=$(grep '"keystore":' $gaianet_base_dir/nodeid.json | awk -F'"' '{print $4}')
-        mv $gaianet_base_dir/$keystore_filename $gaianet_base_dir/backup/
-
-        # backup the existing config.json, nodeid.json and frpc.toml
-        mv $gaianet_base_dir/config.json $gaianet_base_dir/backup/
-        mv $gaianet_base_dir/nodeid.json $gaianet_base_dir/backup/
-        mv $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/backup/
+        if [ -z "$keystore_filename" ]; then
+            error "Failed to read the 'keystore' field from $gaianet_base_dir/nodeid.json."
+            exit 1
+        else
+            if [ -f "$gaianet_base_dir/$keystore_filename" ]; then
+                printf "    * Copy $keystore_filename to $gaianet_base_dir/backup/\n"
+                cp $gaianet_base_dir/$keystore_filename $gaianet_base_dir/backup/
+            else
+                error "Failed to copy the keystore file. Reason: the keystore file does not exist in $gaianet_base_dir."
+                exit 1
+            fi
+        fi
+        # backup config.json
+        if [ -f "$gaianet_base_dir/config.json" ]; then
+            printf "    * Copy config.json to $gaianet_base_dir/backup/\n"
+            cp $gaianet_base_dir/config.json $gaianet_base_dir/backup/
+        else
+            error "Failed to copy the config.json. Reason: the config.json does not exist in $gaianet_base_dir."
+            exit 1
+        fi
+        # backup nodeid.json
+        if [ -f "$gaianet_base_dir/nodeid.json" ]; then
+            printf "    * Copy nodeid.json to $gaianet_base_dir/backup/\n"
+            cp $gaianet_base_dir/nodeid.json $gaianet_base_dir/backup/
+        else
+            error "Failed to copy the nodeid.json. Reason: the nodeid.json does not exist in $gaianet_base_dir."
+            exit 1
+        fi
+        # backup frpc.toml
+        if [ -f "$gaianet_base_dir/gaianet-domain/frpc.toml" ]; then
+            printf "    * Copy frpc.toml to $gaianet_base_dir/backup/\n"
+            cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/backup/
+        else
+            error "Failed to copy the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/gaianet-domain."
+            exit 1
+        fi
 
         # remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
-        find "$gaianet_base_dir" -mindepth 1 -not -name 'backup' -not -path '*/backup/*' -exec rm -rf {} +
+        find "$gaianet_base_dir" -mindepth 1 -not -name 'backup' -not -path '*/backup/*' -not -name '*.gguf' -exec rm -rf {} +
+
+        printf "\n"
 
     elif [ "$reinstall" -eq 1 ]; then
         printf "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
@@ -476,8 +525,6 @@ else
     printf "\n"
 fi
 
-# * todo: recover the nodeid.json and config.json
-
 # 11. Install gaianet-domain
 printf "[+] Installing gaianet-domain...\n"
 # Check if the directory exists, if not, create it
@@ -538,7 +585,7 @@ fi
 
 # Copy frpc binary from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
 printf "    * Install frpc binary\n"
-mv $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
+cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
 info "      frpc binary is installed in $gaianet_base_dir/bin"
 
 # 12. Download frpc.toml, generate a subdomain and print it
@@ -589,48 +636,56 @@ $sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_ba
 $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 
 # Remove all files in the directory except for frpc and frpc.toml
-find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
+find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc.toml' -exec rm -f {} \;
 
-printf "[+] COMPLETED! The gaianet node has been installed successfully.\n\n"
+if [ "$upgrade" -eq 1 ]; then
 
-info "Your node ID is $subdomain. Please register it in your portal account to receive awards!"
+    printf "[+] COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
 
-# Command to append
-cmd="export PATH=\"$bin_dir:\$PATH\""
+    info ">>> Next, you should run the command 'gaianet init' to initialize the GaiaNet node."
 
-shell="${SHELL#${SHELL%/*}/}"
-shell_rc=".""$shell""rc"
+else
+    printf "[+] COMPLETED! The gaianet node has been installed successfully.\n\n"
 
-# Check if the shell is zsh or bash
-if [[ $shell == *'zsh'* ]]; then
-    # If zsh, append to .zprofile
-    if ! grep -Fxq "$cmd" $HOME/.zprofile
-    then
-        echo "$cmd" >> $HOME/.zprofile
+    info "Your node ID is $subdomain. Please register it in your portal account to receive awards!"
+
+    # Command to append
+    cmd="export PATH=\"$bin_dir:\$PATH\""
+
+    shell="${SHELL#${SHELL%/*}/}"
+    shell_rc=".""$shell""rc"
+
+    # Check if the shell is zsh or bash
+    if [[ $shell == *'zsh'* ]]; then
+        # If zsh, append to .zprofile
+        if ! grep -Fxq "$cmd" $HOME/.zprofile
+        then
+            echo "$cmd" >> $HOME/.zprofile
+        fi
+
+        # If zsh, append to .zshrc
+        if ! grep -Fxq "$cmd" $HOME/.zshrc
+        then
+            echo "$cmd" >> $HOME/.zshrc
+        fi
+
+    elif [[ $shell == *'bash'* ]]; then
+
+        # If bash, append to .bash_profile
+        if ! grep -Fxq "$cmd" $HOME/.bash_profile
+        then
+            echo "$cmd" >> $HOME/.bash_profile
+        fi
+
+        # If bash, append to .bashrc
+        if ! grep -Fxq "$cmd" $HOME/.bashrc
+        then
+            echo "$cmd" >> $HOME/.bashrc
+        fi
     fi
 
-    # If zsh, append to .zshrc
-    if ! grep -Fxq "$cmd" $HOME/.zshrc
-    then
-        echo "$cmd" >> $HOME/.zshrc
-    fi
+    info ">>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. To initialize the GaiaNet node, you need to\n>>> * Run the command 'source $HOME/$shell_rc' to make the gaianet CLI tool available in the current shell;\n>>> * Run the command 'gaianet init' to initialize the GaiaNet node."
 
-elif [[ $shell == *'bash'* ]]; then
-
-    # If bash, append to .bash_profile
-    if ! grep -Fxq "$cmd" $HOME/.bash_profile
-    then
-        echo "$cmd" >> $HOME/.bash_profile
-    fi
-
-    # If bash, append to .bashrc
-    if ! grep -Fxq "$cmd" $HOME/.bashrc
-    then
-        echo "$cmd" >> $HOME/.bashrc
-    fi
 fi
-
-info ">>> Next, you should initialize the GaiaNet node with the LLM and knowledge base. To initialize the GaiaNet node, you need to\n>>> * Run the command 'source $HOME/$shell_rc' to make the gaianet CLI tool available in the current shell;\n>>> * Run the command 'gaianet init' to initialize the GaiaNet node."
-
 
 exit 0
