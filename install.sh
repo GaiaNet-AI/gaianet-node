@@ -164,8 +164,13 @@ if [ -d "$gaianet_base_dir" ]; then
     if [ "$upgrade" -eq 1 ]; then
 
         # check version
-        current_version=$(gaianet --version)
-        if [ "GaiaNet CLI Tool v$version" = "$current_version" ]; then
+        if ! command -v gaianet &> /dev/null; then
+            current_version=""
+        else
+            current_version=$(gaianet --version)
+        fi
+
+        if [ -n "$current_version" ] && [ "GaiaNet CLI Tool v$version" = "$current_version" ]; then
             info "The current version ($current_version) is the same as the target version (GaiaNet CLI Tool v$version). Skip the upgrade process."
             exit 0
 
@@ -270,16 +275,44 @@ if [ "$upgrade" -eq 1 ]; then
 
         if ! grep -q '"chat_batch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
-            sed -i '' '2i\
-            "chat_batch_size": "512",
-            ' $gaianet_base_dir/config.json
+            if [ "$(uname)" == "Darwin" ]; then
+                sed -i '' '2i\
+                "chat_batch_size": "512",
+                ' "$gaianet_base_dir/config.json"
+
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                sed -i '2i\
+                "chat_batch_size": "512",
+                ' "$gaianet_base_dir/config.json"
+
+            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                error "    * For Windows users, please run this script in WSL."
+                exit 1
+            else
+                error "    * Only support Linux, MacOS and Windows."
+                exit 1
+            fi
         fi
 
         if ! grep -q '"embedding_batch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
-            sed -i '' '2i\
-            "embedding_batch_size": "512",
-            ' $gaianet_base_dir/config.json
+            if [ "$(uname)" == "Darwin" ]; then
+                sed -i '' '2i\
+                "embedding_batch_size": "512",
+                ' "$gaianet_base_dir/config.json"
+
+            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                sed -i '2i\
+                "embedding_batch_size": "512",
+                ' "$gaianet_base_dir/config.json"
+
+            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                error "    * For Windows users, please run this script in WSL."
+                exit 1
+            else
+                error "    * Only support Linux, MacOS and Windows."
+                exit 1
+            fi
         fi
 
         info "    * The config.json is recovered in $gaianet_base_dir"
