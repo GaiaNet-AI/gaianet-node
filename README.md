@@ -15,7 +15,7 @@
 
 
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | We need your help to translate this README into your native language.
+[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Farsi(فارسی)](README-fa.md) | We need your help to translate this README into your native language.
 
 Like our work? ⭐ Star us!
 
