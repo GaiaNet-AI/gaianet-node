@@ -30,8 +30,8 @@
   
   
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Farsi(فارسی)](README-fa.md) |
- ما به کمک شما برای ترجمه این README به زبان مادری‌تان نیاز داریم.
+[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Farsi(فارسی)](README-fa.md) | 
+ما به کمک شما برای ترجمه این README به زبان مادری‌تان نیاز داریم.
 
   
 
@@ -497,3 +497,4 @@ Options:
   
 
 لذت ببرید!
+
