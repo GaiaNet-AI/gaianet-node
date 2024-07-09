@@ -175,14 +175,28 @@ if [ -d "$gaianet_base_dir" ]; then
             exit 0
 
         else
-            while true; do
-                read -p "The gaianet node will be upgraded to v$version. It is strongly recommended to (1) STOP the running node and (2) backup $gaianet_base_dir directory before continuing the upgrade process. Continue? (y/n): " answer
-                case $answer in
-                    [Yy]* ) break;;
-                    [Nn]* ) echo "Upgrade cancelled."; exit;;
-                    * ) echo "Please answer y or n.";;
-                esac
-            done
+            if [ -t 0 ]; then
+                # Terminal is attached, proceed as normal
+                while true; do
+                    read -p "The gaianet node will be upgraded to v$version. It is strongly recommended to (1) STOP the running node and (2) backup $gaianet_base_dir directory before continuing the upgrade process. Continue? (y/n): " answer
+                    case $answer in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo "Upgrade cancelled."; exit;;
+                        * ) echo "Please answer y or n.";;
+                    esac
+                done
+            else
+                # Script is being piped, re-attach terminal input for the read command
+                exec < /dev/tty
+                while true; do
+                    read -p "The gaianet node will be upgraded to v$version. It is strongly recommended to (1) STOP the running node and (2) backup $gaianet_base_dir directory before continuing the upgrade process. Continue? (y/n): " answer
+                    case $answer in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo "Upgrade cancelled."; exit;;
+                        * ) echo "Please answer y or n.";;
+                    esac
+                done
+            fi
         fi
 
         printf "[+] Performing backup before upgrading to v$version ...\n\n"
