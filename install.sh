@@ -248,7 +248,7 @@ if [ -d "$gaianet_base_dir" ]; then
         # remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
         find "$gaianet_base_dir" -mindepth 1 -not -name 'backup' -not -path '*/backup/*' -not -name '*.gguf' -exec rm -rf {} +
 
-        printf "\n"
+        printf "    * Backup done\n\n"
 
     elif [ "$reinstall" -eq 1 ]; then
         printf "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
