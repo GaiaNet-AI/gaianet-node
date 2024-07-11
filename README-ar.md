@@ -1,4 +1,4 @@
-# Run your own GaiaNet node
+# قم بتشغيل عقدة Gaianet الخاصة بك
 
 
 <p align="center">
@@ -15,54 +15,53 @@
 
 
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | We need your help to translate this README into your native language.
+[اليابانية(日本語)](README-ja.md) | [الصينية(中文)](README-cn.md) | [التركية (Türkçe)](README-tr.md) | [العربية (العَرَبية)](README-ar.md) | نحتاجُ الى مساعدتك في ترجمة  هذا الملف الى لغتك الأم.
 
-Like our work? ⭐ Star us!
 
+أعجَبَك عَمَلُنا؟ ⭐ قَيْمِنّا بنجمة!
 ---
 
-## Quick start
+## بداية سريعة
 
-Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
+قم بتثبيت حزمة برامج العقدة الافتراضية باستخدام أمر واحد على نظام التشغيل Mac أو Linux أو Windows WSL.
 
 ```bash
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
-Then, follow the prompt on your screen to set up the environment path. The command line will begin with `source`.
+ثم اتبع التعليمات على شاشتك لإعداد مسار البيئة, سيبدأ سطر الأوامر بالأمر `source`.
 
-Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
+قم بتهيئة العقدة. ستقوم بتنزيل ملفات النماذج وقواعد بيانات المتجهات المحددة في ملف `$HOME/gaianet/config.json`، وقد يستغرق ذلك بضع دقائق نظرًا لحجم الملفات الكبير.
 
 ```bash
 gaianet init
 ```
 
-Start the node.
+ابدأ العقدة.
 
 ```bash
 gaianet start
 ```
-
-The script prints the official node address on the console as follows.
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+سيقوم النص بطباعة عنوان العقدة الرسمي على الكونسول كما يلي.
+يمكنك فتح المتصفح على ذلك العنوان لرؤية معلومات العقدة ثم التحدث مع وكيل الذكاء الاصطناعي على العقدة.
 
 ```
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
-To stop the node, you can run the following script.
+لإيقاف العقدة, يمكنك تشغيل الأمر الآتي:
 
 ```bash
 gaianet stop
 ```
 
-## Install guide
+## دليل التثبيت
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> يجب أن تبدو النتائج كما يلي: </summary>
 
 ```console
 [+] Downloading default config file ...
@@ -108,19 +107,19 @@ WasmEdge binaries accessible
 
 </details>
 
-By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+بشكل افتراضي, يتم التثبيت ب `$HOME/gaianet`, يمكنك أيضًا أن تختارَ عنوانًا بديلاً.
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Initialize the node
+## تهيئة العقدة
 
 ```
 gaianet init
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> يجب أن تبدو النتيجة كما يلي: </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -146,28 +145,29 @@ gaianet init
 
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the llama-3 8B model with a London guidebook as knowledge base.
+يعمل أمر `init` على تهيئة العقدة وفقًا لملف `$HOME/gaianet/config.json`. يمكنك استخدام بعض التكوينات المعدة مسبقًا. على سبيل المثال، الأمر أدناه يقوم بتهيئة عقدة باستخدام نموذج llama-3 8B مع دليل لندن كقاعدة معرفية.
 
 ```bash
 gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
-To see a list of pre-set configurations, you can do `gaianet init --help`.
-Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+لرؤية قائمة تكوينات معدة مسبقًا, بإمكانك تشغيل `gaianet init --help`.
+بالإضافة إلى التكوينات المعدة مسبقًا مثل `gaianet_docs`، يمكنك أيضًا تمرير عنوان URL إلى ملف `config.json` الخاص بك ليتم تهيئة العقدة بالحالة التي ترغب فيها.
 
-If you need to `init` a node installed in an alternative directory, do this.
+
+إذا كنت بحاجة إلى تهيئة-`init`- عقدة مثبتة في دليل بديل، قم بذلك على النحو التالي.
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Start the node
+## إبدأ العقدة
 
 ```
 gaianet start
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> النتيجة يجب أن تكون كما يلي: </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -186,25 +186,25 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+يمكنك بدء العقدة للاستخدام المحلي. ستكون متاحة فقط عبر `localhost` ولن تكون متاحة على أي من عناوين URL العامة لنطاقات GaiaNet.
 
 ```bash
 gaianet start --local-only
 ```
 
-You can also start a node installed in an alternative base directory.
+يمكنك أيضًا بدء عقدة مثبتة في دليل أساسي بديل.
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Stop the node
+### أوقف العقدة
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> النتيجة يجب أن تبدو كما يلي: </summary>
 
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
@@ -212,29 +212,31 @@ gaianet stop
 
 </details>
 
-Stop a node installed in an alternative base directory.
+إيقاف عقدة مثبتة في دليل أساسي بديل.
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
-### Update configuration
+### تحديث التكوين
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+باستخدام الأمر الفرعي `gaianet config` يمكنك تحديث الحقول الأساسية المحددة في ملف `config.json`. **يجب** عليك تشغيل `gaianet init` مرة أخرى بعد تحديث التكوين.
 
-To update the `chat` field, for example, use the following command:
+
+
+لتحديث حقل `chat`، على سبيل المثال، استخدم الأمر التالي:
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
-To update the `chat_ctx_size` field, for example, use the following command:
+لتحديث حقل `chat_ctx_size`، على سبيل المثال، استخدم الأمر التالي:
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Below are all options of the `config` subcommand.
+فيما يلي جميع خيارات الأمر الفرعي `config`:
 
 ```console
 $ gaianet config --help
@@ -260,4 +262,4 @@ Options:
   --help                         Show this help message
 ```
 
-Have fun!
+استمتع!
