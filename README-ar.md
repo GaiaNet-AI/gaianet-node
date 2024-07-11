@@ -25,7 +25,8 @@
 
 قم بتثبيت حزمة برامج العقدة الافتراضية باستخدام أمر واحد على نظام التشغيل Mac أو Linux أو Windows WSL.
 
-```curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
+```bash
+curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
 ثم اتبع التعليمات على شاشتك لإعداد مسار البيئة, سيبدأ سطر الأوامر بالأمر `source`.
