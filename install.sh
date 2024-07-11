@@ -223,6 +223,13 @@ if [ -d "$gaianet_base_dir" ]; then
             error "Failed to copy the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/gaianet-domain."
             exit 1
         fi
+        # backup deviceid.txt
+        if [ -f "$gaianet_base_dir/deviceid.txt" ]; then
+            printf "    * Copy deviceid.txt to $gaianet_base_dir/backup/\n"
+            cp $gaianet_base_dir/deviceid.txt $gaianet_base_dir/backup/
+        else
+            warning "    * The deviceid.txt does not exist in $gaianet_base_dir."
+        fi
 
         # remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
         find "$gaianet_base_dir" -mindepth 1 -not -name 'backup' -not -path '*/backup/*' -not -name '*.gguf' -exec rm -rf {} +
@@ -265,6 +272,7 @@ info "    * gaianet CLI tool is installed in $bin_dir"
 if [ "$upgrade" -eq 1 ]; then
     printf "[+] Recovering config.json ...\n"
 
+    # recover config.json
     if [ -f "$gaianet_base_dir/backup/config.json" ]; then
         cp $gaianet_base_dir/backup/config.json $gaianet_base_dir/config.json
 
@@ -653,6 +661,17 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 else
     echo "Unsupported OS"
     exit 1
+fi
+
+if [ "$upgrade" -eq 1 ]; then
+    # recover deviceid.txt
+    if [ -f "$gaianet_base_dir/backup/deviceid.txt" ]; then
+        cp $gaianet_base_dir/backup/deviceid.txt $gaianet_base_dir/deviceid.txt
+
+        info "    * The deviceid.txt is recovered in $gaianet_base_dir"
+    else
+        warning "    * The deviceid.txt does not exist in $gaianet_base_dir/backup/."
+    fi
 fi
 
 device_id_file="$gaianet_base_dir/deviceid.txt"
