@@ -670,7 +670,7 @@ if [ "$upgrade" -eq 1 ]; then
 
         info "    * The deviceid.txt is recovered in $gaianet_base_dir"
     else
-        warning "    * The deviceid.txt does not exist in $gaianet_base_dir/backup/."
+        warning "    * The deviceid.txt does not exist in $gaianet_base_dir/backup/. Will generate a new one."
     fi
 fi
 

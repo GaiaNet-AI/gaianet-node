@@ -794,6 +794,7 @@ start() {
 
         # start api-server
         retry_count=0
+        start_retry_cout=0
         max_retries=3
         while true; do
 
@@ -834,20 +835,77 @@ start() {
 
             sleep 10
 
-            info "    Verify the LlamaEdge API Server. Please wait seconds ..."
-            status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-                -X POST http://localhost:$llamaedge_port/v1/chat/completions \
-                -H 'accept:application/json' \
-                -H 'Content-Type: application/json' \
-                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+            # check if http://localhost:$llamaedge_port/echo is available
+            # The URL to check
+            url="http://localhost:$llamaedge_port/echo"
 
-            curl_exit_status=$?
+            # Use curl to send a request to the URL
+            # -s --silent: Silent mode. Don't show progress meter or error messages
+            # -o /dev/null: Redirect output to /dev/null (no output)
+            # -w '%{http_code}': Output the HTTP status code
+            http_status=$(curl -s -o /dev/null -w '%{http_code}' "$url")
 
-            if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
-                break
+            # Check if the HTTP status code is 200 (OK)
+            if [ "$http_status" -eq 200 ]; then
+                info "    LlamaEdge API Server is ready!"
+                info "    Verify the LlamaEdge API Server. Please wait seconds ..."
+                status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                    -H 'accept:application/json' \
+                    -H 'Content-Type: application/json' \
+                    -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+
+                curl_exit_status=$?
+
+                if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+                    break
+                else
+                    tail -2 $log_dir/start-llamaedge.log
+
+                    # stop the api-server
+                    pkill -9 wasmedge || true
+
+                    # stop supervise if it is running
+                    if svok $gaianet_base_dir > /dev/null 2>&1; then
+                        svc -d $gaianet_base_dir
+                        svc -k $gaianet_base_dir
+                        svc -x $gaianet_base_dir
+                        supervise_pid=$gaianet_base_dir/supervise.pid
+                        if [ -f $supervise_pid ]; then
+                            rm $supervise_pid
+                        fi
+                        rm $gaianet_base_dir/run
+                        rm -rf $gaianet_base_dir/supervise
+                    fi
+
+                    # remove the pid file
+                    llamaedge_pid=$gaianet_base_dir/llamaedge.pid
+                    if [ -f $llamaedge_pid ]; then
+                        rm $llamaedge_pid
+                    fi
+
+                    sleep 10  # wait for 10 seconds before retrying
+
+                    ((retry_count++))
+                    if [ $retry_count -ge $((max_retries + 1)) ]; then
+                        error "    * Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
+
+                        # stop the Qdrant instance
+                        pkill -9 qdrant || true
+                        qdrant_pid=$gaianet_base_dir/qdrant.pid
+                        if [ -f $qdrant_pid ]; then
+                            rm $qdrant_pid
+                        fi
+
+                        # wait for 3 seconds before exiting
+                        sleep 3
+
+                        exit 1
+                    else
+                        error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
+                    fi
+                fi
             else
-                tail -2 $log_dir/start-llamaedge.log
-
                 # stop the api-server
                 pkill -9 wasmedge || true
 
@@ -872,8 +930,8 @@ start() {
 
                 sleep 10  # wait for 10 seconds before retrying
 
-                ((retry_count++))
-                if [ $retry_count -ge $((max_retries + 1)) ]; then
+                ((start_retry_cout++))
+                if [ $start_retry_cout -ge $((max_retries + 1)) ]; then
                     error "    * Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
 
                     # stop the Qdrant instance
@@ -888,7 +946,7 @@ start() {
 
                     exit 1
                 else
-                    error "    * Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
+                    error "    * LlamaEdge API Server is not ready. Retrying ($start_retry_cout)..."
                 fi
             fi
 
