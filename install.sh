@@ -655,8 +655,23 @@ else
     exit 1
 fi
 
-# Generate a random string as Device ID
-device_id="device-$(openssl rand -hex 12)"
+device_id_file="$gaianet_base_dir/deviceid.txt"
+
+# Check if the device_id file exists
+if [ -f "$device_id_file" ]; then
+    # The file exists, read device_id from the file
+    device_id=$(cat "$device_id_file")
+    # Check if the device_id is empty
+    if [ -z "$device_id" ]; then
+        # device_id is empty, generate a new one
+        device_id="device-$(openssl rand -hex 12)"
+        echo "$device_id" > "$device_id_file"
+    fi
+else
+    # The file does not exist, generate a new device_id and save it to the file
+    device_id="device-$(openssl rand -hex 12)"
+    echo "$device_id" > "$device_id_file"
+fi
 
 $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
