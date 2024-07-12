@@ -17,7 +17,7 @@
 Mac, Linux veya Windows WSL'de tek bir komut satırıyla varsayılan düğüm yazılım yığınını yükleyin.
 
 ```bash
-curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
+curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
 Düğümü başlatın. Bu işlem `$HOME/gaianet/config.json` dosyasında belirtilen model dosyalarını ve vektör veritabanı dosyalarını indirecektir ve dosyalar büyük olduğu için birkaç dakika sürebilir.
@@ -53,7 +53,7 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 
 <details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
 
-```
+```console
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -132,6 +132,7 @@ gaianet init
 
     * Recovery is done successfully
 ```
+
 </details>
 
 init` komutu düğümü `$HOME/gaianet/config.json` dosyasına göre başlatır. Önceden ayarlanmış konfigürasyonlarımızdan bazılarını kullanabilirsiniz.
