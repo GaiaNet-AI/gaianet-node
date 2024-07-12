@@ -22,7 +22,7 @@
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
-初始化节点。这将下载 `$HOME/gaianet/config.json` 文件中指定的模型文件和矢量数据库文件，由于文件较大，可能需要几分钟时间。
+初始化节点。这将下载 `$HOME/gaianet/config.json` 文件中指定的模型文件和向量数据库文件，由于文件较大，可能需要几分钟时间。
 
 ```bash
 gaianet init
@@ -39,7 +39,7 @@ gaianet start
 您可以打开浏览器访问该 URL，查看节点信息并与节点上的人工智能代理聊天。
 
 ```
-... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
 要停止节点，可以运行以下脚本。
