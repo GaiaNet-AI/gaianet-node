@@ -19,7 +19,7 @@
 在 Mac、Linux 或 Windows WSL 上只需一行命令即可安装默认节点软件栈。
 
 ```bash
-curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
+curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
 初始化节点。这将下载 `$HOME/gaianet/config.json` 文件中指定的模型文件和矢量数据库文件，由于文件较大，可能需要几分钟时间。
