@@ -244,16 +244,31 @@ create_collection() {
 
     # 10.1 recover from the given qdrant collection snapshot
     if [ -n "$url_snapshot" ]; then
-        printf "    * Download Qdrant collection snapshot ...\n"
-        if [[ $url_snapshot == *.tar.gz ]]; then
-            filename=$(basename $url_snapshot)
-            check_curl $url_snapshot $gaianet_base_dir/$filename
-            tar -xzOf $gaianet_base_dir/$filename > $gaianet_base_dir/default.snapshot
-            rm $gaianet_base_dir/$filename
+        # Regular expression for URL validation
+        regex="^(https?|ftp)://[^\s/$.?#].[^\s]*$"
+
+        # Check if $url_snapshot is a valid URL
+        if [[ $url_snapshot =~ $regex ]]; then
+            printf "    * Download Qdrant collection snapshot ...\n"
+            if [[ $url_snapshot == *.tar.gz ]]; then
+                filename=$(basename $url_snapshot)
+                check_curl $url_snapshot $gaianet_base_dir/$filename
+                tar -xzOf $gaianet_base_dir/$filename > $gaianet_base_dir/default.snapshot
+                rm $gaianet_base_dir/$filename
+            else
+                check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+            fi
+            info "      The snapshot is downloaded in $gaianet_base_dir"
+
+        # Check if $url_snapshot is a local file
+        elif [ -f "$gaianet_base_dir/$url_snapshot" ]; then
+            # rename the file to default.snapshot
+            info "    * Rename $url_snapshot to default.snapshot ..."
+            cp $gaianet_base_dir/$url_snapshot $gaianet_base_dir/default.snapshot
+
         else
-            check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+            echo "$url_snapshot is neither a valid URL nor a local file."
         fi
-        info "      The snapshot is downloaded in $gaianet_base_dir"
 
         printf "    * Import the Qdrant collection snapshot ...\n"
         printf "      The process may take a few minutes. Please wait ...\n"
@@ -271,7 +286,8 @@ create_collection() {
             error "    * [Error] Failed to recover from the collection snapshot. $response"
 
             if [ "$qdrant_already_running" = false ]; then
-                kill $qdrant_pid
+                info "    * Stop the Qdrant instance ..."
+                kill -9 $qdrant_pid
             fi
 
             exit 1
