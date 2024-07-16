@@ -27,9 +27,9 @@ config_url=""
 # path to the gaianet base directory
 gaianet_base_dir="$HOME/gaianet"
 # qdrant binary
-qdrant_version="v1.9.4"
+qdrant_version="v1.10.1"
 # tmp directory
-tmp_dir="/tmp"
+tmp_dir="$gaianet_base_dir/tmp"
 # specific CUDA enabled GGML plugin
 ggmlcuda=""
 # 0: disable vector, 1: enable vector
@@ -52,7 +52,7 @@ function print_usage {
     printf "  --base <Path>      Specify a path to the gaianet base directory\n"
     printf "  --reinstall        Install and download all required deps\n"
     printf "  --upgrade          Upgrade the gaianet node\n"
-    printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: /tmp]\n"
+    printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: $gaianet_base_dir/tmp]\n"
     printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
     printf "  --enable-vector:   Install vector log aggregator\n"
