@@ -12,9 +12,9 @@
   </a>
 </p>
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | We need your help to translate this README into your native language.
+[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | [Russian (русскийة)](README-ru.md) | Нам нужна ваша помощь, чтобы перевести этот README на ваш родной язык.
 
-Like our work? ⭐ Star us!
+Нравится наша работа? ⭐ Поставьте нам звезду!
 
 ---
 
@@ -61,6 +61,7 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 
 <details><summary>Вывод должен выглядеть следующим образом: </summary>
 
+
 ```console
 [+] Downloading default config file ...
 
@@ -105,19 +106,16 @@ WasmEdge binaries accessible
 
 </details
 
-По умолчанию он устанавливается в директорию `$HOME/gaianet`. Вы также можете выбрать установку в альтернативный каталог.
+По умолчанию установка производится в директорию `$HOME/gaianet`. Вы также можете выбрать установку в альтернативный каталог.
 
-``bash
+```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
-
 ```
 
 ## Инициализация узла
 
 ```
-
 gaianet init
-
 ````
 
 <details><summary>Вывод должен выглядеть следующим образом: </summary>
@@ -158,7 +156,7 @@ gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/
 Чтобы посмотреть список предустановленных конфигураций, вы можете выполнить команду `gaianet init --help`.
 Помимо предустановленных конфигураций, таких как `gaianet_docs`, вы также можете передать URL-адрес собственного `config.json`, чтобы узел был инициализирован до нужного вам состояния.
 
-Если вам нужно `инициализировать` узел, установленный в альтернативной директории, сделайте следующее.
+Если вам нужно инициализировать `init` узел, установленный в альтернативной директории, сделайте следующее.
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
@@ -166,13 +164,13 @@ gaianet init --base $HOME/gaianet.alt
 
 ## Запуск узла
 
-```
+```bash
 gaianet start
 ```
 
 <details><summary>Вывод должен выглядеть следующим образом: </summary>
 
-``bash
+```bash
 [+] Starting Qdrant instance ...
 
     Qdrant instance started with pid: 39762
@@ -226,39 +224,38 @@ gaianet start
 
   Чтобы обновить значение поля `chat`, например, используйте следующую команду:
 
-  ``bash
+  ```bash
   gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
   ```
 
   К примеру, для того чтобы обновить значение поля `chat_ctx_size`, выполните следующую команду:
 
-  ``bash
+  ```bash
   gaianet config --chat-ctx-size 5120
   ```
   Ниже перечислены все опции подкоманды `config`.
 
-  ``Консоль
+  ```console
   $ gaianet config --help
-
+  
   Использование: gaianet config [OPTIONS]
 
   Опции:
-    --chat-url <url> Обновление url модели чата.
-    --chat-ctx-size <val> Обновить размер контекста модели чата.
-    --embedding-url <url> Обновить url модели встраивания.
-    --embedding-ctx-size <val> Обновить размер контекста модели встраивания.
-    --prompt-template <val> Обновить шаблон подсказки модели чата.
-    --port <val> Обновление порта LlamaEdge API Server.
-    --system-prompt <val> Обновить системную подсказку.
-    --rag-prompt <val> Обновить подсказку rag.
-    --rag-policy <val> Обновление политики rag [Возможные значения: system-message, last-user-message].
-    --reverse-prompt <val> Обновить обратную подсказку.
-    --domain <val> Обновление домена узла GaiaNet.
-    --snapshot <url> Обновление моментального снимка Qdrant.
-    --qdrant-limit <val> Обновить максимальное количество возвращаемых результатов.
+    --chat-url <url>               Обновление url модели чата.
+    --chat-ctx-size <val>          Обновить размер контекста модели чата.
+    --embedding-url <url>          Обновить url модели встраивания.
+    --embedding-ctx-size <val>     Обновить размер контекста модели встраивания.
+    --prompt-template <val>        Обновить шаблон подсказки модели чата.
+    --port <val>                   Обновление порта LlamaEdge API Server.
+    --system-prompt <val>          Обновить системную подсказку.
+    --rag-prompt <val>             Обновить подсказку rag.
+    --rag-policy <val>             Обновление политики rag [Возможные значения: system-message, last-user-message].
+    --reverse-prompt <val>         Обновить обратную подсказку.
+    --domain <val>                 Обновление домена узла GaiaNet.
+    --snapshot <url>               Обновление моментального снимка Qdrant.
+    --qdrant-limit <val>           Обновить максимальное количество возвращаемых результатов.
     --qdrant-score-threshold <val> Обновление минимального порога оценки для результата.
-    --base <path> Базовый каталог узла GaiaNet.
-    --help Показать сообщение о помощи
+    --base <path>                  Базовый каталог узла GaiaNet.
+    --help                         Показать сообщение о помощи
   ```
   Удачи!
-````
