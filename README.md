@@ -15,7 +15,7 @@
 
 
 
-[Russian(Русский)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-ru.md) [Japanese(日本語)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-ja.md) | [Chinese(中文)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-cn.md) | [Turkish (Türkçe)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-tr.md) | We need your help to translate this README into your native language.
+[Russian(Русский)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-ru.md) | [Japanese(日本語)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-ja.md) | [Chinese(中文)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-cn.md) | [Turkish (Türkçe)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-tr.md) | [Farsi(فارسی)](https://github.com/GaiaNet-AI/gaianet-node/blob/main/README-fa.md) | We need your help to translate this README into your native language.
 
 Like our work? ⭐ Star us!
 
