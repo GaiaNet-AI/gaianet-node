@@ -263,7 +263,6 @@ create_collection() {
         # Check if $url_snapshot is a local file
         elif [ -f "$gaianet_base_dir/$url_snapshot" ]; then
             # rename the file to default.snapshot
-            info "    * Rename $url_snapshot to default.snapshot ..."
             cp $gaianet_base_dir/$url_snapshot $gaianet_base_dir/default.snapshot
 
         else
