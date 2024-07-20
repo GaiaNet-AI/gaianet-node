@@ -245,7 +245,7 @@ create_collection() {
     # 10.1 recover from the given qdrant collection snapshot
     if [ -n "$url_snapshot" ]; then
         # Regular expression for URL validation
-        regex="^(https?|ftp)://[^\s/$.?#].[^\s]*$"
+        regex='(https?|ftp)://[-[:alnum:]\+&@#/%?=~_|!:,.;]+'
 
         # Check if $url_snapshot is a valid URL
         if [[ $url_snapshot =~ $regex ]]; then
