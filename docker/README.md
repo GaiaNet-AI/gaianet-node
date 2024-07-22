@@ -109,10 +109,43 @@ docker cp /local/path/to/nodeid.json gaianet:/root/gaianet/nodeid.json
 docker cp /local/path/to/1234-abcd-key-store gaianet:/root/gaianet/1234-abcd-key-store
 ```
 
-THen, restart the node for the new address and keystore to take effect.
+Then, restart the node for the new address and keystore to take effect.
 
 ```
 docker stop gaianet
 docker start gaianet
 ```
 
+## Regenerate the node Id
+
+You can also regenerate the nodeId associated with the node.
+
+First, you need to clear the old nodeId configuration. 
+
+Edit the `nodeid.json` file in the base dir and it should look like the default `nodeid.json` in [nodeid.json](https://github.com/GaiaNet-AI/gaianet-node/blob/main/nodeid.json):
+```
+{
+}
+```
+And clear the address field in `config.json` and it should look like: 
+```
+{
+    "address": "",
+    ...
+}
+```
+
+Second, run the `registry.wasm` file:
+```
+wasmedge --dir .:. registry.wasm
+```
+The output of the command is your new key file stored in your base dir.
+
+And in the nodeid.json file you can find your new nodeId and key newly generated.
+```
+{
+  "address": "0xd5ed...d181",
+  "keystore": "afe0...a12b",
+  "password": "..."
+}
+```
