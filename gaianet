@@ -262,8 +262,13 @@ create_collection() {
 
         # Check if $url_snapshot is a local file
         elif [ -f "$gaianet_base_dir/$url_snapshot" ]; then
-            # rename the file to default.snapshot
-            cp $gaianet_base_dir/$url_snapshot $gaianet_base_dir/default.snapshot
+            info "      * Use local snapshot: $url_snapshot"
+            if [[ $url_snapshot == *.tar.gz ]]; then
+                tar -xzOf $gaianet_base_dir/$url_snapshot > $gaianet_base_dir/default.snapshot
+            else
+                # make a copy of the original snapshot file
+                cp $gaianet_base_dir/$url_snapshot $gaianet_base_dir/default.snapshot
+            fi
 
         else
             echo "$url_snapshot is neither a valid URL nor a local file."
