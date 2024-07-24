@@ -1,7 +1,7 @@
 # Docker support
 
 You can run all the commands in this document without any change on any machine with the latest Docker and at least 8GB of RAM available to the container.
-By default, the container uses the CPU to peform computations, which could be slow for large LLMs. For GPUs,
+By default, the container uses the CPU to perform computations, which could be slow for large LLMs. For GPUs,
 
 * Mac: Everything here works on [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/). However, the Apple GPU cores will not be available inside Docker containers until [WebGPU is supported by Docker](https://github.com/LlamaEdge/LlamaEdge/blob/main/docker/webgpu.md) later in 2024.
 * Windows and Linux with Nvidia GPU: You will need to install [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installation) for Docker. In the instructions below, replace the `latest` tag with `cuda12` or `cuda11` to use take advantage of the GPU, and add the `--device nvidia.com/gpu=all` flag. If you need to build the images yourself, replace `Dockerfile` with `Dockerfile.cuda12` or `Dockerfile.cuda11`.
@@ -109,10 +109,43 @@ docker cp /local/path/to/nodeid.json gaianet:/root/gaianet/nodeid.json
 docker cp /local/path/to/1234-abcd-key-store gaianet:/root/gaianet/1234-abcd-key-store
 ```
 
-THen, restart the node for the new address and keystore to take effect.
+Then, restart the node for the new address and keystore to take effect.
 
 ```
 docker stop gaianet
 docker start gaianet
 ```
 
+## Regenerate the node Id
+
+You can also regenerate the nodeId associated with the node.
+
+First, you need to clear the old nodeId configuration. 
+
+Edit the `nodeid.json` file in the base dir and it should look like the default `nodeid.json` in [nodeid.json](https://github.com/GaiaNet-AI/gaianet-node/blob/main/nodeid.json):
+```
+{
+}
+```
+And clear the address field in `config.json` and it should look like: 
+```
+{
+    "address": "",
+    ...
+}
+```
+
+Second, run the `registry.wasm` file:
+```
+wasmedge --dir .:. registry.wasm
+```
+The output of the command is your new key file stored in your base dir.
+
+And in the nodeid.json file you can find your new nodeId and key newly generated.
+```
+{
+  "address": "0xd5ed...d181",
+  "keystore": "afe0...a12b",
+  "password": "..."
+}
+```

@@ -1,4 +1,5 @@
-# Kendi GaiaNet düğümünüzü çalıştırın
+# قم بتشغيل عقدة Gaianet الخاصة بك
+
 
 <p align="center">
   <a href="https://discord.gg/gaianet-ai">
@@ -12,46 +13,55 @@
   </a>
 </p>
 
-## Hızlı başlangıç
 
-Mac, Linux veya Windows WSL'de tek bir komut satırıyla varsayılan düğüm yazılım yığınını yükleyin.
+
+[إنجليزي(English)](README.md) | [اليابانية(日本語)](README-ja.md) | [الصينية(中文)](README-cn.md) | [التركية (Türkçe)](README-tr.md) | [العربية (العَرَبية)](README-ar.md) | نحتاجُ الى مساعدتك في ترجمة  هذا الملف الى لغتك الأم.
+
+
+أعجَبَك عَمَلُنا؟ ⭐ قَيْمِنّا بنجمة!
+---
+
+## بداية سريعة
+
+قم بتثبيت حزمة برامج العقدة الافتراضية باستخدام أمر واحد على نظام التشغيل Mac أو Linux أو Windows WSL.
 
 ```bash
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
-Düğümü başlatın. Bu işlem `$HOME/gaianet/config.json` dosyasında belirtilen model dosyalarını ve vektör veritabanı dosyalarını indirecektir ve dosyalar büyük olduğu için birkaç dakika sürebilir.
+ثم اتبع التعليمات على شاشتك لإعداد مسار البيئة, سيبدأ سطر الأوامر بالأمر `source`.
+
+قم بتهيئة العقدة. ستقوم بتنزيل ملفات النماذج وقواعد بيانات المتجهات المحددة في ملف `$HOME/gaianet/config.json`، وقد يستغرق ذلك بضع دقائق نظرًا لحجم الملفات الكبير.
 
 ```bash
 gaianet init
 ```
 
-Düğümü başlatın.
+ابدأ العقدة.
 
 ```bash
 gaianet start
 ```
-
-Kod, resmi düğüm adresini konsola aşağıdaki gibi yazdırır.
-Düğüm bilgilerini görmek için bu URL'ye bir tarayıcı açabilir ve ardından düğümdeki AI aracısı ile sohbet edebilirsiniz.
+سيقوم النص بطباعة عنوان العقدة الرسمي على الكونسول كما يلي.
+يمكنك فتح المتصفح على ذلك العنوان لرؤية معلومات العقدة ثم التحدث مع وكيل الذكاء الاصطناعي على العقدة.
 
 ```
-... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
-Düğümü durdurmak için aşağıdaki komut dosyasını çalıştırabilirsiniz.
+لإيقاف العقدة, يمكنك تشغيل الأمر الآتي:
 
 ```bash
 gaianet stop
 ```
 
-## Kurulum kılavuzu
+## دليل التثبيت
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
+<details><summary> يجب أن تبدو النتائج كما يلي: </summary>
 
 ```console
 [+] Downloading default config file ...
@@ -97,19 +107,19 @@ WasmEdge binaries accessible
 
 </details>
 
-Varsayılan olarak `$HOME/gaianet` dizinine yüklenir. Alternatif bir dizine yüklemeyi de seçebilirsiniz.
+بشكل افتراضي, يتم التثبيت ب `$HOME/gaianet`, يمكنك أيضًا أن تختارَ عنوانًا بديلاً.
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Düğümü başlatın
+## تهيئة العقدة
 
 ```
 gaianet init
 ```
 
-<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
+<details><summary> يجب أن تبدو النتيجة كما يلي: </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -135,28 +145,29 @@ gaianet init
 
 </details>
 
-init` komutu düğümü `$HOME/gaianet/config.json` dosyasına göre başlatır. Önceden ayarlanmış konfigürasyonlarımızdan bazılarını kullanabilirsiniz.
+يعمل أمر `init` على تهيئة العقدة وفقًا لملف `$HOME/gaianet/config.json`. يمكنك استخدام بعض التكوينات المعدة مسبقًا. على سبيل المثال، الأمر أدناه يقوم بتهيئة عقدة باستخدام نموذج llama-3 8B مع دليل لندن كقاعدة معرفية.
 
 ```bash
 gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
-Önceden ayarlanmış yapılandırmaların bir listesini görmek için `gaianet init --help` yapabilirsiniz.
-gaianet_docs` gibi önceden ayarlanmış yapılandırmaların yanı sıra, düğümün istediğiniz duruma başlatılması için kendi `config.json` dosyanıza bir URL de iletebilirsiniz.
+لرؤية قائمة تكوينات معدة مسبقًا, بإمكانك تشغيل `gaianet init --help`.
+بالإضافة إلى التكوينات المعدة مسبقًا مثل `gaianet_docs`، يمكنك أيضًا تمرير عنوان URL إلى ملف `config.json` الخاص بك ليتم تهيئة العقدة بالحالة التي ترغب فيها.
 
-Alternatif bir dizinde kurulu bir düğümü `init` etmeniz gerekiyorsa, bunu yapın.
+
+إذا كنت بحاجة إلى تهيئة-`init`- عقدة مثبتة في دليل بديل، قم بذلك على النحو التالي.
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Düğümü başlat
+## إبدأ العقدة
 
 ```
 gaianet start
 ```
 
-<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
+<details><summary> النتيجة يجب أن تكون كما يلي: </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -175,25 +186,25 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-Düğümü yerel kullanım için başlatabilirsiniz. Yalnızca `localhost` üzerinden erişilebilir olacak ve GaiaNet etki alanının genel URL'lerinden hiçbirinde bulunmayacaktır.
+يمكنك بدء العقدة للاستخدام المحلي. ستكون متاحة فقط عبر `localhost` ولن تكون متاحة على أي من عناوين URL العامة لنطاقات GaiaNet.
 
 ```bash
 gaianet start --local-only
 ```
 
-Alternatif bir temel dizinde yüklü bir düğümü de başlatabilirsiniz.
+يمكنك أيضًا بدء عقدة مثبتة في دليل أساسي بديل.
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Düğümü durdur
+### أوقف العقدة
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> Çıktı aşağıdaki gibi görünmelidir: </summary>
+<details><summary> النتيجة يجب أن تبدو كما يلي: </summary>
 
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
@@ -201,37 +212,39 @@ gaianet stop
 
 </details>
 
-Alternatif bir temel dizinde yüklü bir düğümü durdurun.
+إيقاف عقدة مثبتة في دليل أساسي بديل.
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
-### Yapılandırmayı güncelle
+### تحديث التكوين
 
-gaianet config` alt komutunu kullanarak `config.json` dosyasında tanımlanan anahtar alanları güncelleyebilirsiniz. Konfigürasyonu güncelledikten sonra `gaianet init` komutunu tekrar çalıştırmalısınız.
+باستخدام الأمر الفرعي `gaianet config` يمكنك تحديث الحقول الأساسية المحددة في ملف `config.json`. **يجب** عليك تشغيل `gaianet init` مرة أخرى بعد تحديث التكوين.
 
-Örneğin `chat` alanını güncellemek için aşağıdaki komutu kullanın:
+
+
+لتحديث حقل `chat`، على سبيل المثال، استخدم الأمر التالي:
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
-Örneğin `chat_ctx_size` alanını güncellemek için aşağıdaki komutu kullanın:
+لتحديث حقل `chat_ctx_size`، على سبيل المثال، استخدم الأمر التالي:
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Aşağıda `config` alt komutunun tüm seçenekleri yer almaktadır.
+فيما يلي جميع خيارات الأمر الفرعي `config`:
 
 ```console
 $ gaianet config --help
 
-Kullanım: gaianet config [SEÇENEKLER]
+Usage: gaianet config [OPTIONS]
 
-Seçenekler:
---chat-url <url>               Update the url of chat model.
+Options:
+  --chat-url <url>               Update the url of chat model.
   --chat-ctx-size <val>          Update the context size of chat model.
   --embedding-url <url>          Update the url of embedding model.
   --embedding-ctx-size <val>     Update the context size of embedding model.
@@ -249,4 +262,4 @@ Seçenekler:
   --help                         Show this help message
 ```
 
-İyi eğlenceler!
+استمتع!

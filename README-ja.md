@@ -17,15 +17,15 @@
 Mac、Linux、またはWindows WSLで、一行のコマンドでデフォルトのノードソフトウェアスタックをインストールします。
 
 
-```
-curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
+```bash
+curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
 
 ノードを初期化します。`$HOME/gaianet/config.json`ファイルに指定されたモデルファイルとベクターデータベースファイルをダウンロードしますが、ファイルが大きいため数分かかる場合があります。
 
 
-```
+```bash
 gaianet init
 ```
 
@@ -33,7 +33,7 @@ gaianet init
 ノードを開始します。
 
 
-```
+```bash
 gaianet start
 ```
 
@@ -43,22 +43,21 @@ gaianet start
 
 
 ```
-... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.gaianet.xyz
+... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
 
 ノードを停止するには、次のスクリプトを実行します。
 
 
-```
+```bash
 gaianet stop
 ```
 
 
-
 ## インストールガイド
 
-```
+```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
@@ -66,7 +65,7 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 <details><summary> 出力は以下のようになります: </summary>
 
 
-```
+```console
 [+] Downloading default config file ...
 
 [+] Downloading nodeid.json ...
@@ -132,8 +131,7 @@ gaianet init
 
 <details><summary> 出力は以下のようになります: </summary>
 
-
-```
+```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
 ############################################################################################################################## 100.0%############################################################################################################################## 100.0%
 
@@ -155,16 +153,13 @@ gaianet init
     * Recovery is done successfully
 ```
 
-
 </details>
 
 `init` コマンドは、`$HOME/gaianet/config.json` ファイルに従ってノードを初期化します。
 
-
-```
+```bash
 gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
-
 
 プリセット設定のリストを見るには、`gaianet init --help` を実行できます。
 `gaianet_docs`のようなプリセット設定の他に、ノードが希望する状態に初期化されるように自分の `config.json` のURLを渡すこともできます。
@@ -172,7 +167,7 @@ gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/
 別のディレクトリにインストールされたノードを初期化するには、以下を実行します。
 
 
-```
+```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
@@ -188,7 +183,7 @@ gaianet start
 <details><summary> 出力は以下のようになります: </summary>
 
 
-```
+```bash
 [+] Starting Qdrant instance ...
 
     Qdrant instance started with pid: 39762
@@ -209,23 +204,20 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 ローカルでノードを開始することができます。これは `localhost` 経由でのみアクセス可能で、GaiaNetドメインの公開URLでは利用できません。
 
 
-```
+```bash
 gaianet start --local-only
 ```
 
 
 別のベースディレクトリにインストールされたノードも開始できます。
 
-
-```
+```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-
-
 ### ノードを停止
 
-```
+```bash
 gaianet stop
 ```
 
@@ -233,7 +225,7 @@ gaianet stop
 <details><summary> 出力は以下のようになります: </summary>
 
 
-```
+```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
 ```
 
@@ -243,7 +235,7 @@ gaianet stop
 別のベースディレクトリにインストールされたノードを停止します。
 
 
-```
+```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
@@ -256,7 +248,7 @@ gaianet stop --base $HOME/gaianet.alt
 たとえば、`chat` フィールドを更新するには、次のコマンドを使用します：
 
 
-```
+```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
@@ -264,7 +256,7 @@ gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-
 たとえば、`chat_ctx_size` フィールドを更新するには、次のコマンドを使用します：
 
 
-```
+```bash
 gaianet config --chat-ctx-size 5120
 ```
 
@@ -272,7 +264,7 @@ gaianet config --chat-ctx-size 5120
 `config` サブコマンドのすべてのオプションは以下の通りです。
 
 
-```
+```console
 $ gaianet config --help
 
 使用方法: gaianet config [OPTIONS]
