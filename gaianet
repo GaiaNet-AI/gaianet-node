@@ -4,11 +4,11 @@ set -e
 
 # version of CLI tool
 # Note that the version should kept same as the version of installer
-version="0.2.2"
+version="0.2.3"
 
 # version of the GaiaNet node
 # Note that the version should kept same as the version of installer
-installer_version="0.2.2"
+installer_version="0.2.3"
 
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
@@ -245,7 +245,7 @@ create_collection() {
     # 10.1 recover from the given qdrant collection snapshot
     if [ -n "$url_snapshot" ]; then
         # Regular expression for URL validation
-        regex="^(https?|ftp)://[^\s/$.?#].[^\s]*$"
+        regex='(https?|ftp)://[-[:alnum:]\+&@#/%?=~_|!:,.;]+'
 
         # Check if $url_snapshot is a valid URL
         if [[ $url_snapshot =~ $regex ]]; then
@@ -262,9 +262,13 @@ create_collection() {
 
         # Check if $url_snapshot is a local file
         elif [ -f "$gaianet_base_dir/$url_snapshot" ]; then
-            # rename the file to default.snapshot
-            info "    * Rename $url_snapshot to default.snapshot ..."
-            cp $gaianet_base_dir/$url_snapshot $gaianet_base_dir/default.snapshot
+            info "      * Use local snapshot: $url_snapshot"
+            if [[ $url_snapshot == *.tar.gz ]]; then
+                tar -xzOf $gaianet_base_dir/$url_snapshot > $gaianet_base_dir/default.snapshot
+            else
+                # make a copy of the original snapshot file
+                cp $gaianet_base_dir/$url_snapshot $gaianet_base_dir/default.snapshot
+            fi
 
         else
             echo "$url_snapshot is neither a valid URL nor a local file."
