@@ -17,6 +17,8 @@
 
 Like our work? ⭐ Star us!
 
+Checkout our [official docs](https://docs.gaianet.ai/) and a [Manning ebook](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer) on how to customize open source models.
+
 ---
 
 ## Quick start
