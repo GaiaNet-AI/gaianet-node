@@ -1,4 +1,4 @@
-# Run your own GaiaNet node
+# MENJALANKAN GAIA NODE MILIK ANDA
 
 
 <p align="center">
@@ -13,56 +13,47 @@
   </a>
 </p>
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Farsi(فارسی)](README-fa.md) | [Arabic (العربية)](README-ar.md) | [Indonesia (Indonesia)](README-id.md) | We need your help to translate this README into your native language.
+## MULAI DENGAN CEPAT
 
-Like our work? ⭐ Star us!
-
-Checkout our [official docs](https://docs.gaianet.ai/) and a [Manning ebook](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer) on how to customize open source models.
-
----
-
-## Quick start
-
-Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
+Instal kumpulan perangkat lunak *node* bawaan hanya dengan menggunakan satu baris perintah di Mac, Linux, atau Windows WSL.
 
 ```bash
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
-Then, follow the prompt on your screen to set up the environment path. The command line will begin with `source`.
+Kemudian, ikuti perintah yang muncul pada layar Anda untuk menyiapkan *environment path*. yang dimulai dengan mengetikkan `source`, contohnya adalah `source ~/.bashrc`.
 
-Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
+Inisialisasi *node*. Ini akan mengunduh file model dan file basis data vektor yang ditentukan sesuai pada file `$HOME/gaianet/config.json`, dan mungkin memerlukan waktu beberapa menit karena file berukuran besar.
 
 ```bash
 gaianet init
 ```
 
-Start the node.
+Mulai node dengan perintah
 
 ```bash
 gaianet start
 ```
 
-The script prints the official node address on the console as follows.
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+*Script* akan memunculkan alamat dari *node* pada *console*. Anda dapat melakukan klik pada link tersebut untuk membuka browser dan melihat informasi *node* beserta memulai obrolan dengan agen AI dari *node* tersebut.
 
 ```
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
-To stop the node, you can run the following script.
+Untuk menghentikan *node*, anda bisa menjalankan perintah berikut.
 
 ```bash
 gaianet stop
 ```
 
-## Install guide
+## Panduan Instalasi
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Hasilnya seharusnya akan seperti dibawah ini: </summary>
 
 ```console
 [+] Downloading default config file ...
@@ -108,19 +99,19 @@ WasmEdge binaries accessible
 
 </details>
 
-By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+Secara bawaan, ini diinstal ke direktori `$HOME/gaianet`. Namun anda juga dapat memilih untuk menginstal ke direktori alternatif.
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Initialize the node
+## Inisialisasi node
 
 ```
 gaianet init
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Hasilnya seharusnya akan seperti dibawah ini: </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -146,28 +137,28 @@ gaianet init
 
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the llama-3 8B model with a London guidebook as knowledge base.
+Perintah `init` menginisialisasi *node* sesuai dengan file `$HOME/gaianet/config.json`. Anda dapat menggunakan beberapa konfigurasi standar. Misalnya, perintah di bawah ini menginisialisasi *node* dengan model llama-3 8B dengan buku panduan London sebagai basis pengetahuan.
 
 ```bash
 gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
-To see a list of pre-set configurations, you can do `gaianet init --help`.
-Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+Untuk melihat daftar konfigurasi yang telah ditentukan sebelumnya, Anda dapat menjalankan perintah `gaianet init --help`.
+Selain konfigurasi yang telah ditentukan sebelumnya seperti `gaianet_docs`, Anda juga dapat meneruskan URL ke `config.json` Anda sendiri agar *node* dapat diinisialisasi sesuai dengan kondisi yang Anda inginkan.
 
-If you need to `init` a node installed in an alternative directory, do this.
+Jika Anda perlu `init` sebuah *node* yang diinstal di direktori alternatif, lakukan ini.
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Start the node
+## Memulai Menjalankan Node
 
 ```
 gaianet start
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Hasilnya seharusnya akan seperti dibawah ini: </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -186,25 +177,26 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+You can start the *node* for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+Anda dapat memulai *node* untuk penggunaan lokal. Dengan ini *node* hanya dapat diakses melalui `localhost` dan tidak tersedia di URL publik domain GaiaNet mana pun.
 
 ```bash
 gaianet start --local-only
 ```
 
-You can also start a node installed in an alternative base directory.
+Anda juga dapat memulai sebuah *node* yang diinstal di direktori alternatif.
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Stop the node
+### Menghentikan Node
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> Hasilnya seharusnya akan seperti dibawah ini: </summary>
 
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
@@ -212,7 +204,7 @@ gaianet stop
 
 </details>
 
-Stop a node installed in an alternative base directory.
+Berikut ini adalah perintah jika anda ingin menghentikan *node* yang terinstall di direktori alternatif.
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
@@ -220,21 +212,21 @@ gaianet stop --base $HOME/gaianet.alt
 
 ### Update configuration
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+Menggunakan subperintah `gaianet config` dapat memperbarui bidang kunci yang ditentukan dalam file `config.json`. Anda HARUS menjalankan `gaianet init` lagi setelah Anda memperbarui konfigurasi.
 
-To update the `chat` field, for example, use the following command:
+Untuk memperbarui kolom `chat`, misalnya, gunakan perintah berikut:
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
-To update the `chat_ctx_size` field, for example, use the following command:
+Untuk memperbarui kolom `chat_ctx_size`, misalnya, gunakan perintah berikut:
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Below are all options of the `config` subcommand.
+Di bawah ini adalah semua opsi subperintah `config`.
 
 ```console
 $ gaianet config --help
@@ -260,4 +252,4 @@ Options:
   --help                         Show this help message
 ```
 
-Have fun!
+Selamat Bersenang-senang!
