@@ -179,17 +179,17 @@ function Check-CurlSilent {
     }
 }
 
-Write-Host ""
-Write-Host @"
- ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
-██╔════╝ ██╔══██╗██║██╔══██╗████╗  ██║██╔════╝╚══██╔══╝
-██║  ███╗███████║██║███████║██╔██╗ ██║█████╗     ██║
-██║   ██║██╔══██║██║██╔══██║██║╚██╗██║██╔══╝     ██║
-╚██████╔╝██║  ██║██║██║  ██║██║ ╚████║███████╗   ██║
- ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝
-"@
-Write-Host ""
-Write-Host ""
+# Write-Host ""
+# Write-Host @"
+#  ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
+# ██╔════╝ ██╔══██╗██║██╔══██╗████╗  ██║██╔════╝╚══██╔══╝
+# ██║  ███╗███████║██║███████║██╔██╗ ██║█████╗     ██║
+# ██║   ██║██╔══██║██║██╔══██║██║╚██╗██║██╔══╝     ██║
+# ╚██████╔╝██║  ██║██║██║  ██║██║ ╚████║███████╗   ██║
+#  ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝
+# "@
+# Write-Host ""
+# Write-Host ""
 
 # if (Test-Path -Path $gaianet_base_dir -PathType Container) {
 #     Write-Host "Gaianet node is already installed in $gaianet_base_dir"
@@ -204,7 +204,7 @@ Write-Host ""
 # Create base directory if it does not exist
 if (-not (Test-Path -Path $gaianet_base_dir -PathType Container)) {
     New-Item -Path $gaianet_base_dir -ItemType Directory -Force
-    icacls $gaianet_base_dir /grant Everyone:(OI)(CI)F
+    icacls $gaianet_base_dir /grant 'Everyone:(OI)(CI)F'
 
     Write-Output "Directory created with permissions set to 777."
 }
@@ -213,7 +213,7 @@ Set-Location -Path $gaianet_base_dir
 # Create log directory if it does not exist
 if (-not (Test-Path -Path "$gaianet_base_dir/log" -PathType Container)) {
     New-Item -Path "$gaianet_base_dir/log" -ItemType Directory -Force
-    icacls "$gaianet_base_dir/log" /grant Everyone:(OI)(CI)F
+    icacls "$gaianet_base_dir/log" /grant 'Everyone:(OI)(CI)F'
 
     Write-Output "Log directory created with permissions set to 777."
 }
@@ -222,7 +222,7 @@ $log_dir = "$gaianet_base_dir/log"
 # Create bin directory if it does not exist
 if (-not (Test-Path -Path "$gaianet_base_dir/bin" -PathType Container)) {
     New-Item -Path "$gaianet_base_dir/bin" -ItemType Directory -Force
-    icacls "$gaianet_base_dir/bin" /grant Everyone:(OI)(CI)F
+    icacls "$gaianet_base_dir/bin" /grant 'Everyone:(OI)(CI)F'
 
     Write-Output "Bin directory created with permissions set to 777."
 }
