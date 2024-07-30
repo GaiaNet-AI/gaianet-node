@@ -280,12 +280,12 @@ if [ "$upgrade" -eq 1 ]; then
             # Prepend the field to the beginning of the JSON object
             if [ "$(uname)" == "Darwin" ]; then
                 sed -i '' '2i\
-                "chat_batch_size": "512",
+                "chat_batch_size": "16",
                 ' "$gaianet_base_dir/config.json"
 
             elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
                 sed -i '2i\
-                "chat_batch_size": "512",
+                "chat_batch_size": "16",
                 ' "$gaianet_base_dir/config.json"
 
             elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
