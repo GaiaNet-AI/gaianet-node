@@ -667,9 +667,6 @@ start() {
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse batch size for chat model
         chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' config.json)
-        if [ -z "$chat_batch_size" ]; then
-            chat_batch_size=$chat_ctx_size
-        fi
         # parse prompt type for chat model
         prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
         # parse system prompt for chat model
@@ -703,9 +700,6 @@ start() {
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse batch size for embedding model
         embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' config.json)
-        if [ -z "$embedding_batch_size" ]; then
-            embedding_batch_size=$embedding_ctx_size
-        fi
         # parse port for LlamaEdge API Server
         llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
         # parse qdrant limit
@@ -995,9 +989,6 @@ start() {
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse batch size for chat model
         chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' config.json)
-        if [ -z "$chat_batch_size" ]; then
-            chat_batch_size=$chat_ctx_size
-        fi
         # parse prompt type for chat model
         prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
         # parse reverse prompt for chat model
@@ -1023,9 +1014,6 @@ start() {
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse batch size for embedding model
         embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' config.json)
-        if [ -z "$embedding_batch_size" ]; then
-            embedding_batch_size=$embedding_ctx_size
-        fi
         # parse port for LlamaEdge API Server
         llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
         # check port
