@@ -195,6 +195,35 @@ function Check-BinaryInstalled {
     }
 }
 
+# Define available options
+$options = @(
+    "--help: Display this help message",
+    "--version: Display the version of the installer",
+)
+
+# Function to display help message
+function Show-Help {
+    Write-Output "Available options:"
+    foreach ($option in $options) {
+        Write-Output "  $option"
+    }
+}
+
+param (
+    [string[]]$args
+)
+
+if ($args -contains "--help") {
+    Show-Help
+    exit 0
+}
+
+# Example usage of other options
+if ($args -contains "--version") {
+    Write-Output "Gaianet-node Installer v$version"
+    exit 0
+}
+
 # Write-Host ""
 # Write-Host @"
 #  ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
