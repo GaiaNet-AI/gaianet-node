@@ -179,6 +179,22 @@ function Check-CurlSilent {
     }
 }
 
+# Function to check if a binary is installed
+function Check-BinaryInstalled {
+    param (
+        [string]$binaryName
+    )
+
+    $command = Get-Command $binaryName -ErrorAction SilentlyContinue
+    if ($command) {
+        Write-Output "$binaryName is installed."
+        return $true
+    } else {
+        Write-Output "$binaryName is not installed."
+        return $false
+    }
+}
+
 # Write-Host ""
 # Write-Host @"
 #  ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
@@ -235,6 +251,9 @@ $bin_dir = "$gaianet_base_dir/bin"
 # 3. Download `nodeid.json`
 if ($upgrade) {
     Write-Output "unimplemented"
+
+    # TODO add upgrade logic
+
 } else {
     Write-Output "[+] Downloading default config.json ...\n"
 
@@ -263,4 +282,67 @@ if ($upgrade) {
     }
 }
 
+# 4. Install vector and download vector config file
+if ($enable_vector) {
+    # install vector if not installed
+    $binaryName = "vector"
+    $isVectorInstalled = Check-BinaryInstalled -binaryName $binaryName
+    if (-not $isVectorInstalled) {
+        Write-Output "[+] Installing vector ...\n"
+        # download
+        $vectorUrl = "https://packages.timber.io/vector/$vector_version/vector-x64.msi"
+        $vectorMsiOutputPath = "$gaianet_base_dir/vector-$vector_version-x64.msi"
+
+        Download-File -url $vectorUrl -output $vectorMsiOutputPath
+
+        # install
+        Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", "`"$vectorMsiOutputPath`"", "/quiet", "/norestart" -NoNewWindow -Wait
+    }
+
+    # download vector.toml if not exists
+    $vectorTomlPath = "$gaianet_base_dir/vector.toml"
+    if (-not (Test-Path -Path $vectorTomlPath -PathType Leaf)) {
+        Write-Output "[+] Downloading vector config file ...\n"
+        $vectorTomlUrl = "https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/vector.toml"
+        $vectorTomlOutputPath = "$gaianet_base_dir/vector.toml"
+
+        Download-File -url $vectorTomlUrl -output $vectorTomlOutputPath
+
+        Info "    * The vector.toml is downloaded in $gaianet_base_dir"
+    }
+
+}
+
+# 5. Install WasmEdge and ggml plugin
+Write-Output "[+] Installing WasmEdge and ggml plugin ...\n"
+# Check if $ggmlcuda is not empty
+if ($ggmlcuda) {
+    Write-Output "check cuda version"
+
+    # TODO check cuda version
+
+} else {
+
+    # TODO install wasmedge + ggml plugin
+
+}
+
+# 6. Install Qdrant binary and prepare directories
+
+# 6.1 Inatall Qdrant binary
+
+# 6.2 Init qdrant directory
+
+
+# 7. Download rag-api-server.wasm
+
+# 8. Download dashboard to $gaianet_base_dir
+
+# 9. Download registry.wasm
+
+# 10. Generate node ID
+
+# 11. Install gaianet-domain
+
+# 12. Download frpc.toml, generate a subdomain and print it
 
