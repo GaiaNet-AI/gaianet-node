@@ -122,12 +122,12 @@ while ($args.Count -gt 0) {
             exit 0
         }
         '--help' {
-            print_usage
+            Print-Usage
             exit 0
         }
         default {
             Write-Host "Unknown argument: $key"
-            print_usage
+            Print-Usage
             exit 1
         }
     }
@@ -209,20 +209,20 @@ function Show-Help {
     }
 }
 
-param (
-    [string[]]$args
-)
+# param (
+#     [string[]]$args
+# )
 
-if ($args -contains "--help") {
-    Show-Help
-    exit 0
-}
+# if ($args -contains "--help") {
+#     Show-Help
+#     exit 0
+# }
 
-# Example usage of other options
-if ($args -contains "--version") {
-    Write-Output "Gaianet-node Installer v$version"
-    exit 0
-}
+# # Example usage of other options
+# if ($args -contains "--version") {
+#     Write-Output "Gaianet-node Installer v$version"
+#     exit 0
+# }
 
 # Write-Host ""
 # Write-Host @"
