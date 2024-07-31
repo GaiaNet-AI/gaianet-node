@@ -195,19 +195,19 @@ function Check-BinaryInstalled {
     }
 }
 
-# Define available options
-$options = @(
-    "--help: Display this help message",
-    "--version: Display the version of the installer",
-)
+# # Define available options
+# $options = @(
+#     "--help: Display this help message",
+#     "--version: Display the version of the installer",
+# )
 
-# Function to display help message
-function Show-Help {
-    Write-Output "Available options:"
-    foreach ($option in $options) {
-        Write-Output "  $option"
-    }
-}
+# # Function to display help message
+# function Show-Help {
+#     Write-Output "Available options:"
+#     foreach ($option in $options) {
+#         Write-Output "  $option"
+#     }
+# }
 
 # param (
 #     [string[]]$args
