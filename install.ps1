@@ -195,34 +195,6 @@ function Check-BinaryInstalled {
     }
 }
 
-# # Define available options
-# $options = @(
-#     "--help: Display this help message",
-#     "--version: Display the version of the installer",
-# )
-
-# # Function to display help message
-# function Show-Help {
-#     Write-Output "Available options:"
-#     foreach ($option in $options) {
-#         Write-Output "  $option"
-#     }
-# }
-
-# param (
-#     [string[]]$args
-# )
-
-# if ($args -contains "--help") {
-#     Show-Help
-#     exit 0
-# }
-
-# # Example usage of other options
-# if ($args -contains "--version") {
-#     Write-Output "Gaianet-node Installer v$version"
-#     exit 0
-# }
 
 # Write-Host ""
 # Write-Host @"
@@ -314,9 +286,9 @@ if ($upgrade) {
 # 4. Install vector and download vector config file
 if ($enable_vector) {
     # install vector if not installed
-    $binaryName = "vector"
-    $isVectorInstalled = Check-BinaryInstalled -binaryName $binaryName
-    if (-not $isVectorInstalled) {
+    $binaryName = "vector.exe"
+    # $isVectorInstalled = Check-BinaryInstalled -binaryName $binaryName
+    if ((Get-Command $binaryName -ErrorAction SilentlyContinue) -eq $null) {
         Write-Output "[+] Installing vector ...\n"
         # download
         $vectorUrl = "https://packages.timber.io/vector/$vector_version/vector-x64.msi"
@@ -325,7 +297,7 @@ if ($enable_vector) {
         Download-File -url $vectorUrl -output $vectorMsiOutputPath
 
         # install
-        Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", "`"$vectorMsiOutputPath`"", "/quiet", "/norestart" -NoNewWindow -Wait
+        Start-Process -FilePath "msiexec.exe" -ArgumentList "/i","`"$vectorMsiOutputPath`"","/quiet","/norestart" -NoNewWindow -Wait
     }
 
     # download vector.toml if not exists
