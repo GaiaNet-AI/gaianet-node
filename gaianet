@@ -1135,7 +1135,7 @@ start() {
                 -X POST http://localhost:$llamaedge_port/v1/chat/completions \
                 -H 'accept:application/json' \
                 -H 'Content-Type: application/json' \
-                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"get_name\",\"description\":\"Return your name\"}}], \"model\":\"$chat_model_stem\"}")
 
             curl_exit_status=$?
 
