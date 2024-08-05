@@ -102,12 +102,6 @@ check_config_options() {
         exit 1
     fi
 
-    # check if the `system_prompt` field exists or not
-    if ! grep -q '"system_prompt":' $gaianet_base_dir/config.json; then
-        error "Not found the 'system_prompt' field in $gaianet_base_dir/config.json\n"
-        exit 1
-    fi
-
     # check if the `embedding` field exists or not
     if ! grep -q '"embedding":' $gaianet_base_dir/config.json; then
         error "Not found the 'embedding' field in $gaianet_base_dir/config.json\n"
@@ -1407,7 +1401,6 @@ case $subcommand in
         embedding_url=""
         prompt_template=""
         port=""
-        system_prompt=""
         rag_prompt=""
         rag_policy=""
         reverse_prompt=""
@@ -1451,12 +1444,6 @@ case $subcommand in
                 --port)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         port=$2
-                        shift 2
-                    fi
-                    ;;
-                --system-prompt)
-                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-                        system_prompt=$2
                         shift 2
                     fi
                     ;;
@@ -1591,31 +1578,6 @@ case $subcommand in
 
             # update
             update_config llamaedge_port $port
-        fi
-
-        # update system prompt
-        if [ -n "$system_prompt" ]; then
-            printf "[+] Updating the system prompt of chat model ...\n"
-            printf "    * Old system prompt: $(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
-            info "    * New system prompt: $system_prompt"
-            # The new value for system_prompt
-            new_value="$system_prompt"
-
-            # Escape ampersands and backslashes in the new value
-            new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
-
-            # Update the value of system_prompt in config.json
-            if [ "$(uname)" == "Darwin" ]; then
-                sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                sed -i "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-                error "    * For Windows users, please run this script in WSL."
-                exit 1
-            else
-                error "    * Only support Linux, MacOS and Windows."
-                exit 1
-            fi
         fi
 
         # update rag prompt
