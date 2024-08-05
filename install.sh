@@ -9,10 +9,10 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
-version="0.2.5"
-rag_api_server_version="0.7.5"
-llama_api_server_version="0.12.5"
-ggml_bn="b3463"
+version="0.3.0"
+rag_api_server_version="0.8.0"
+llama_api_server_version="0.13.0"
+ggml_bn="b3499"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 
@@ -327,21 +327,21 @@ if [ "$upgrade" -eq 1 ]; then
 else
     printf "[+] Downloading default config.json ...\n"
 
-    if [ ! -f "$gaianet_base_dir/config.json" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
+    # if [ ! -f "$gaianet_base_dir/config.json" ]; then
+    #     check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
 
-        info "    * The default config file is downloaded in $gaianet_base_dir"
-    else
-        warning "    * Use the cached config file in $gaianet_base_dir"
-    fi
+    #     info "    * The default config file is downloaded in $gaianet_base_dir"
+    # else
+    #     warning "    * Use the cached config file in $gaianet_base_dir"
+    # fi
 
-    # 3. download nodeid.json
-    if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
-        printf "[+] Downloading nodeid.json ...\n"
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+    # # 3. download nodeid.json
+    # if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
+    #     printf "[+] Downloading nodeid.json ...\n"
+    #     check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
 
-        info "    * The nodeid.json is downloaded in $gaianet_base_dir"
-    fi
+    #     info "    * The nodeid.json is downloaded in $gaianet_base_dir"
+    # fi
 fi
 
 # 4. Install vector and download vector config file

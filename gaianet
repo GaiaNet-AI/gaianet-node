@@ -4,11 +4,11 @@ set -e
 
 # version of CLI tool
 # Note that the version should kept same as the version of installer
-version="0.2.5"
+version="0.3.0"
 
 # version of the GaiaNet node
 # Note that the version should kept same as the version of installer
-installer_version="0.2.5"
+installer_version="0.3.0"
 
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
