@@ -1336,7 +1336,6 @@ show_config_help() {
     printf "  --embedding-ctx-size <val>     Update the context size of embedding model.\n"
     printf "  --prompt-template <val>        Update the prompt template of chat model.\n"
     printf "  --port <val>                   Update the port of LlamaEdge API Server.\n"
-    printf "  --system-prompt <val>          Update the system prompt.\n"
     printf "  --rag-prompt <val>             Update the rag prompt.\n"
     printf "  --rag-policy <val>             Update the rag policy [Possible values: system-message, last-user-message].\n"
     printf "  --reverse-prompt <val>         Update the reverse prompt.\n"
