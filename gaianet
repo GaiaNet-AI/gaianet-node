@@ -1145,8 +1145,27 @@ start() {
 
     fi
 
+    # 3. start server assistant
+    printf "[+] Starting Server Assistant ...\n\n"
+    # start assistant
+    nohup gaias --api-server-socket-addr 0.0.0.0:10086 --socket-addr 0.0.0.0:3000 --target-url http://localhost:10087 --server-log-file $gaianet_base_dir/log/start-llamaedge.log > $log_dir/assistant.log 2>&1 &
+    gaias_pid=$!
+    echo $gaias_pid > $gaianet_base_dir/gaias.pid
+    info "    Server assistant started with pid: $gaias_pid"
 
-    # 3. start gaianet-domain
+    # retrieve server info
+    info "    Notify server info"
+    # curl --location 'http://localhost:3000/v1/info'
+    # status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+    #     -X GET http://localhost:3000/retrieve/info \
+    #     -H 'accept: application/json' \
+    #     -H 'Content-Type: application/json')
+    # if [ "$status_code" -eq 200 ]; then
+    #     info "    * The server info received."
+    # fi
+    printf "\n\n"
+
+    # 4. start gaianet-domain
     if [ "$local_only" -eq 0 ]; then
         # start gaianet-domain
         printf "[+] Starting gaianet-domain ...\n\n"
@@ -1258,6 +1277,7 @@ stop_force() {
     fi
 
     pkill -9 qdrant || true
+    pkill -9 gaias || true
     pkill -9 wasmedge || true
     if [ "$local_log_storage" -eq 0 ]; then
         pkill -9 vector || true
@@ -1267,6 +1287,11 @@ stop_force() {
     qdrant_pid=$gaianet_base_dir/qdrant.pid
     if [ -f $qdrant_pid ]; then
         rm $qdrant_pid
+    fi
+
+    gaias_pid=$gaianet_base_dir/gaias.pid
+    if [ -f $gaias_pid ]; then
+        rm $gaias_pid
     fi
 
     llamaedge_pid=$gaianet_base_dir/llamaedge.pid
