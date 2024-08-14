@@ -1154,13 +1154,14 @@ start() {
     # start assistant
     export RUST_LOG=info
     nohup gaias --socket-addr 0.0.0.0:$assistant_port --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --target-url $check_node_url --log $gaianet_base_dir/log/assistant.log 2>&1 &
+    sleep 2
     gaias_pid=$!
     echo $gaias_pid > $gaianet_base_dir/gaias.pid
     info "    Server assistant started with pid: $gaias_pid"
 
     # retrieve server info
     info "    Notify server info"
-    # curl --location 'http://localhost:3000/v1/info'
+    # curl --location 'http://localhost:3000/retrieve/info'
     # status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
     #     -X GET http://localhost:3000/retrieve/info \
     #     -H 'accept: application/json' \
