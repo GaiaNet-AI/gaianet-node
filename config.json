@@ -19,5 +19,7 @@
     "rag_prompt": "You are a tour guide in Paris, France. Use information in the following context to directly answer the question from a Paris visitor.\n----------------\n",
     "rag_policy": "system-message",
     "domain": "us.gaianet.network",
-    "llamaedge_port": "8080"
+    "llamaedge_port": "8080",
+    "assistant_port": "8081",
+    "check_node_url": "http://localhost:10087"
 }
