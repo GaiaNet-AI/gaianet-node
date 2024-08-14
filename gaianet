@@ -1148,7 +1148,7 @@ start() {
     # 3. start server assistant
     printf "[+] Starting Server Assistant ...\n\n"
     # start assistant
-    nohup gaias --api-server-socket-addr 0.0.0.0:10086 --socket-addr 0.0.0.0:3000 --target-url http://localhost:10087 --server-log-file $gaianet_base_dir/log/start-llamaedge.log > $log_dir/assistant.log 2>&1 &
+    nohup gaias --socket-addr 0.0.0.0:3000 --server-socket-addr 0.0.0.0:10086 --server-log-file $gaianet_base_dir/log/start-llamaedge.log --target-url http://localhost:10087 > $log_dir/assistant.log 2>&1 &
     gaias_pid=$!
     echo $gaias_pid > $gaianet_base_dir/gaias.pid
     info "    Server assistant started with pid: $gaias_pid"
