@@ -1161,15 +1161,17 @@ start() {
 
     # retrieve server info
     info "    Notify server info"
-    # curl --location 'http://localhost:3000/retrieve/info'
-    # status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-    #     -X GET http://localhost:3000/retrieve/info \
-    #     -H 'accept: application/json' \
-    #     -H 'Content-Type: application/json')
-    # if [ "$status_code" -eq 200 ]; then
-    #     info "    * The server info received."
-    # fi
-    printf "\n\n"
+    status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+        -X GET http://localhost:$assistant_port/retrieve/info \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json')
+    if [ "$status_code" -eq 200 ]; then
+        info "    * The server info received."
+    elif [ "$status_code" -eq 500 ]; then
+        error "    * Failed to send server information to $check_node_url"
+    else
+        error "    * Failed to retrieve API Server info."
+    fi
 
     # 4. start gaianet-domain
     if [ "$local_only" -eq 0 ]; then
