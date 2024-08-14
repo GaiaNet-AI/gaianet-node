@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="main"
+repo_branch="feat-add-server-assistant"
 version="0.3.2"
 rag_api_server_version="0.8.2"
 llama_api_server_version="0.13.2"
@@ -328,7 +328,11 @@ else
     printf "[+] Downloading default config.json ...\n"
 
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
+        if [ "$repo_branch" = "main" ]; then
+            check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
+        else
+            check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/config.json $gaianet_base_dir/config.json
+        fi
 
         info "    * The default config file is downloaded in $gaianet_base_dir"
     else
