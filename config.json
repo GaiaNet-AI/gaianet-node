@@ -21,5 +21,5 @@
     "domain": "us.gaianet.network",
     "llamaedge_port": "8080",
     "assistant_port": "8081",
-    "check_node_url": "http://localhost:10087"
+    "check_node_url": "https://httpbin.org/anything/0x1234567890123456789012345678901234567890.us.gaianet.network"
 }
