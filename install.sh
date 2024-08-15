@@ -15,6 +15,7 @@ llama_api_server_version="0.13.2"
 ggml_bn="b3499"
 vector_version="0.38.0"
 dashboard_version="v3.1"
+assistant_version="0.1.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -701,6 +702,44 @@ $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g"
 
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc.toml' -exec rm -f {} \;
+
+# 13. Install server assistant
+printf "[+] Installing server assistant...\n"
+if [ "$(uname)" == "Darwin" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-x86_64-apple-darwin.tar.gz $bin_dir/server-assistant.tar.gz
+
+    elif [ "$target" = "arm64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-aarch64-apple-darwin.tar.gz $bin_dir/server-assistant.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        exit 1
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-x86_64-unknown-linux-gnu.tar.gz $bin_dir/server-assistant.tar.gz
+    else
+        error " * Unsupported architecture: $target, only support x86_64 on Linux"
+        exit 1
+    fi
+
+else
+    error "Only support Linux, MacOS and Windows(WSL)."
+    exit 1
+fi
+
+tar -xzf $bin_dir/server-assistant.tar.gz -C $bin_dir
+rm $bin_dir/server-assistant.tar.gz
+if [ -f $bin_dir/SHA256SUM ]; then
+    rm $bin_dir/SHA256SUM
+fi
+
+info "    * server assistant is installed in $bin_dir"
+
 
 if [ "$upgrade" -eq 1 ]; then
 
