@@ -1181,17 +1181,17 @@ start() {
 
     # 5. notify server info
     sleep 2
-    info "    Notify server info"
+    printf "[+] Notify server info\n\n"
     status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
         -X GET http://localhost:$assistant_port/retrieve/info \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json')
     if [ "$status_code" -eq 200 ]; then
-        info "    * The server info received."
+        info "    The server info has been received."
     elif [ "$status_code" -eq 500 ]; then
-        error "    * Failed to send server information to $check_node_url"
+        error "    Failed to send server information to $check_node_url"
     else
-        error "    * Failed to retrieve API Server info."
+        error "    Failed to retrieve API Server info."
     fi
 
     info ">>> To stop the GaiaNet node, run the command: gaianet stop <<<"
