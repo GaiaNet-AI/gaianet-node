@@ -1153,25 +1153,11 @@ start() {
     check_node_url=$(awk -F'"' '/"check_node_url":/ {print $4}' $gaianet_base_dir/config.json)
     # start assistant
     export RUST_LOG=info
-    nohup gaias --socket-addr 0.0.0.0:$assistant_port --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --target-url $check_node_url --log $gaianet_base_dir/log/assistant.log 2>&1 &
+    nohup gaias --socket-addr 0.0.0.0:$assistant_port --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --target-url $check_node_url --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
     sleep 2
     gaias_pid=$!
     echo $gaias_pid > $gaianet_base_dir/gaias.pid
     info "    Server assistant started with pid: $gaias_pid"
-
-    # retrieve server info
-    info "    Notify server info"
-    status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-        -X GET http://localhost:$assistant_port/retrieve/info \
-        -H 'accept: application/json' \
-        -H 'Content-Type: application/json')
-    if [ "$status_code" -eq 200 ]; then
-        info "    * The server info received."
-    elif [ "$status_code" -eq 500 ]; then
-        error "    * Failed to send server information to $check_node_url"
-    else
-        error "    * Failed to retrieve API Server info."
-    fi
 
     # 4. start gaianet-domain
     if [ "$local_only" -eq 0 ]; then
@@ -1191,6 +1177,21 @@ start() {
     fi
     if [ "$local_only" -eq 1 ]; then
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
+    fi
+
+    # 5. notify server info
+    sleep 2
+    info "    Notify server info"
+    status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+        -X GET http://localhost:$assistant_port/retrieve/info \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json')
+    if [ "$status_code" -eq 200 ]; then
+        info "    * The server info received."
+    elif [ "$status_code" -eq 500 ]; then
+        error "    * Failed to send server information to $check_node_url"
+    else
+        error "    * Failed to retrieve API Server info."
     fi
 
     info ">>> To stop the GaiaNet node, run the command: gaianet stop <<<"
