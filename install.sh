@@ -378,7 +378,7 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.14.1-rc.1 --nowasilogging --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.14.1-rc.1 --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
@@ -388,7 +388,7 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 else
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.14.1-rc.1 --nowasilogging --tmpdir=$tmp_dir; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.14.1-rc.1 --tmpdir=$tmp_dir; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         wasmedge_version=$(wasmedge --version)
