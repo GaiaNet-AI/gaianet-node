@@ -12,6 +12,7 @@ repo_branch="feat-add-server-assistant"
 version="0.3.2"
 rag_api_server_version="0.8.2"
 llama_api_server_version="0.13.2"
+wasmedge_version="0.14.0"
 ggml_bn="b3499"
 vector_version="0.38.0"
 dashboard_version="v3.1"
@@ -385,20 +386,18 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.14.1-rc.1 --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
-        wasmedge_version=$(wasmedge --version)
         info "    * The $wasmedge_version is installed in $wasmedge_path."
     else
         error "    * Failed to install WasmEdge"
         exit 1
     fi
 else
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.14.1-rc.1 --tmpdir=$tmp_dir; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --tmpdir=$tmp_dir; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
-        wasmedge_version=$(wasmedge --version)
         info "    * The $wasmedge_version is installed in $wasmedge_path."
     else
         error "    * Failed to install WasmEdge"
