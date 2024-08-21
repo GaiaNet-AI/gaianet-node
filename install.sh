@@ -10,7 +10,7 @@ cwd=$(pwd)
 
 repo_branch="feat-add-server-assistant"
 version="0.3.2"
-rag_api_server_version="0.8.2"
+rag_api_server_version="0.9.0"
 llama_api_server_version="0.14.0"
 wasmedge_version="0.14.0"
 ggml_bn="b3499"
