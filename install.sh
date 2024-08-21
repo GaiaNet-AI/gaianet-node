@@ -16,7 +16,7 @@ wasmedge_version="0.14.0"
 ggml_bn="b3499"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-assistant_version="0.2.0"
+assistant_version="0.2.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
