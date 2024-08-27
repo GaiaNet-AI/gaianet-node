@@ -8,13 +8,15 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="main"
+repo_branch="feat-add-server-assistant"
 version="0.3.2"
-rag_api_server_version="0.8.2"
-llama_api_server_version="0.13.2"
+rag_api_server_version="0.9.0"
+llama_api_server_version="0.14.0"
+wasmedge_version="0.14.0"
 ggml_bn="b3499"
 vector_version="0.38.0"
 dashboard_version="v3.1"
+assistant_version="0.2.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -265,6 +267,12 @@ bin_dir=$gaianet_base_dir/bin
 printf "[+] Installing gaianet CLI tool ...\n"
 check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
 
+if [ "$repo_branch" = "main" ]; then
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
+else
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/gaianet $bin_dir/gaianet
+fi
+
 chmod u+x $bin_dir/gaianet
 info "    * gaianet CLI tool is installed in $bin_dir"
 
@@ -328,7 +336,11 @@ else
     printf "[+] Downloading default config.json ...\n"
 
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
+        if [ "$repo_branch" = "main" ]; then
+            check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
+        else
+            check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/config.json $gaianet_base_dir/config.json
+        fi
 
         info "    * The default config file is downloaded in $gaianet_base_dir"
     else
@@ -374,20 +386,18 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --ggmlbn=$ggml_bn --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
-        wasmedge_version=$(wasmedge --version)
         info "    * The $wasmedge_version is installed in $wasmedge_path."
     else
         error "    * Failed to install WasmEdge"
         exit 1
     fi
 else
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v 0.13.5 --ggmlbn=$ggml_bn --tmpdir=$tmp_dir; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --tmpdir=$tmp_dir; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
-        wasmedge_version=$(wasmedge --version)
         info "    * The $wasmedge_version is installed in $wasmedge_path."
     else
         error "    * Failed to install WasmEdge"
@@ -493,12 +503,11 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     printf "\n"
 fi
 
-# 7. Download rag-api-server.wasm
+# 7. Download LlamaEdge API server
 printf "[+] Downloading LlamaEdge API server ...\n"
-# check_curl https://github.com/LlamaEdge/rag-api-server/releases/latest/download/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
-# check_curl https://github.com/LlamaEdge/LlamaEdge/releases/latest/download/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
-
+# download rag-api-server.wasm
 check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/$rag_api_server_version/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
+# download llama-api-server.wasm
 check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
 info "    * The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
@@ -699,6 +708,44 @@ $sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g"
 
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc.toml' -exec rm -f {} \;
+
+# 13. Install server assistant
+printf "[+] Installing server assistant...\n"
+if [ "$(uname)" == "Darwin" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-x86_64-apple-darwin.tar.gz $bin_dir/server-assistant.tar.gz
+
+    elif [ "$target" = "arm64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-aarch64-apple-darwin.tar.gz $bin_dir/server-assistant.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        exit 1
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-x86_64-unknown-linux-gnu.tar.gz $bin_dir/server-assistant.tar.gz
+    else
+        error " * Unsupported architecture: $target, only support x86_64 on Linux"
+        exit 1
+    fi
+
+else
+    error "Only support Linux, MacOS and Windows(WSL)."
+    exit 1
+fi
+
+tar -xzf $bin_dir/server-assistant.tar.gz -C $bin_dir
+rm $bin_dir/server-assistant.tar.gz
+if [ -f $bin_dir/SHA256SUM ]; then
+    rm $bin_dir/SHA256SUM
+fi
+
+info "    * server assistant is installed in $bin_dir"
+
 
 if [ "$upgrade" -eq 1 ]; then
 
