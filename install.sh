@@ -702,7 +702,7 @@ else
 fi
 
 # Replace subdomain for the pulse api url
-$sed_i_cmd "s/\$subdomain/$subdomain.$gaianet_domain/g" $gaianet_base_dir/config.json
+$sed_i_cmd "s/\$subdomain/$subdomain/g" $gaianet_base_dir/config.json
 
 $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
 $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
