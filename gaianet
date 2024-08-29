@@ -1169,13 +1169,19 @@ start() {
     # 4. start server assistant
     printf "[+] Starting Server Assistant ...\n\n"
     sleep 2
+
     # parse server_health_url
     server_health_url=$(awk -F'"' '/"server_health_url":/ {print $4}' $gaianet_base_dir/config.json)
     # parse server_info_url
     server_info_url=$(awk -F'"' '/"server_info_url":/ {print $4}' $gaianet_base_dir/config.json)
+    # parse system prompt
+    system_prompt=$(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)
+    # parse rag prompt
+    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)
+
     # start assistant
     export RUST_LOG=info
-    nohup gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --server-health-url $server_health_url --server-info-url $server_info_url --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
+    nohup gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --server-health-url $server_health_url --server-info-url $server_info_url --system-prompt "$system_prompt" --rag-prompt "$rag_prompt" --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
     gaias_pid=$!
     echo $gaias_pid > $gaianet_base_dir/gaias.pid
     info "    Server assistant started with pid: $gaias_pid"
