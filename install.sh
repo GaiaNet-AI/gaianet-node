@@ -8,12 +8,12 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="feat-add-server-assistant"
+repo_branch="main"
 version="0.3.2"
-rag_api_server_version="0.9.0"
-llama_api_server_version="0.14.0"
+rag_api_server_version="0.9.2"
+llama_api_server_version="0.14.2"
 wasmedge_version="0.14.0"
-ggml_bn="b3499"
+ggml_bn="b3613"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 assistant_version="0.2.2"
