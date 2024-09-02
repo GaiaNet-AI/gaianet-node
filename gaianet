@@ -4,7 +4,7 @@ set -e
 
 # version of CLI tool
 # Note that the version should kept same as the version of installer
-version="0.3.2"
+version="0.4.0"
 
 # version of the GaiaNet node
 # Note that the version should kept same as the version of installer
