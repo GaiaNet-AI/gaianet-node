@@ -218,11 +218,11 @@ if [ -d "$gaianet_base_dir" ]; then
             exit 1
         fi
         # backup frpc.toml
-        if [ -f "$gaianet_base_dir/gaianet-domain/frpc.toml" ]; then
+        if [ -f "$gaianet_base_dir/gaia-frp/frpc.toml" ]; then
             printf "    * Copy frpc.toml to $gaianet_base_dir/backup/\n"
-            cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/backup/
+            cp $gaianet_base_dir/gaia-frp/frpc.toml $gaianet_base_dir/backup/
         else
-            error "Failed to copy the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/gaianet-domain."
+            error "Failed to copy the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/gaia-frp."
             exit 1
         fi
         # backup deviceid.txt
@@ -570,51 +570,51 @@ else
     printf "\n"
 fi
 
-# 11. Install gaianet-domain
-printf "[+] Installing gaianet-domain...\n"
+# 11. Install gaia-frp
+printf "[+] Installing gaia-frp...\n"
 # Check if the directory exists, if not, create it
-if [ ! -d "$gaianet_base_dir/gaianet-domain" ]; then
-    mkdir -p -m777 $gaianet_base_dir/gaianet-domain
+if [ ! -d "$gaianet_base_dir/gaia-frp" ]; then
+    mkdir -p -m777 $gaianet_base_dir/gaia-frp
 fi
 cd $gaianet_base_dir
-gaianet_domain_version="v0.1.1"
-printf "    * Download gaianet-domain binary\n"
+gaia_frp_version="v0.1.2"
+printf "    * Download gaia-frp binary\n"
 if [ "$(uname)" == "Darwin" ]; then
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz
 
-        tar -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_amd64.tar.gz
+        tar -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
+        rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz
 
-        info "      gaianet-domain is downloaded in $gaianet_base_dir"
+        info "      gaia-frp is downloaded in $gaianet_base_dir"
     elif [ "$target" = "arm64" ] || [ "$target" = "aarch64" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz
 
-        tar -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_darwin_arm64.tar.gz
+        tar -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
+        rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz
 
-        info "      gaianet-domain is downloaded in $gaianet_base_dir"
+        info "      gaia-frp is downloaded in $gaianet_base_dir"
     else
         error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
         exit 1
     fi
 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    # download gaianet-domain statically linked binary
+    # download gaia-frp statically linked binary
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_linux_amd64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_amd64.tar.gz
 
-        tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_amd64.tar.gz
+        tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
+        rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_amd64.tar.gz
 
-        info "      gaianet-domain is downloaded in $gaianet_base_dir"
+        info "      gaia-frp is downloaded in $gaianet_base_dir"
     elif [ "$target" = "arm64" ] || [ "$target" = "aarch64" ]; then
-        check_curl https://github.com/GaiaNet-AI/gaianet-domain/releases/download/$gaianet_domain_version/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz
 
-        tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaianet-domain
-        rm $gaianet_base_dir/gaianet_domain_${gaianet_domain_version}_linux_arm64.tar.gz
+        tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
+        rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz
 
-        info "      gaianet-domain is downloaded in $gaianet_base_dir"
+        info "      gaia-frp is downloaded in $gaianet_base_dir"
     else
         error " * Unsupported architecture: $target, only support x86_64 and arm64 on Linux"
         exit 1
@@ -628,9 +628,9 @@ else
     exit 1
 fi
 
-# Copy frpc binary from $gaianet_base_dir/gaianet-domain to $gaianet_base_dir/bin
+# Copy frpc binary from $gaianet_base_dir/gaia-frp to $gaianet_base_dir/bin
 printf "    * Install frpc binary\n"
-cp $gaianet_base_dir/gaianet-domain/frpc $gaianet_base_dir/bin/
+cp $gaianet_base_dir/gaia-frp/frpc $gaianet_base_dir/bin/
 info "      frpc binary is installed in $gaianet_base_dir/bin"
 
 # 12. Download frpc.toml, generate a subdomain and print it
@@ -638,16 +638,16 @@ if [ "$upgrade" -eq 1 ]; then
     # recover the frpc.toml
     if [ -f "$gaianet_base_dir/backup/frpc.toml" ]; then
         printf "    * Recover frpc.toml\n"
-        cp $gaianet_base_dir/backup/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
-        info "      frpc.toml is recovered in $gaianet_base_dir/gaianet-domain"
+        cp $gaianet_base_dir/backup/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
+        info "      frpc.toml is recovered in $gaianet_base_dir/gaia-frp"
     else
         error "Failed to recover the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
 else
     printf "    * Download frpc.toml\n"
-    check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaianet-domain/frpc.toml
-    info "      frpc.toml is downloaded in $gaianet_base_dir/gaianet-domain"
+    check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
+    info "      frpc.toml is downloaded in $gaianet_base_dir/gaia-frp"
 fi
 
 # Read address from config.json as node subdomain
@@ -660,7 +660,7 @@ if [ -z "$subdomain" ]; then
 fi
 
 # Read domain from config.json
-gaianet_domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+gaia_frp=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
 
 # Replace the serverAddr & subdomain in frpc.toml
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -704,13 +704,13 @@ fi
 # Replace subdomain for the pulse api url
 $sed_i_cmd "s/\$subdomain/$subdomain/g" $gaianet_base_dir/config.json
 
-$sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-$sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaianet_domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-$sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+$sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+$sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+$sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 
 # Remove all files in the directory except for frpc and frpc.toml
-find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc.toml' -exec rm -f {} \;
+find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc.toml' -exec rm -f {} \;
 
 # 13. Install server assistant
 printf "[+] Installing server assistant...\n"
