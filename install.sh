@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="rename-frp"
+repo_branch="main"
 version="0.4.0"
 rag_api_server_version="0.9.2"
 llama_api_server_version="0.14.2"
