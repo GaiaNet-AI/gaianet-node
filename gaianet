@@ -550,13 +550,13 @@ init() {
         exit 1
     fi
 
-    $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-    $sed_i_cmd "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-    $sed_i_cmd "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
-    $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" $gaianet_base_dir/gaianet-domain/frpc.toml
+    $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    $sed_i_cmd "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    $sed_i_cmd "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 
     # Remove all files in the directory except for frpc and frpc.toml
-    find $gaianet_base_dir/gaianet-domain -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
+    find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
 
     printf "\n"
 
@@ -1145,18 +1145,18 @@ start() {
 
     fi
 
-    # 3. start gaianet-domain
+    # 3. start gaia-frp
     if [ "$local_only" -eq 0 ]; then
-        # start gaianet-domain
-        printf "[+] Starting gaianet-domain ...\n\n"
-        nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaianet-domain/frpc.toml > $log_dir/start-gaianet-domain.log 2>&1 &
+        # start gaia-frp
+        printf "[+] Starting gaia-frp ...\n\n"
+        nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
         sleep 2
-        gaianet_domain_pid=$!
-        echo $gaianet_domain_pid > $gaianet_base_dir/gaianet-domain.pid
-        info "    gaianet-domain started with pid: $gaianet_domain_pid"
+        gaia_frp_pid=$!
+        echo $gaia_frp_pid > $gaianet_base_dir/gaia-frp.pid
+        info "    gaia-frp started with pid: $gaia_frp_pid"
 
         # Extract the subdomain from frpc.toml
-        subdomain=$(grep "subdomain" $gaianet_base_dir/gaianet-domain/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+        subdomain=$(grep "subdomain" $gaianet_base_dir/gaia-frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
 
         domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
         info "    The GaiaNet node is started at: https://$subdomain.$domain"
@@ -1193,7 +1193,7 @@ start() {
 
 # * stop subcommand
 
-# deprecated: stop the Qdrant instance, rag-api-server, and gaianet-domain
+# deprecated: stop the Qdrant instance, rag-api-server, and gaia-frp
 stop() {
     # Check if "gaianet" directory exists in $HOME
     if [ ! -d "$gaianet_base_dir" ]; then
@@ -1242,18 +1242,18 @@ stop() {
         fi
     fi
 
-    # stop gaianet-domain
-    gaianet_domain_pid=$gaianet_base_dir/gaianet-domain.pid
-    if [ -f $gaianet_domain_pid ]; then
-        printf "[+] Stopping gaianet-domain ...\n"
-        kill -9 $(cat $gaianet_domain_pid)
-        rm $gaianet_domain_pid
+    # stop gaia-frp
+    gaia_frp_pid=$gaianet_base_dir/gaia-frp.pid
+    if [ -f $gaia_frp_pid ]; then
+        printf "[+] Stopping gaia-frp ...\n"
+        kill -9 $(cat $gaia_frp_pid)
+        rm $gaia_frp_pid
     fi
 
     exit 0
 }
 
-# force stop the Qdrant instance, rag-api-server, and gaianet-domain
+# force stop the Qdrant instance, rag-api-server, and gaia-frp
 stop_force() {
     local_log_storage=1
     if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
@@ -1305,9 +1305,9 @@ stop_force() {
         rm $vector_pid
     fi
 
-    gaianet_domain_pid=$gaianet_base_dir/gaianet-domain.pid
-    if [ -f $gaianet_domain_pid ]; then
-        rm $gaianet_domain_pid
+    gaia_frp_pid=$gaianet_base_dir/gaia-frp.pid
+    if [ -f $gaia_frp_pid ]; then
+        rm $gaia_frp_pid
     fi
 
     exit 0
@@ -1328,10 +1328,10 @@ show_info() {
         info "Node ID: $node_id"
     fi
 
-    frpc_toml=$gaianet_base_dir/gaianet-domain/frpc.toml
+    frpc_toml=$gaianet_base_dir/gaia-frp/frpc.toml
     # check if frpc.toml exists or not
     if [ ! -f "$frpc_toml" ]; then
-        error "Not found frpc.toml file in $gaianet_base_dir/gaianet-domain"
+        error "Not found frpc.toml file in $gaianet_base_dir/gaia-frp"
         exit 1
     fi
     # print device_id
