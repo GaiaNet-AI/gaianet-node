@@ -17,6 +17,7 @@ ggml_bn="b3613"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 assistant_version="0.2.2"
+qdrant_version="v1.11.4"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -28,8 +29,6 @@ unprivileged=0
 config_url=""
 # path to the gaianet base directory
 gaianet_base_dir="$HOME/gaianet"
-# qdrant binary
-qdrant_version="v1.10.1"
 # tmp directory
 tmp_dir="$gaianet_base_dir/tmp"
 # specific CUDA enabled GGML plugin
