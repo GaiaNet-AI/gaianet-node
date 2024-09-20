@@ -220,6 +220,9 @@ if [ -d "$gaianet_base_dir" ]; then
         if [ -f "$gaianet_base_dir/gaia-frp/frpc.toml" ]; then
             printf "    * Copy frpc.toml to $gaianet_base_dir/backup/\n"
             cp $gaianet_base_dir/gaia-frp/frpc.toml $gaianet_base_dir/backup/
+        elif [ -f "$gaianet_base_dir/gaianet-domain/frpc.toml" ]; then
+            printf "    * Copy frpc.toml to $gaianet_base_dir/backup/\n"
+            cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/backup/
         else
             error "Failed to copy the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/gaia-frp."
             exit 1
