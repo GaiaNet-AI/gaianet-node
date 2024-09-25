@@ -80,7 +80,7 @@ WasmEdge binaries accessible
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## 노드 초기화 하
+## 노드 초기화 하기
 
 ```
 gaianet init
