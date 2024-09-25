@@ -82,8 +82,9 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 
 ## 노드 초기화 하기
 
-```
+```bash
 gaianet init
+```
 
 <details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
 ```bash
