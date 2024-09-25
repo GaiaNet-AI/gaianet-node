@@ -84,7 +84,6 @@ curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/insta
 
 ```
 gaianet init
-```
 
 <details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
 ```bash
