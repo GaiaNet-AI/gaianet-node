@@ -704,7 +704,17 @@ else
 fi
 
 # Replace subdomain for the pulse api url
-$sed_i_cmd "s/\$subdomain/$subdomain/g" $gaianet_base_dir/config.json
+if [ "$(uname)" == "Darwin" ]; then
+    sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    sed -i "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    error "For Windows users, please run this script in WSL."
+    exit 1
+else
+    error "Only support Linux, MacOS and Windows(WSL)."
+    exit 1
+fi
 
 $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
