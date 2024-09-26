@@ -20,6 +20,6 @@
     "rag_policy": "system-message",
     "domain": "us.gaianet.network",
     "llamaedge_port": "8080",
-    "server_health_url": "https://pulse.gaianet.ai/node-health/$subdomain",
-    "server_info_url": "https://pulse.gaianet.ai/node-info/$subdomain"
+    "server_health_url": "https://pulse.gaianet.ai/node-health/0x",
+    "server_info_url": "https://pulse.gaianet.ai/node-info/0x"
 }

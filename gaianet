@@ -69,6 +69,20 @@ check_base_dir() {
     fi
 }
 
+sed_in_place() {
+    if [ "$(uname)" == "Darwin" ]; then
+        sed -i '' "$@"
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        sed -i "$@"
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        error "    * For Windows users, please run this script in WSL."
+        exit 1
+    else
+        error "    * Only support Linux, MacOS and Windows."
+        exit 1
+    fi
+}
+
 # check the validity of the config.json file
 check_config_options() {
 
@@ -541,19 +555,12 @@ init() {
     domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        sed_i_cmd="sed -i"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        sed_i_cmd="sed -i ''"
-    else
-        echo "Unsupported OS"
-        exit 1
-    fi
-
-    $sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-    $sed_i_cmd "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-    $sed_i_cmd "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-    $sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    sed_in_place "/^[[:space:]]*\"server_health_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$address\2|" $gaianet_base_dir/config.json
+    sed_in_place "/^[[:space:]]*\"server_info_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$address\2|" $gaianet_base_dir/config.json
+    sed_in_place "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    sed_in_place "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    sed_in_place "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 
     # Remove all files in the directory except for frpc and frpc.toml
     find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
@@ -570,17 +577,13 @@ update_config() {
     key=$1
     new_value=$2
     file=$gaianet_base_dir/config.json
-    bak=$gaianet_base_dir/config.json.bak
 
     # update in place
     if [ -z "$new_value" ]; then
-        sed -i.bak -e "s/\(\"$key\": \s*\).*\,/\1\"$new_value\",/" $file
+        sed_in_place "s/\(\"$key\": \s*\).*\,/\1\"$new_value\",/" $file
     else
-        sed -i.bak -e "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" $file
+        sed_in_place "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" $file
     fi
-
-    # remove backup file
-    rm $bak
 }
 
 # * start subcommand
@@ -1667,17 +1670,7 @@ case $subcommand in
             new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
             # Update the value of system_prompt in config.json
-            if [ "$(uname)" == "Darwin" ]; then
-                sed -i '' "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                sed -i "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-                error "    * For Windows users, please run this script in WSL."
-                exit 1
-            else
-                error "    * Only support Linux, MacOS and Windows."
-                exit 1
-            fi
+            sed_in_place "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
         fi
 
         # update rag prompt
@@ -1693,18 +1686,7 @@ case $subcommand in
             new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
 
             # Update the value of rag_prompt in config.json
-            if [ "$(uname)" == "Darwin" ]; then
-                sed -i '' "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                sed -i "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-                error "    * For Windows users, please run this script in WSL."
-                exit 1
-            else
-                error "    * Only support Linux, MacOS and Windows."
-                exit 1
-            fi
-
+            sed_in_place "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
         fi
 
         # update rag policy
