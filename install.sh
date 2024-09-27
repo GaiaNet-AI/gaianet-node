@@ -23,6 +23,10 @@ qdrant_version="v1.11.4"
 reinstall=0
 # 0: do not upgrade, 1: upgrade
 upgrade=0
+# file path to be backed up
+backup_to_file=""
+# file path to be migrated from
+migrated_from_file=""
 # 0: must be root or sudo, 1: regular unprivileged user
 unprivileged=0
 # url to the config file
@@ -53,6 +57,8 @@ function print_usage {
     printf "  --base <Path>      Specify a path to the gaianet base directory\n"
     printf "  --reinstall        Install and download all required deps\n"
     printf "  --upgrade          Upgrade the gaianet node\n"
+    printf "  --backup <File>    Backup the config to the specified file\n"
+    printf "  --migrate <File>   Install and migrate the config from the specified backup file\n"
     printf "  --tmpdir <Path>    Specify a path to the temporary directory [default: $gaianet_base_dir/tmp]\n"
     printf "  --ggmlcuda [11/12] Install a specific CUDA enabled GGML plugin version [Possible values: 11, 12].\n"
     # printf "  --unprivileged: install the gaianet CLI tool into base directory instead of system directory\n"
@@ -66,13 +72,17 @@ while [[ $# -gt 0 ]]; do
     case $key in
         --config)
             config_url="$2"
-            shift
-            shift
+            shift 2
             ;;
         --base)
             gaianet_base_dir="$2"
-            shift
-            shift
+
+            if [ ! -n "$gaianet_base_dir" ]; then
+                echo "$gaianet_base_dir should be a valid directory"
+                exit 1
+            fi
+            gaianet_base_dir=$(realpath -m "$gaianet_base_dir")
+            shift 2
             ;;
         --reinstall)
             reinstall=1
@@ -82,15 +92,33 @@ while [[ $# -gt 0 ]]; do
             upgrade=1
             shift
             ;;
+        --backup)
+            backup_to_file="$2"
+
+            if [ ! -n "$backup_to_file" ]; then
+                echo "Please specify the backup file"
+                exit 1
+            fi
+            backup_to_file=$(realpath -m "$backup_to_file")
+            shift 2
+            ;;
+        --migrate)
+            migrated_from_file="$2"
+
+            if [ ! -f "$migrated_from_file" ]; then
+                echo "Cannot find the backup file: $migrated_from_file"
+                exit 1
+            fi
+            migrated_from_file=$(realpath -m "$migrated_from_file")
+            shift 2
+            ;;
         --tmpdir)
             tmp_dir="$2"
-            shift
-            shift
+            shift 2
             ;;
         --ggmlcuda)
             ggmlcuda="$2"
-            shift
-            shift
+            shift 2
             ;;
         # --unprivileged)
         #     unprivileged=1
@@ -160,6 +188,32 @@ sed_in_place() {
         exit 1
     fi
 }
+
+# Upgrade and migrate cannot coexist
+if [ "$upgrade" -eq 1 ] && [ -n "$migrated_from_file" ]; then
+    error "    Cannot use both --upgrade and --migrate"
+    exit 1
+fi
+
+# Do backup
+if [ -n "$backup_to_file" ]; then
+    if [ ! -d $gaianet_base_dir ]; then
+        error "    Cannot backup because the directory $gaianet_base_dir does not exist"
+        exit 1
+    fi
+
+    backup_keystore_filename=$(grep '"keystore":' $gaianet_base_dir/nodeid.json | awk -F'"' '{print $4}')
+    cd $gaianet_base_dir
+    if [ -f gaia-frp/frpc.toml ]; then
+        tar -cf $backup_to_file config.json nodeid.json gaia-frp/frpc.toml $backup_keystore_filename
+    else
+        tar -cf $backup_to_file config.json nodeid.json gaianet-domain/frpc.toml $backup_keystore_filename
+    fi
+    info "Config from $gaianet_base_dir has been backed up to $backup_to_file."
+    info "Pass it as the value of '--migrate' option to install your new GaiaNet node"
+    exit 0
+fi
+
 
 printf "\n"
 cat <<EOF
@@ -319,7 +373,8 @@ if [ "$upgrade" -eq 1 ]; then
         error "    * Failed to recover the config.json. Reason: the config.json does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
-
+elif [ -f "$migrated_from_file" ] && tar -tf "$migrated_from_file" | grep -q "config.json"; then
+    tar -xf "$migrated_from_file" -C $gaianet_base_dir config.json
 else
     printf "[+] Downloading default config.json ...\n"
 
@@ -333,14 +388,6 @@ else
         info "    * The default config file is downloaded in $gaianet_base_dir"
     else
         warning "    * Use the cached config file in $gaianet_base_dir"
-    fi
-
-    # 3. download nodeid.json
-    if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
-        printf "[+] Downloading nodeid.json ...\n"
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
-
-        info "    * The nodeid.json is downloaded in $gaianet_base_dir"
     fi
 fi
 
@@ -540,8 +587,26 @@ if [ "$upgrade" -eq 1 ]; then
         error "Failed to recover the node ID. Reason: the nodeid.json does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
-
+elif [ -f "$migrated_from_file" ] && tar -tf "$migrated_from_file" | grep -q "nodeid.json"; then
+    tar -xf "$migrated_from_file" -C $gaianet_base_dir nodeid.json
+    migrate_keystore_filename=$(grep '"keystore":' $gaianet_base_dir/nodeid.json | awk -F'"' '{print $4}')
+    if [ -z "$migrate_keystore_filename" ]; then
+        error "Failed to read the 'keystore' field from backup nodeid.json."
+        exit 1
+    else
+        if tar -tf "$migrated_from_file" | grep -q "$migrate_keystore_filename"; then
+            tar -xf "$migrated_from_file" -C $gaianet_base_dir $migrate_keystore_filename
+        else
+            error "Failed to copy the keystore file. Reason: the keystore file does not exist in backup file."
+            exit 1
+        fi
+    fi
 else
+    # download the default nodeid.json
+    if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
+        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+    fi
+
     printf "[+] Generating node ID ...\n"
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
@@ -621,6 +686,12 @@ if [ "$upgrade" -eq 1 ]; then
     else
         error "Failed to recover the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/backup/."
         exit 1
+    fi
+elif [ -f "$migrated_from_file" ] && ( tar -tf "$migrated_from_file" | grep -q "gaianet-domain/frpc.toml" || tar -tf "$migrated_from_file" | grep -q "gaia-frp/frpc.toml" ); then
+    if tar -tf "$migrated_from_file" | grep -q "gaianet-domain/frpc.toml"; then
+        tar -xf "$migrated_from_file" --strip-components=1 -C $gaianet_base_dir/gaia-frp gaianet-domain/frpc.toml
+    else
+        tar -xf "$migrated_from_file" --strip-components=1 -C $gaianet_base_dir/gaia-frp gaia-frp/frpc.toml
     fi
 else
     printf "    * Download frpc.toml\n"
