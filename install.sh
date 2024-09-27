@@ -147,6 +147,20 @@ check_curl_silent() {
     fi
 }
 
+sed_in_place() {
+    if [ "$(uname)" == "Darwin" ]; then
+        sed -i '' "$@"
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        sed -i "$@"
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        error "    * For Windows users, please run this script in WSL."
+        exit 1
+    else
+        error "    * Only support Linux, MacOS and Windows."
+        exit 1
+    fi
+}
+
 printf "\n"
 cat <<EOF
  ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
@@ -288,44 +302,16 @@ if [ "$upgrade" -eq 1 ]; then
 
         if ! grep -q '"chat_batch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
-            if [ "$(uname)" == "Darwin" ]; then
-                sed -i '' '2i\
-                "chat_batch_size": "16",
-                ' "$gaianet_base_dir/config.json"
-
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                sed -i '2i\
-                "chat_batch_size": "16",
-                ' "$gaianet_base_dir/config.json"
-
-            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-                error "    * For Windows users, please run this script in WSL."
-                exit 1
-            else
-                error "    * Only support Linux, MacOS and Windows."
-                exit 1
-            fi
+            sed_in_place '2i\
+            "chat_batch_size": "16",
+            ' "$gaianet_base_dir/config.json"
         fi
 
         if ! grep -q '"embedding_batch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
-            if [ "$(uname)" == "Darwin" ]; then
-                sed -i '' '2i\
-                "embedding_batch_size": "512",
-                ' "$gaianet_base_dir/config.json"
-
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                sed -i '2i\
-                "embedding_batch_size": "512",
-                ' "$gaianet_base_dir/config.json"
-
-            elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-                error "    * For Windows users, please run this script in WSL."
-                exit 1
-            else
-                error "    * Only support Linux, MacOS and Windows."
-                exit 1
-            fi
+            sed_in_place '2i\
+            "embedding_batch_size": "512",
+            ' "$gaianet_base_dir/config.json"
         fi
 
         info "    * The config.json is recovered in $gaianet_base_dir"
@@ -489,17 +475,7 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     config_file="$gaianet_base_dir/qdrant/config/config.yaml"
 
     if [ -f "$config_file" ]; then
-        if [ "$(uname)" == "Darwin" ]; then
-            sed -i '' 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
-        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            sed -i 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
-        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            error "For Windows users, please run this script in WSL."
-            exit 1
-        else
-            error "Only support Linux, MacOS and Windows(WSL)."
-            exit 1
-        fi
+        sed_in_place 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
     fi
 
     printf "\n"
@@ -664,15 +640,6 @@ fi
 # Read domain from config.json
 gaia_frp=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
 
-# Replace the serverAddr & subdomain in frpc.toml
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    sed_i_cmd="sed -i"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    sed_i_cmd="sed -i ''"
-else
-    echo "Unsupported OS"
-    exit 1
-fi
 
 if [ "$upgrade" -eq 1 ]; then
     # recover deviceid.txt
@@ -703,23 +670,12 @@ else
     echo "$device_id" > "$device_id_file"
 fi
 
-# Replace subdomain for the pulse api url
-if [ "$(uname)" == "Darwin" ]; then
-    sed -i '' "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    sed -i "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    error "For Windows users, please run this script in WSL."
-    exit 1
-else
-    error "Only support Linux, MacOS and Windows(WSL)."
-    exit 1
-fi
-
-$sed_i_cmd "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-$sed_i_cmd "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-$sed_i_cmd "s/name = \".*\"/name = \"$subdomain.$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-$sed_i_cmd "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+sed_in_place "/^[[:space:]]*\"server_health_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$subdomain\2|" $gaianet_base_dir/config.json
+sed_in_place "/^[[:space:]]*\"server_info_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$subdomain\2|" $gaianet_base_dir/config.json
+sed_in_place "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+sed_in_place "s/name = \".*\"/name = \"$subdomain.$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+sed_in_place "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc.toml' -exec rm -f {} \;
