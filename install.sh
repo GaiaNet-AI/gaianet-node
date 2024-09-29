@@ -10,8 +10,8 @@ cwd=$(pwd)
 
 repo_branch="main"
 version="0.4.5"
-rag_api_server_version="0.9.7"
-llama_api_server_version="0.14.7"
+rag_api_server_version="0.9.8"
+llama_api_server_version="0.14.8"
 wasmedge_version="0.14.1"
 ggml_bn="b3613"
 vector_version="0.38.0"
