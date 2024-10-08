@@ -1175,8 +1175,28 @@ start() {
 
     # parse server_health_url
     server_health_url=$(awk -F'"' '/"server_health_url":/ {print $4}' $gaianet_base_dir/config.json)
+    # check if server_health_url is empty
+    if [ -z "$server_health_url" ]; then
+        error "    * server_health_url is empty. Exiting ..."
+
+        # stop the running services
+        stop_force
+
+        exit 1
+    fi
+
     # parse server_info_url
     server_info_url=$(awk -F'"' '/"server_info_url":/ {print $4}' $gaianet_base_dir/config.json)
+    # check if server_info_url is empty
+    if [ -z "$server_info_url" ]; then
+        error "    * server_info_url is empty. Exiting ..."
+
+        # stop the running services
+        stop_force
+
+        exit 1
+    fi
+
     # parse system prompt
     system_prompt=$(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)
     # parse rag prompt
@@ -1185,9 +1205,28 @@ start() {
     # start assistant
     export RUST_LOG=info
     nohup gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --server-health-url $server_health_url --server-info-url $server_info_url --system-prompt "$system_prompt" --rag-prompt "$rag_prompt" --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
+
+    sleep 2
+
+    # capture the pid of the assistant
     gaias_pid=$!
+
+    # capture the exit status
+    status=$?
+
     echo $gaias_pid > $gaianet_base_dir/gaias.pid
-    info "    Server assistant started with pid: $gaias_pid"
+
+    # check if the assistant has started successfully
+    if [ $status -ne 0 ]; then
+        error "    * Failed to start Server Assistant. Exiting ..."
+
+        # stop the running services
+        stop_force
+
+        exit 1
+    else
+        info "    Server assistant started with pid: $gaias_pid"
+    fi
 
     info ">>> To stop the GaiaNet node, run the command: gaianet stop <<<"
 
