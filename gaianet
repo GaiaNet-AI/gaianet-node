@@ -1177,7 +1177,7 @@ start() {
     domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
     # check if domain is empty
     if [ -z "$domain" ]; then
-        error "    * domain is empty. Exiting ..."
+        error "    * Domain field in $gaianet_base_dir/config.json is empty. Exiting ..."
 
         # stop the running services
         stop_force
@@ -1186,6 +1186,16 @@ start() {
     fi
 
     # parse device_id
+    frpc_toml=$gaianet_base_dir/gaia-frp/frpc.toml
+    # check if frpc.toml exists or not
+    if [ ! -f "$frpc_toml" ]; then
+        error "    * Not found frpc.toml file in $gaianet_base_dir/gaia-frp"
+
+        # stop the running services
+        stop_force
+
+        exit 1
+    fi
     device_id=$(grep 'metadatas.deviceId' "$frpc_toml" | awk -F' = ' '{print $2}' | tr -d '"')
     if [ -z "$device_id" ]; then
         error "    * Devide id is not assigned. Please run 'gaianet init' command first."
