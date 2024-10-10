@@ -1173,39 +1173,6 @@ start() {
     printf "[+] Starting Server Assistant ...\n\n"
     sleep 2
 
-    # parse domain
-    domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
-    # check if domain is empty
-    if [ -z "$domain" ]; then
-        error "    * Domain field in $gaianet_base_dir/config.json is empty. Exiting ..."
-
-        # stop the running services
-        stop_force
-
-        exit 1
-    fi
-
-    # parse device_id
-    frpc_toml=$gaianet_base_dir/gaia-frp/frpc.toml
-    # check if frpc.toml exists or not
-    if [ ! -f "$frpc_toml" ]; then
-        error "    * Not found frpc.toml file in $gaianet_base_dir/gaia-frp"
-
-        # stop the running services
-        stop_force
-
-        exit 1
-    fi
-    device_id=$(grep 'metadatas.deviceId' "$frpc_toml" | awk -F' = ' '{print $2}' | tr -d '"')
-    if [ -z "$device_id" ]; then
-        error "    * Devide id is not assigned. Please run 'gaianet init' command first."
-
-        # stop the running services
-        stop_force
-
-        exit 1
-    fi
-
     # parse system prompt
     system_prompt=$(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)
     # parse rag prompt
@@ -1213,7 +1180,7 @@ start() {
 
     # start assistant
     export RUST_LOG=info
-    nohup gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --domain $domain --device-id $device_id --system-prompt "$system_prompt" --rag-prompt "$rag_prompt" --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
+    nohup gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --gaianet-dir $gaianet_base_dir --system-prompt "$system_prompt" --rag-prompt "$rag_prompt" --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
 
     sleep 2
 
