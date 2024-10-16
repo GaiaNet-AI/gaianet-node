@@ -741,8 +741,6 @@ else
     echo "$device_id" > "$device_id_file"
 fi
 
-sed_in_place "/^[[:space:]]*\"server_health_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$subdomain\2|" $gaianet_base_dir/config.json
-sed_in_place "/^[[:space:]]*\"server_info_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$subdomain\2|" $gaianet_base_dir/config.json
 sed_in_place "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 sed_in_place "s/name = \".*\"/name = \"$subdomain.$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
