@@ -1,5 +1,4 @@
-# Run your own GaiaNet node
-
+# 運行您自己的 GaiaNet 節點
 
 <p align="center">
   <a href="https://discord.gg/gaianet-ai">
@@ -13,56 +12,56 @@
   </a>
 </p>
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-zhcn.md) | [Chinese(繁體中文)](README-zhtw.md) | [Turkish (Türkçe)](README-tr.md) | [Farsi(فارسی)](README-fa.md) | [Arabic (العربية)](README-ar.md) | [Indonesia](README-id.md) | [Russian (русскийة)](README-ru.md) | [Portuguese (português)](README-pt.md) | We need your help to translate this README into your native language.
+[日文(日本語)](README-ja.md) | [簡體中文](README-cn.md) | [土耳其文 (Türkçe)](README-tr.md) | [波斯文(فارسی)](README-fa.md) | [阿拉伯文 (العربية)](README-ar.md) | [印尼文](README-id.md) | [俄文 (русскийة)](README-ru.md) | [葡萄牙文 (português)](README-pt.md) | 我們需要您的幫助將此 README 翻譯成您的母語。
 
-Like our work? ⭐ Star us!
+喜歡我們的工作嗎？⭐ 給我們顆星星！
 
-Checkout our [official docs](https://docs.gaianet.ai/) and a [Manning ebook](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer) on how to customize open source models.
+查看我們的[官方文檔](https://docs.gaianet.ai/)和一本關於如何自定義開源模型的 [Manning 電子書](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer)。
 
 ---
 
-## Quick start
+## 快速開始
 
-Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
+在 Mac、Linux 或 Windows WSL 上使用單行命令安裝默認節點。
 
 ```bash
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
-Then, follow the prompt on your screen to set up the environment path. The command line will begin with `source`.
+然後，按照提示設置環境路徑。命令行將以 `source` 開頭。
 
-Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
+初始化節點。它將下載 `$HOME/gaianet/config.json` 文件中指定的模型文件和向量數據庫文件，由於文件較大，可能需要幾分鐘時間。
 
 ```bash
 gaianet init
 ```
 
-Start the node.
+啟動節點。
 
 ```bash
 gaianet start
 ```
 
-The script prints the official node address on the console as follows.
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+腳本會在控制台上打印官方節點地址，如下所示。
+您可以在瀏覽器中打開該 URL 以查看節點資訊，然後與節點上的 AI 代理聊天。
 
 ```
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
-To stop the node, you can run the following script.
+要停止節點，您可以運行以下腳本。
 
 ```bash
 gaianet stop
 ```
 
-## Install guide
+## 安裝指南
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 輸出應該如下所示： </summary>
 
 ```console
 [+] Downloading default config file ...
@@ -108,19 +107,19 @@ WasmEdge binaries accessible
 
 </details>
 
-By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+默認情況下，它安裝在 `$HOME/gaianet` 目錄中。您也可以選擇安裝到其他目錄。
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Initialize the node
+## 初始化節點
 
 ```
 gaianet init
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 輸出應該如下所示： </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -146,28 +145,28 @@ gaianet init
 
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the llama-3 8B model with a London guidebook as knowledge base.
+`init` 命令根據 `$HOME/gaianet/config.json` 文件初始化節點。您可以使用我們預設的一些配置。例如，下面的命令使用 llama-3 8B 模型和倫敦旅遊指南作為知識庫初始化節點。
 
 ```bash
 gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
-To see a list of pre-set configurations, you can do `gaianet init --help`.
-Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+要查看預設配置列表，您可以執行 `gaianet init --help`。
+除了像 `gaianet_docs` 這樣的預設配置外，您還可以傳遞一個 URL 指向您自己的 `config.json`，以使節點初始化為您想要的狀態。
 
-If you need to `init` a node installed in an alternative directory, do this.
+如果您需要在另一個目錄中 `init` 一個已安裝的節點，請執行以下操作。
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Start the node
+## 啟動節點
 
 ```
 gaianet start
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 輸出應該如下所示： </summary>
 
 ```bash
 [+] Starting Qdrant instance ...
@@ -186,25 +185,25 @@ wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q
 
 </details>
 
-You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+您可以啟動節點以供本地使用。它將僅通過 `localhost` 訪問，不會在任何 GaiaNet 域的公共 URL 上可用。
 
 ```bash
 gaianet start --local-only
 ```
 
-You can also start a node installed in an alternative base directory.
+您也可以啟動安裝在另一個基本目錄中的節點。
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Stop the node
+### 停止節點
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 輸出應該如下所示： </summary>
 
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
@@ -212,52 +211,52 @@ gaianet stop
 
 </details>
 
-Stop a node installed in an alternative base directory.
+停止安裝在另一個基本目錄中的節點。
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
-### Update configuration
+### 更新配置
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+使用 `gaianet config` 子命令可以更新 `config.json` 文件中定義的關鍵字段。更新配置後，您必須再次運行 `gaianet init`。
 
-To update the `chat` field, for example, use the following command:
+例如，要更新 `chat` 字段，請使用以下命令：
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
 
-To update the `chat_ctx_size` field, for example, use the following command:
+例如，要更新 `chat_ctx_size` 字段，請使用以下命令：
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Below are all options of the `config` subcommand.
+以下是 `config` 子命令的所有選項：
 
 ```console
 $ gaianet config --help
 
-Usage: gaianet config [OPTIONS]
+用法：gaianet config [選項]
 
-Options:
-  --chat-url <url>               Update the url of chat model.
-  --chat-ctx-size <val>          Update the context size of chat model.
-  --embedding-url <url>          Update the url of embedding model.
-  --embedding-ctx-size <val>     Update the context size of embedding model.
-  --prompt-template <val>        Update the prompt template of chat model.
-  --port <val>                   Update the port of LlamaEdge API Server.
-  --system-prompt <val>          Update the system prompt.
-  --rag-prompt <val>             Update the rag prompt.
-  --rag-policy <val>             Update the rag policy [Possible values: system-message, last-user-message].
-  --reverse-prompt <val>         Update the reverse prompt.
-  --domain <val>                 Update the domain of GaiaNet node.
-  --snapshot <url>               Update the Qdrant snapshot.
-  --qdrant-limit <val>           Update the max number of result to return.
-  --qdrant-score-threshold <val> Update the minimal score threshold for the result.
-  --base <path>                  The base directory of GaiaNet node.
-  --help                         Show this help message
+選項：
+  --chat-url <url>               更新聊天模型的 URL。
+  --chat-ctx-size <val>          更新聊天模型的上下文大小。
+  --embedding-url <url>          更新嵌入模型的 URL。
+  --embedding-ctx-size <val>     更新嵌入模型的上下文大小。
+  --prompt-template <val>        更新聊天模型的提示模板。
+  --port <val>                   更新 LlamaEdge API 服務器的端口。
+  --system-prompt <val>          更新系統提示。
+  --rag-prompt <val>             更新 rag 提示。
+  --rag-policy <val>             更新 rag 策略 [可能的值：system-message, last-user-message]。
+  --reverse-prompt <val>         更新反向提示。
+  --domain <val>                 更新 GaiaNet 節點的域名。
+  --snapshot <url>               更新 Qdrant 快照。
+  --qdrant-limit <val>           更新要返回的最大結果數。
+  --qdrant-score-threshold <val> 更新結果的最小分數閾值。
+  --base <path>                  GaiaNet 節點的基本目錄。
+  --help                         顯示此幫助資訊
 ```
 
-Have fun!
+玩得開心！
