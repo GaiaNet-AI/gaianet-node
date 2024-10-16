@@ -555,8 +555,6 @@ init() {
     domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
-    sed_in_place "/^[[:space:]]*\"server_health_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$address\2|" $gaianet_base_dir/config.json
-    sed_in_place "/^[[:space:]]*\"server_info_url\"/ s|\(.*\/\)[^/]*\(\"[,]*\)|\1$address\2|" $gaianet_base_dir/config.json
     sed_in_place "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
     sed_in_place "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
     sed_in_place "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
