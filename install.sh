@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
                 echo "$gaianet_base_dir should be a valid directory"
                 exit 1
             fi
-            gaianet_base_dir=$(realpath -m "$gaianet_base_dir")
+            gaianet_base_dir=$(cd "$gaianet_base_dir" && pwd)
             shift 2
             ;;
         --reinstall)
@@ -99,7 +99,7 @@ while [[ $# -gt 0 ]]; do
                 echo "Please specify the backup file"
                 exit 1
             fi
-            backup_to_file=$(realpath -m "$backup_to_file")
+            backup_to_file=$(cd "$backup_to_file" && pwd)
             shift 2
             ;;
         --migrate)
@@ -109,7 +109,7 @@ while [[ $# -gt 0 ]]; do
                 echo "Cannot find the backup file: $migrated_from_file"
                 exit 1
             fi
-            migrated_from_file=$(realpath -m "$migrated_from_file")
+            migrated_from_file=$(cd "$migrated_from_file" && pwd)
             shift 2
             ;;
         --tmpdir)
