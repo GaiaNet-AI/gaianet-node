@@ -1,126 +1,92 @@
-# Run your own GaiaNet node
+# GaiaNet 노드 직접 실행하기
 
+우리의 작업이 마음에 드시나요? ⭐ 별표를 눌러주세요!
 
-<p align="center">
-  <a href="https://discord.gg/gaianet-ai">
-    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
-  </a>
-  <a href="https://twitter.com/Gaianet_AI">
-    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
-  </a>
-   <a href="https://www.gaianet.ai/">
-    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
-  </a>
-</p>
+공식 문서와 오픈 소스 모델을 커스터마이징하는 방법에 대해 [공식문서](https://docs.gaianet.ai/) 와 [매닝 이북](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer) 을 확인해보세요.
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Korean(한국어)](README-kr.md) | [Turkish (Türkçe)](README-tr.md) | [Farsi(فارسی)](README-fa.md) | [Arabic (العربية)](README-ar.md) | [Indonesia](README-id.md) | [Russian (русскийة)](README-ru.md) | [Portuguese (português)](README-pt.md) | We need your help to translate this README into your native language.
+## 빠른 시작
 
-Like our work? ⭐ Star us!
-
-Checkout our [official docs](https://docs.gaianet.ai/) and a [Manning ebook](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer) on how to customize open source models.
-
----
-
-## Quick start
-
-Install the default node software stack with a single line of command on Mac, Linux, or Windows WSL.
+Mac, Linux 또는 Windows WSL에서 다음 단일 명령줄로 기본 노드 소프트웨어 스택을 설치하세요.
 
 ```bash
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
 ```
 
-Then, follow the prompt on your screen to set up the environment path. The command line will begin with `source`.
+그런 다음 화면에 나타나는 안내에 따라 환경 경로를 설정하세요. 커맨드 라인은 `source`로 시작될 것입니다.
 
-Initialize the node. It will download the model files and vector database files specified in the `$HOME/gaianet/config.json` file, and it could take a few minutes since the files are large.
-
+노드를 초기화합니다. `$HOME/gaianet/config.json` 파일에 지정된 모델 파일과 벡터 데이터베이스 파일을 다운로드합니다. 파일들의 용량이 크기 때문에 몇 분 정도 걸릴 수 있습니다.
 ```bash
 gaianet init
 ```
 
-Start the node.
+다음 명령어로 노드를 시작합니다.
 
 ```bash
 gaianet start
 ```
 
-The script prints the official node address on the console as follows.
-You can open a browser to that URL to see the node information and then chat with the AI agent on the node.
+스크립트는 다음과 같이 콘솔에 공식 노드 주소를 출력합니다. 해당 URL을 브라우저에서 열어 노드 정보를 확인하고 노드의 AI 에이전트와 채팅할 수 있습니다.
 
 ```
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
-To stop the node, you can run the following script.
+노드를 멈추려면 다음 스크립트를 실행하세요.
 
 ```bash
 gaianet stop
 ```
 
-## Install guide
+## 설치 가이드
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
 
 ```console
 [+] Downloading default config file ...
-
 [+] Downloading nodeid.json ...
-
 [+] Installing WasmEdge with wasi-nn_ggml plugin ...
-
 Info: Detected Linux-x86_64
-
 Info: WasmEdge Installation at /home/azureuser/.wasmedge
-
 Info: Fetching WasmEdge-0.13.5
-
 /tmp/wasmedge.2884467 ~/gaianet
 ######################################################################## 100.0%
 ~/gaianet
 Info: Fetching WasmEdge-GGML-Plugin
-
 Info: Detected CUDA version:
-
 /tmp/wasmedge.2884467 ~/gaianet
 ######################################################################## 100.0%
 ~/gaianet
 Installation of wasmedge-0.13.5 successful
 WasmEdge binaries accessible
-
     The WasmEdge Runtime wasmedge version 0.13.5 is installed in /home/azureuser/.wasmedge/bin/wasmedge.
-
-
 [+] Installing Qdrant binary...
     * Download Qdrant binary
 ################################################################################################## 100.0%
-
     * Initialize Qdrant directory
-
 [+] Downloading the rag-api-server.wasm ...
 ################################################################################################## 100.0%
-
 [+] Downloading dashboard ...
 ################################################################################################## 100.0%
 ```
-
 </details>
 
-By default, it installs into the `$HOME/gaianet` directory. You can also choose to install into an alternative directory.
+기본설정으로 `$HOME/gaianet` 경로의 디렉토리에 설치됩니다. 다른 디렉토리에 설치하도록 선택할 수도 있습니다.
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## Initialize the node
+## 노드 초기화 하기
 
-```
+```bash
 gaianet init
 ```
 
-<details><summary> The output should look like below: </summary>
+<details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
 
 ```bash
 [+] Downloading Llama-2-7b-chat-hf-Q5_K_M.gguf ...
@@ -146,101 +112,89 @@ gaianet init
 
 </details>
 
-The `init` command initializes the node according to the `$HOME/gaianet/config.json` file. You can use some of our pre-set configurations. For example, the command below initializes a node with the llama-3 8B model with a London guidebook as knowledge base.
+`init` 명령은 `$HOME/gaianet/config.json` 파일의 설정에 따라 노드를 초기화합니다. 미리 설정된 프리셋 구성 중 일부를 사용할 수 있습니다. 예를 들어, 다음 명령은 런던 가이드북을 지식 기반으로 하는 llama-3 8B 모델로 노드를 초기화합니다.
 
 ```bash
 gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_london/config.json
 ```
 
-To see a list of pre-set configurations, you can do `gaianet init --help`.
-Besides a pre-set configurations like `gaianet_docs`, you can also pass a URL to your own `config.json` for the node to be initialized to the state you'd like.
+미리 설정된 프리셋 구성 목록을 보려면 `gaianet init --help`를 실행하세요.
 
-If you need to `init` a node installed in an alternative directory, do this.
+`gaianet_docs`와 같이 미리 설정된 구성 외에도, 원하는 상태로 노드를 초기화하고 싶다면 자체적으로 만든 `config.json`의 URL을 입력합니다.
+
+
+대체 디렉토리에 설치된 노드를 `init`해야 하는 경우 다음과 같이 하세요.
 
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## Start the node
+## 노드 시작하기
 
 ```
 gaianet start
 ```
-
-<details><summary> The output should look like below: </summary>
-
+<details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
 ```bash
 [+] Starting Qdrant instance ...
-
     Qdrant instance started with pid: 39762
-
 [+] Starting LlamaEdge API Server ...
-
     Run the following command to start the LlamaEdge API Server:
-
 wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q5_K_M.gguf --nn-preload embedding:GGML:AUTO:all-MiniLM-L6-v2-ggml-model-f16.gguf rag-api-server.wasm --model-name Llama-2-7b-chat-hf-Q5_K_M,all-MiniLM-L6-v2-ggml-model-f16 --ctx-size 4096,384 --prompt-template llama-2-chat --qdrant-collection-name default --web-ui ./ --socket-addr 0.0.0.0:8080 --log-prompts --log-stat --rag-prompt "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n"
-
-
     LlamaEdge API Server started with pid: 39796
 ```
-
 </details>
 
-You can start the node for local use. It will be only accessible via `localhost` and not available on any of the GaiaNet domain's public URLs.
+로컬 환경에서 사용하기 위해 노드를 시작하는 명령입니다. 이 경우 `localhost`를 통해서만 접근 가능하며 GaiaNet 도메인의 공개 URL에서는 사용할 수 없습니다.
 
 ```bash
 gaianet start --local-only
 ```
 
-You can also start a node installed in an alternative base directory.
+다른 기본 경로에 설치된 노드를 시작할 수도 있습니다.
 
 ```bash
 gaianet start --base $HOME/gaianet.alt
 ```
 
-### Stop the node
+### 노드 중지하기
 
 ```bash
 gaianet stop
 ```
 
-<details><summary> The output should look like below: </summary>
-
+<details><summary> 출력 결과는 다음과 같을 것입니다 :  </summary>
 ```bash
 [+] Stopping WasmEdge, Qdrant and frpc ...
 ```
-
 </details>
 
-Stop a node installed in an alternative base directory.
+다른 대체경로에 설치된 노드를 중지하려면 다음 명령어를 사용합니다.
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
 
-### Update configuration
+### 설정 업데이트 하기
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+`gaianet config` 하위 명령을 사용하여 `config.json` 파일에 정의된 주요 필드들을 업데이트할 수 있습니다. 구성을 업데이트한 후에는 반드시 `gaianet init`을 다시 실행해야 합니다.
 
-To update the `chat` field, for example, use the following command:
+예를 들어 `chat` 필드를 업데이트하려면 다음 명령어를 사용할 수 있습니다 :
 
 ```bash
 gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-GGUF/resolve/main/Llama-2-13b-chat-hf-Q5_K_M.gguf"
 ```
-
-To update the `chat_ctx_size` field, for example, use the following command:
+예를 들어 `chat_ctx_size` 필드를 업데이트하려면 다음 명령을 사용하세요 :
 
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
 
-Below are all options of the `config` subcommand.
+다음은 `config` 하위 명령의 모든 옵션입니다.
 
 ```console
 $ gaianet config --help
-
 Usage: gaianet config [OPTIONS]
-
 Options:
   --chat-url <url>               Update the url of chat model.
   --chat-ctx-size <val>          Update the context size of chat model.
@@ -260,4 +214,4 @@ Options:
   --help                         Show this help message
 ```
 
-Have fun!
+즐거운 사용 되세요!
