@@ -35,6 +35,7 @@ config_url=""
 gaianet_base_dir="$HOME/gaianet"
 # tmp directory
 tmp_dir="$gaianet_base_dir/tmp"
+tmp_dir_updated=0
 # specific CUDA enabled GGML plugin
 ggmlcuda=""
 # 0: disable vector, 1: enable vector
@@ -82,6 +83,9 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             gaianet_base_dir=$(cd "$gaianet_base_dir" && pwd)
+            if [ "$tmp_dir_updated" -eq 0 ]; then
+                tmp_dir="$gaianet_base_dir/tmp"
+            fi
             shift 2
             ;;
         --reinstall)
@@ -114,6 +118,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tmpdir)
             tmp_dir="$2"
+            tmp_dir_updated=1
             shift 2
             ;;
         --ggmlcuda)
