@@ -557,7 +557,7 @@ init() {
 
     sed_in_place "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
     sed_in_place "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
-    sed_in_place "s/localPort = \".*\"/localPort = \"$llamaedge_port\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+    sed_in_place "s/localPort = .*/localPort = $llamaedge_port/g" $gaianet_base_dir/gaia-frp/frpc.toml
     sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 
     # Remove all files in the directory except for frpc and frpc.toml
