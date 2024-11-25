@@ -745,6 +745,7 @@ else
     device_id="device-$(openssl rand -hex 12)"
     echo "$device_id" > "$device_id_file"
 fi
+info "    * The device ID is $device_id"
 
 sed_in_place "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
