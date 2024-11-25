@@ -1203,7 +1203,7 @@ start() {
     fi
 
     info ">>> To stop the GaiaNet node, run the command: gaianet stop <<<"
-    info ">>> You can close this terminal window safely now if you don't need to keep the terminal open. <<<"
+    info ">>> You can close this terminal window safely now <<<"
 
     exit 0
 }
