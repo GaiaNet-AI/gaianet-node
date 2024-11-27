@@ -10,10 +10,10 @@ cwd=$(pwd)
 
 repo_branch="main"
 version="0.4.12"
-rag_api_server_version="0.9.16"
-llama_api_server_version="0.14.16"
+rag_api_server_version="0.9.15"
+llama_api_server_version="0.14.15"
 wasmedge_version="0.14.1"
-ggml_bn="b4067"
+ggml_bn="b3613"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 assistant_version="0.3.2"
@@ -435,7 +435,7 @@ if [ -n "$ggmlcuda" ]; then
         exit 1
     fi
 else
-    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --tmpdir=$tmp_dir; then
+    if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --ggmlbn=$ggml_bn --tmpdir=$tmp_dir; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
         info "    * The $wasmedge_version is installed in $wasmedge_path."
