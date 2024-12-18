@@ -9,14 +9,14 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
-version="0.4.13"
-rag_api_server_version="0.9.17"
-llama_api_server_version="0.14.17"
+version="0.4.14"
+rag_api_server_version="0.11.1"
+llama_api_server_version="0.15.1"
 wasmedge_version="0.14.1"
 ggml_bn="b4273"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-assistant_version="0.3.2"
+assistant_version="0.3.3"
 qdrant_version="v1.11.4"
 
 # 0: do not reinstall, 1: reinstall
