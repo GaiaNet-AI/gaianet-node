@@ -707,6 +707,8 @@ start() {
         qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' config.json)
         # parse qdrant score threshold
         qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' config.json)
+        # parse context window
+        context_window=$(awk -F'"' '/"context_window":/ {print $4}' config.json)
 
         if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
             if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
@@ -757,6 +759,7 @@ start() {
         --qdrant-collection-name $embedding_collection_name \
         --qdrant-limit $qdrant_limit \
         --qdrant-score-threshold $qdrant_score_threshold \
+        --context-window $context_window \
         --web-ui ./ \
         --socket-addr 0.0.0.0:$llamaedge_port)
 
@@ -1395,6 +1398,7 @@ show_config_help() {
     printf "  --snapshot <url>               Update the Qdrant snapshot.\n"
     printf "  --qdrant-limit <val>           Update the max number of result to return.\n"
     printf "  --qdrant-score-threshold <val> Update the minimal score threshold for the result.\n"
+    printf "  --context-window <val>         Update the context window.\n"
     printf "  --base <path>                  The base directory of GaiaNet node.\n"
     printf "  --help                         Show this help message\n\n"
 }
@@ -1462,6 +1466,7 @@ case $subcommand in
         snapshot="placeholder"
         qdrant_limit=""
         qdrant_score_threshold=""
+        context_window=""
 
         while (( "$#" )); do
             case "$1" in
@@ -1563,6 +1568,12 @@ case $subcommand in
                 --qdrant-score-threshold)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         qdrant_score_threshold=$2
+                        shift 2
+                    fi
+                    ;;
+                --context-window)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        context_window=$2
                         shift 2
                     fi
                     ;;
@@ -1751,6 +1762,16 @@ case $subcommand in
 
             # update
             update_config qdrant_score_threshold $qdrant_score_threshold
+        fi
+
+        # update context window
+        if [ -n "$context_window" ]; then
+            printf "[+] Updating the context window ...\n"
+            printf "    * Old window: $(awk -F'"' '/"context_window":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New window: $context_window"
+
+            # update
+            update_config context_window $context_window
         fi
 
         printf "[+] COMPLETED! The config.json is updated successfully.\n\n"
