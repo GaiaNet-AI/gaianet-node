@@ -708,7 +708,12 @@ start() {
         # parse qdrant score threshold
         qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' config.json)
         # parse context window
-        context_window=$(awk -F'"' '/"context_window":/ {print $4}' config.json)
+        # check if context window is present in config.json
+        if grep -q '"context_window":' config.json; then
+            context_window=$(awk -F'"' '/"context_window":/ {print $4}' config.json)
+        else
+            context_window=1
+        fi
 
         if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
             if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
