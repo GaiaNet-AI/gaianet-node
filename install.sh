@@ -280,7 +280,7 @@ if [ -d "$gaianet_base_dir" ]; then
             # check if context_window is present in config.json
             if ! grep -q '"context_window":' $gaianet_base_dir/config.json; then
                 sed_in_place '2i\
-                "context_window": "1",
+  "context_window": "1",
                 ' "$gaianet_base_dir/config.json"
             fi
 
