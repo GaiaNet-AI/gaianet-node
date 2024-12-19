@@ -277,6 +277,14 @@ if [ -d "$gaianet_base_dir" ]; then
         if [ -f "$gaianet_base_dir/config.json" ]; then
             printf "    * Copy config.json to $gaianet_base_dir/backup/\n"
             cp $gaianet_base_dir/config.json $gaianet_base_dir/backup/
+
+            # check if context_window is present in config.json
+            if ! grep -q '"context_window":' config.json; then
+                sed_in_place '2i\
+                "context_window": "1",
+                ' "$gaianet_base_dir/config.json"
+            fi
+
         else
             error "Failed to copy the config.json. Reason: the config.json does not exist in $gaianet_base_dir."
             exit 1
