@@ -232,6 +232,27 @@ EOF
 
 printf "\n\n"
 
+# check nvidia-smi if NVIDIA GPU is detected on Linux
+os_name=$(uname -s)
+if [[ "$os_name" == "Linux" ]]; then
+    info "Operating System: Linux"
+
+    # check if NVIDIA GPU is present
+    if lspci | grep -iq nvidia; then
+        info "NVIDIA GPU detected!"
+
+        # check if nvidia-smi is installed
+        if ! command -v nvidia-smi &> /dev/null; then
+            warning "nvidia-smi is not installed. Please install it to manage your NVIDIA GPU."
+            warning "To install nvidia-smi on Ubuntu, run:"
+            warning "  sudo apt update && sudo apt install nvidia-utils-<driver-version>"
+            warning "Example for driver version 470:"
+            warning "  sudo apt install nvidia-utils-470"
+            exit 1
+        fi
+    fi
+fi
+
 # If need to upgrade, remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
 # If need to reinstall, remove the $gaianet_base_dir directory
 if [ -d "$gaianet_base_dir" ]; then
