@@ -243,7 +243,7 @@ if [[ "$os_name" == "Linux" ]]; then
 
         # check if nvidia-smi is installed
         if ! command -v nvidia-smi &> /dev/null; then
-            warning "nvidia-smi is not detected. It is strongly recommended to install it to manage your NVIDIA GPU."
+            warning "nvidia-smi is not detected. You can install it manually after the node installation is complete.\n\nInstalling nvidia-smi will enable the system to efficiently allocate resources to nodes, increasing the potential for higher rewards."
         fi
     fi
 fi
