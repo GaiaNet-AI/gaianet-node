@@ -1,7 +1,7 @@
 {
     "address": "",
     "description": "The default GaiaNet node config with a Llama-3.2-3B-Instruct model and a Paris tour guide knowledge base.",
-    "domain": "us.gaianet.network",
+    "domain": "gaia.domains",
     "llamaedge_port": "8080",
     "chat": "https://huggingface.co/second-state/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q5_K_M.gguf",
     "chat_name": "Llama-3.2-3B-Instruct",
