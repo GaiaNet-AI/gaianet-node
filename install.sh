@@ -243,12 +243,7 @@ if [[ "$os_name" == "Linux" ]]; then
 
         # check if nvidia-smi is installed
         if ! command -v nvidia-smi &> /dev/null; then
-            warning "nvidia-smi is not installed. Please install it to manage your NVIDIA GPU."
-            warning "To install nvidia-smi on Ubuntu, run:"
-            warning "  sudo apt update && sudo apt install nvidia-utils-<driver-version>"
-            warning "Example for driver version 470:"
-            warning "  sudo apt install nvidia-utils-470"
-            exit 1
+            warning "nvidia-smi is not detected. It is strongly recommended to install it to manage your NVIDIA GPU."
         fi
     fi
 fi
