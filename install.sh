@@ -16,7 +16,7 @@ wasmedge_version="0.14.1"
 ggml_bn="b4273"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-assistant_version="0.3.4"
+assistant_version="0.3.5"
 qdrant_version="v1.11.4"
 
 # 0: do not reinstall, 1: reinstall
