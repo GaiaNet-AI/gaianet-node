@@ -820,14 +820,14 @@ info "    * server assistant is installed in $bin_dir"
 
 if [ "$upgrade" -eq 1 ]; then
 
-    printf "[+] COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
+    printf "✅ COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
 
-    info ">>> Next, you should run the command 'gaianet init' to initialize the GaiaNet node."
+    info "👉 Next, you should run the command 'gaianet init' to initialize the GaiaNet node."
 
 else
-    printf "[+] COMPLETED! The gaianet node has been installed successfully.\n\n"
+    printf "✅ COMPLETED! The gaianet node has been installed successfully.\n\n"
 
-    info "Your node ID is $subdomain. Please register it in your portal account to receive awards!"
+    info "✨ Your node ID is $subdomain. 🌟 Please register it in your portal account to receive rewards!"
 
     # Command to append
     cmd="export PATH=\"$bin_dir:\$PATH\""
