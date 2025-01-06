@@ -1422,7 +1422,7 @@ show_start_help() {
     printf "Options:\n"
     printf "  --local-only               Start the program in local mode.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
-    printf "  --rag                      Force start rag-api-server.\n"
+    printf "  --force-rag                Force start rag-api-server even if the 'snapshot' field of config.json is empty. Users should ensure the qdrant has been initialized with the desired snapshot.\n"
     printf "  --help                     Show this help message\n\n"
 }
 
@@ -1881,7 +1881,7 @@ case $subcommand in
                         check_base_dir
                     fi
                     ;;
-                --rag)
+                --force-rag)
                     force_rag=true
                     shift
                     ;;
