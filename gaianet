@@ -589,6 +589,7 @@ update_config() {
 # start rag-api-server and a qdrant instance
 start() {
     local_only=$1
+    force_rag=$2
     log_dir=$gaianet_base_dir/log
     if ! [ -d "$log_dir" ]; then
         mkdir -p -m777 $log_dir
@@ -615,7 +616,7 @@ start() {
     fi
 
     snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
-    if [ -n "$snapshot" ]; then
+    if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
         # 1. start a Qdrant instance
         printf "[+] Starting Qdrant instance ...\n"
 
@@ -1421,6 +1422,7 @@ show_start_help() {
     printf "Options:\n"
     printf "  --local-only               Start the program in local mode.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
+    printf "  --force-rag                Force start rag-api-server even if the 'snapshot' field of config.json is empty. Users should ensure the qdrant has been initialized with the desired snapshot.\n"
     printf "  --help                     Show this help message\n\n"
 }
 
@@ -1864,6 +1866,8 @@ case $subcommand in
     run|start)
         local=0
 
+	force_rag=false
+
         while (( "$#" )); do
             case "$1" in
                 --local-only)
@@ -1877,6 +1881,10 @@ case $subcommand in
                         check_base_dir
                     fi
                     ;;
+                --force-rag)
+                    force_rag=true
+                    shift
+                    ;;
                 *)
                     show_start_help
                     exit 1
@@ -1884,7 +1892,7 @@ case $subcommand in
             esac
         done
 
-        start $local
+        start $local $force_rag
 
         ;;
 
