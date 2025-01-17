@@ -1187,7 +1187,7 @@ start() {
 
     # start assistant
     export RUST_LOG=info
-    nohup $gaianet_base_dir/bin/gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --gaianet-dir $gaianet_base_dir --system-prompt "$system_prompt" --rag-prompt "$rag_prompt" --log $gaianet_base_dir/log/assistant.log > /dev/null 2>&1 &
+    nohup $gaianet_base_dir/bin/gaias --server-socket-addr 0.0.0.0:$llamaedge_port --server-log-file $gaianet_base_dir/log/start-llamaedge.log --gaianet-dir $gaianet_base_dir --system-prompt "$system_prompt" --rag-prompt "$rag_prompt" --log $gaianet_base_dir/log/assistant.log --interval 60 > /dev/null 2>&1 &
 
     sleep 2
 
