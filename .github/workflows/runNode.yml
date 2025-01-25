@@ -10,7 +10,10 @@ on:
 
 jobs:
   run-node-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Install apt packages
