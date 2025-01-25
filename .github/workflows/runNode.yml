@@ -36,6 +36,8 @@ jobs:
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet start
           sleep 10
+          gaias --version
+          cat $HOME/gaianet/log/assistant.log
       - name: Test localhost API
         continue-on-error: true
         run: |
