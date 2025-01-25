@@ -35,13 +35,13 @@ jobs:
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet start
-          sleep 10
+          sleep 20
           ldd $HOME/gaianet/bin/gaias
           gaias --version
-          cat $HOME/gaianet/log/assistant.log
       - name: Test localhost API
         continue-on-error: true
         run: |
+          ls -al $HOME/gaianet/log/
           curl --fail -X POST http://localhost:8080/v1/chat/completions \
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
