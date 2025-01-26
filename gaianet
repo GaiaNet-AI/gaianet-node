@@ -669,6 +669,12 @@ start() {
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse batch size for chat model
         chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' config.json)
+        # parse ubatch size for chat model
+        if grep -q '"chat_ubatch_size":' config.json; then
+            chat_ubatch_size=$(awk -F'"' '/"chat_ubatch_size":/ {print $4}' config.json)
+        else
+            chat_ubatch_size=$chat_batch_size
+        fi
         # parse prompt type for chat model
         prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
         # parse system prompt for chat model
@@ -702,6 +708,12 @@ start() {
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse batch size for embedding model
         embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' config.json)
+        # parse ubatch size for embedding model
+        if grep -q '"embedding_ubatch_size":' config.json; then
+            embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' config.json)
+        else
+            embedding_ubatch_size=$embedding_batch_size
+        fi
         # parse port for LlamaEdge API Server
         llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
         # parse qdrant limit
@@ -760,6 +772,7 @@ start() {
         --model-name $chat_model_stem,$embedding_model_stem \
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --batch-size $chat_batch_size,$embedding_batch_size \
+        --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
         --prompt-template $prompt_type,embedding \
         --rag-policy $rag_policy \
         --qdrant-collection-name $embedding_collection_name \
@@ -950,6 +963,12 @@ start() {
         chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
         # parse batch size for chat model
         chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' config.json)
+        # parse ubatch size for chat model
+        if grep -q '"chat_ubatch_size":' config.json; then
+            chat_ubatch_size=$(awk -F'"' '/"chat_ubatch_size":/ {print $4}' config.json)
+        else
+            chat_ubatch_size=$chat_batch_size
+        fi
         # parse prompt type for chat model
         prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
         # parse reverse prompt for chat model
@@ -975,6 +994,12 @@ start() {
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse batch size for embedding model
         embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' config.json)
+        # parse ubatch size for embedding model
+        if grep -q '"embedding_ubatch_size":' config.json; then
+            embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' config.json)
+        else
+            embedding_ubatch_size=$embedding_batch_size
+        fi
         # parse port for LlamaEdge API Server
         llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
         # check port
@@ -1008,6 +1033,7 @@ start() {
         --model-name $chat_model_stem,$embedding_model_stem \
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --batch-size $chat_batch_size,$embedding_batch_size \
+        --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
         --prompt-template $prompt_type,embedding \
         --web-ui ./ \
         --socket-addr 0.0.0.0:$llamaedge_port)
@@ -1391,9 +1417,11 @@ show_config_help() {
     printf "  --chat-url <url>               Update the url of chat model.\n"
     printf "  --chat-ctx-size <val>          Update the context size of chat model.\n"
     printf "  --chat-batch-size <val>        Update the batch size of chat model.\n"
+    printf "  --chat-ubatch-size <val>       Update the ubatch size of chat model.\n"
     printf "  --embedding-url <url>          Update the url of embedding model.\n"
     printf "  --embedding-ctx-size <val>     Update the context size of embedding model.\n"
     printf "  --embedding-batch-size <val>   Update the batch size of embedding model.\n"
+    printf "  --embedding-ubatch-size <val>  Update the ubatch size of embedding model.\n"
     printf "  --prompt-template <val>        Update the prompt template of chat model.\n"
     printf "  --port <val>                   Update the port of LlamaEdge API Server.\n"
     printf "  --system-prompt <val>          Update the system prompt.\n"
@@ -1495,6 +1523,12 @@ case $subcommand in
                         shift 2
                     fi
                     ;;
+                --chat-ubatch-size)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        chat_ubatch_size=$2
+                        shift 2
+                    fi
+                    ;;
                 --embedding-url)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         embedding_url=$2
@@ -1510,6 +1544,12 @@ case $subcommand in
                 --embedding-batch-size)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         embedding_batch_size=$2
+                        shift 2
+                    fi
+                    ;;
+                --embedding-ubatch-size)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        embedding_ubatch_size=$2
                         shift 2
                     fi
                     ;;
@@ -1630,6 +1670,16 @@ case $subcommand in
             update_config chat_batch_size $chat_batch_size
         fi
 
+        # update ubatch size of chat model
+        if [ -n "$chat_ubatch_size" ]; then
+            printf "[+] Updating the ubatch size of chat model ...\n"
+            printf "    * Old size: $(awk -F'"' '/"chat_ubatch_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New size: $chat_ubatch_size"
+
+            # update
+            update_config chat_ubatch_size $chat_ubatch_size
+        fi
+
         # update url of embedding model
         if [ -n "$embedding_url" ]; then
             printf "[+] Updating the url of embedding model ...\n"
@@ -1658,6 +1708,16 @@ case $subcommand in
 
             # update
             update_config embedding_batch_size $embedding_batch_size
+        fi
+
+        # update ubatch size of embedding model
+        if [ -n "$embedding_ubatch_size" ]; then
+            printf "[+] Updating the ubatch size of embedding model ...\n"
+            printf "    * Old size: $(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New size: $embedding_ubatch_size"
+
+            # update
+            update_config embedding_ubatch_size $embedding_ubatch_size
         fi
 
         # update prompt template
