@@ -387,28 +387,28 @@ if [ "$upgrade" -eq 1 ]; then
         if ! grep -q '"chat_batch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
             sed_in_place '2i\
-            "chat_batch_size": "16",
+  "chat_batch_size": "16",
             ' "$gaianet_base_dir/config.json"
         fi
 
         if ! grep -q '"chat_ubatch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
             sed_in_place '2i\
-            "chat_ubatch_size": "16",
+  "chat_ubatch_size": "16",
             ' "$gaianet_base_dir/config.json"
         fi
 
         if ! grep -q '"embedding_batch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
             sed_in_place '2i\
-            "embedding_batch_size": "512",
+  "embedding_batch_size": "512",
             ' "$gaianet_base_dir/config.json"
         fi
 
         if ! grep -q '"embedding_ubatch_size":' $gaianet_base_dir/config.json; then
             # Prepend the field to the beginning of the JSON object
             sed_in_place '2i\
-            "embedding_ubatch_size": "512",
+  "embedding_ubatch_size": "512",
             ' "$gaianet_base_dir/config.json"
         fi
 
