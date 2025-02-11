@@ -264,3 +264,9 @@ Options:
 ```
 
 Have fun!
+
+### Contributors
+
+<a href="https://github.com/GaiaNet-AI/gaianet-node/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=GaiaNet-AI/gaianet-node" alt="Gaia project contributors" />
+</a>
