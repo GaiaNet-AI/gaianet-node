@@ -399,6 +399,7 @@ create_collection() {
         --model-name $chat_model_stem,$embedding_model_stem \
         --ctx-size $chat_ctx_size,$embedding_ctx_size \
         --qdrant-collection-name $embedding_collection_name \
+        --include-usage \
         --web-ui ./dashboard \
         --socket-addr 0.0.0.0:$llamaedge_port"
 
@@ -779,6 +780,7 @@ start() {
         --qdrant-limit $qdrant_limit \
         --qdrant-score-threshold $qdrant_score_threshold \
         --context-window $context_window \
+        --include-usage \
         --web-ui ./ \
         --socket-addr 0.0.0.0:$llamaedge_port)
 
@@ -1035,6 +1037,7 @@ start() {
         --batch-size $chat_batch_size,$embedding_batch_size \
         --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
         --prompt-template $prompt_type,embedding \
+        --include-usage \
         --web-ui ./ \
         --socket-addr 0.0.0.0:$llamaedge_port)
 
