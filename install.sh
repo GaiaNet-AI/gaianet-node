@@ -16,7 +16,7 @@ wasmedge_version="0.14.1"
 ggml_bn="b4623"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-assistant_version="0.4.2"
+assistant_version="0.4.3"
 qdrant_version="v1.11.4"
 
 # 0: do not reinstall, 1: reinstall
@@ -813,6 +813,9 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 
     if [ "$target" = "x86_64" ]; then
         check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-x86_64-unknown-linux-gnu.tar.gz $bin_dir/server-assistant.tar.gz
+    elif [ "$target" = "aarch64" ]; then
+        check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-aarch64-unknown-linux-gnu.tar.gz $bin_dir/server-assistant.tar.gz
+
     else
         error " * Unsupported architecture: $target, only support x86_64 on Linux"
         exit 1
