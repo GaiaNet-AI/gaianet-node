@@ -646,15 +646,19 @@ elif [ -f "$migrated_from_file" ] && tar -tf "$migrated_from_file" | grep -q "no
         fi
     fi
 else
+    printf "[+] Generating node ID ...\n"
+
     # download the default nodeid.json
     if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
+        printf "    * Download nodeid.json ...⏳\n"
         check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+        info "      👍 Done!"
     fi
 
-    printf "[+] Generating node ID ...\n"
+    printf "    * Generate node ID ...⏳\n"
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
-    info "    👍 Done!"
+    info "      👍 Done!"
 fi
 
 # 11. Install gaia-frp
