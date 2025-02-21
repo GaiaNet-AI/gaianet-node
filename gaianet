@@ -597,13 +597,24 @@ start() {
         mkdir -p -m777 $log_dir
     fi
 
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
+        use_rag_api_server=true
+    else
+        use_rag_api_server=false
+    fi
+
     local_log_storage=1
     if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
         local_log_storage=0
     fi
 
     # check if config.json exists or not
-    printf "[+] Checking the config.json file ...\n"
+    if [ "$use_rag_api_server" = true ]; then
+        printf "[1/5] Checking the config.json file ...\n"
+    else
+        printf "[1/4] Checking the config.json file ...\n"
+    fi
     check_config_options
     info "    👍 Done!"
 
@@ -617,11 +628,10 @@ start() {
         use_supervise=false
     fi
 
-    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
-    if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
+    if [ "$use_rag_api_server" = true ]; then
 
         # 1. start a Qdrant instance
-        printf "[+] Starting Qdrant instance ...\n"
+        printf "[2/5] Starting Qdrant instance ...\n"
 
         qdrant_already_running=false
         if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
@@ -652,7 +662,7 @@ start() {
         fi
 
         # 2. start rag-api-server
-        printf "[+] Starting LlamaEdge API Server ...\n\n"
+        printf "[3/5] Starting LlamaEdge API Server ...\n\n"
 
         # parse cli options for chat model
         cd $gaianet_base_dir
@@ -947,7 +957,7 @@ start() {
     else
 
         # 2. start llama-api-server
-        printf "[+] Starting LlamaEdge API Server ...\n\n"
+        printf "[2/4] Starting LlamaEdge API Server ...\n\n"
 
         # parse cli options for chat model
         cd $gaianet_base_dir
@@ -1189,7 +1199,12 @@ start() {
     # 3. start gaia-frp
     if [ "$local_only" -eq 0 ]; then
         # start gaia-frp
-        printf "[+] Starting gaia-frp ...\n\n"
+        if [ "$use_rag_api_server" = true ]; then
+            printf "[4/5] Starting gaia-frp ...\n\n"
+        else
+            printf "[3/4] Starting gaia-frp ...\n\n"
+        fi
+
         nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
         sleep 2
         gaia_frp_pid=$!
@@ -1208,7 +1223,11 @@ start() {
 
 
     # 4. start server assistant
-    printf "[+] Starting Server Assistant ...\n\n"
+    if [ "$use_rag_api_server" = true ]; then
+        printf "[5/5] Starting Server Assistant ...\n\n"
+    else
+        printf "[4/4] Starting Server Assistant ...\n\n"
+    fi
     sleep 2
 
     # parse system prompt
