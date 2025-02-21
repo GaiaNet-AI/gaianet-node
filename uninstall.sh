@@ -65,31 +65,29 @@ done
 # 1. Stop WasmEdge, Qdrant and frpc
 if command -v gaianet > /dev/null 2>&1; then
     gaianet stop
-    printf "\n"
+    info "    👍 Done!"
 fi
-
 
 # 2. Remove the gaianet base directory
 if [ -d "$gaianet_base_dir" ]; then
     printf "[+] Removing the gaianet base directory ...\n"
     rm -rf $gaianet_base_dir
-    printf "\n"
+    info "    👍 Done!"
 fi
 
 if [ -f "/usr/local/bin/gaianet" ]; then
     printf "[+] Removing gaianet binary from /usr/local/bin ...\n"
     sudo rm "/usr/local/bin/gaianet"
-    printf "\n"
+    info "    👍 Done!"
 fi
-
 
 # 3. Remove WasmEdge
 if command -v wasmedge > /dev/null 2>&1; then
     printf "[+] Uninstall WasmEdge ...\n"
     bash <(curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/uninstall.sh) -q
     printf "\n"
+    info "    👍 Done!"
 fi
-
 
 # 4. Clean up the environment variables
 printf "[+] Remove the path from the shell rc file ...\n"
@@ -118,7 +116,8 @@ if [[ -f "${HOME}/.bash_profile" ]]; then
     [ "$line_num" != "" ] && sed -i.gaianet_backup -e "${line_num}"'d' "${HOME}/.bash_profile"
 fi
 
+info "    👉 Done!"
 
-info ">>> Next, run the command 'source $HOME/$shell_rc' to make the uninstallation effective in the current shell."
 
+info "👉 Next, run the command 'source $HOME/$shell_rc' to make the uninstallation effective in the current shell."
 
