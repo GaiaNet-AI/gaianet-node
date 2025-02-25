@@ -668,7 +668,7 @@ if [ ! -d "$gaianet_base_dir/gaia-frp" ]; then
     mkdir -p -m777 $gaianet_base_dir/gaia-frp
 fi
 cd $gaianet_base_dir
-gaia_frp_version="v0.1.2"
+gaia_frp_version="v0.1.3"
 printf "    * Download gaia-frp binary\n"
 if [ "$(uname)" == "Darwin" ]; then
     if [ "$target" = "x86_64" ]; then
