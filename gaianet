@@ -221,12 +221,13 @@ create_collection() {
     cd $gaianet_base_dir
     url_snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' config.json)
     url_document=$(awk -F'"' '/"document":/ {print $4}' config.json)
-    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
-    if [[ -z "$embedding_collection_name" ]]; then
-        embedding_collection_name="default"
-    fi
+    # Remove these lines since embedding_collection_name is already set
+    # embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
+    # if [[ -z "$embedding_collection_name" ]]; then
+    #     embedding_collection_name="default"
+    # fi
 
-    printf "    * Remove the existed 'default' Qdrant collection ...⏳\n"
+    printf "    * Removing the existing '%s' Qdrant collection ...⏳\n" "$embedding_collection_name"
     cd $gaianet_base_dir
     # remove the collection if it exists
     del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
@@ -532,9 +533,14 @@ init() {
     fi
 
     snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
+    if [[ -z "$embedding_collection_name" ]]; then
+        embedding_collection_name="default"
+    fi
+
     if [ -n "$snapshot" ]; then
         # create or recover a qdrant collection
-        printf "[+] Creating 'default' collection in the Qdrant instance ...\n"
+        printf "[+] Creating '%s' collection in the Qdrant instance ...\n" "$embedding_collection_name"
         create_collection
     fi
 
@@ -598,6 +604,11 @@ start() {
     fi
 
     snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
+    if [[ -z "$embedding_collection_name" ]]; then
+        embedding_collection_name="default"
+    fi
+
     if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
         use_rag_api_server=true
     else
@@ -712,11 +723,6 @@ start() {
             embedding_model_stem=$embedding_name
         fi
 
-        # parse cli options for embedding vector collection name
-        embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
-        if [[ -z "$embedding_collection_name" ]]; then
-            embedding_collection_name="default"
-        fi
         # parse context size for embedding model
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse batch size for embedding model
@@ -999,11 +1005,6 @@ start() {
             embedding_model_stem=$embedding_name
         fi
 
-        # parse cli options for embedding vector collection name
-        embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' config.json)
-        if [[ -z "$embedding_collection_name" ]]; then
-            embedding_collection_name="default"
-        fi
         # parse context size for embedding model
         embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
         # parse batch size for embedding model
