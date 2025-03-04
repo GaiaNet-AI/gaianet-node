@@ -1,0 +1,1631 @@
+
+In gaianet line 7:
+version="0.4.21"
+^-----^ SC2034 (warning): version appears unused. Verify use (or export if used externally).
+
+
+In gaianet line 17:
+source $HOME/.wasmedge/env
+       ^-----------------^ SC1091 (info): Not following: ./.wasmedge/env was not specified as input (see shellcheck -x).
+       ^---^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+source "$HOME"/.wasmedge/env
+
+
+In gaianet line 29:
+if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                                           ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                                                  ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 34:
+    printf "${GREEN}$1${NC}\n\n"
+           ^-------------------^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 38:
+    printf "${RED}$1${NC}\n\n"
+           ^-----------------^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 42:
+    printf "${YELLOW}$1${NC}\n\n"
+           ^--------------------^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 49:
+    if [ $? -ne 0 ]; then
+         ^-- SC2181 (style): Check exit code directly with e.g. 'if ! mycmd;', not indirectly with $?.
+
+
+In gaianet line 58:
+    if [ $? -ne 0 ]; then
+         ^-- SC2181 (style): Check exit code directly with e.g. 'if ! mycmd;', not indirectly with $?.
+
+
+In gaianet line 66:
+    if [ ! -d $gaianet_base_dir ]; then
+              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if [ ! -d "$gaianet_base_dir" ]; then
+
+
+In gaianet line 67:
+        printf "\n❌ Not found $gaianet_base_dir.\n\nPlease run 'bash install.sh' command first, then try again.\n\n"
+               ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 75:
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 77:
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 96:
+    if ! grep -q '"address":' $gaianet_base_dir/config.json; then
+                              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"address":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 102:
+    if ! grep -q '"chat":' $gaianet_base_dir/config.json; then
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"chat":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 108:
+    if ! grep -q '"prompt_template":' $gaianet_base_dir/config.json; then
+                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"prompt_template":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 114:
+    if ! grep -q '"chat_ctx_size":' $gaianet_base_dir/config.json; then
+                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"chat_ctx_size":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 120:
+    if ! grep -q '"system_prompt":' $gaianet_base_dir/config.json; then
+                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"system_prompt":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 126:
+    if ! grep -q '"embedding":' $gaianet_base_dir/config.json; then
+                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"embedding":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 132:
+    if ! grep -q '"embedding_ctx_size":' $gaianet_base_dir/config.json; then
+                                         ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"embedding_ctx_size":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 138:
+    if ! grep -q '"snapshot":' $gaianet_base_dir/config.json; then
+                               ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"snapshot":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 144:
+    if ! grep -q '"embedding_collection_name":' $gaianet_base_dir/config.json; then
+                                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"embedding_collection_name":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 150:
+    if ! grep -q '"qdrant_limit":' $gaianet_base_dir/config.json; then
+                                   ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"qdrant_limit":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 156:
+    if ! grep -q '"qdrant_score_threshold":' $gaianet_base_dir/config.json; then
+                                             ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"qdrant_score_threshold":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 162:
+    if ! grep -q '"rag_prompt":' $gaianet_base_dir/config.json; then
+                                 ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"rag_prompt":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 168:
+    if ! grep -q '"rag_policy":' $gaianet_base_dir/config.json; then
+                                 ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"rag_policy":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 174:
+    if ! grep -q '"domain":' $gaianet_base_dir/config.json; then
+                             ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"domain":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 180:
+    if ! grep -q '"llamaedge_port":' $gaianet_base_dir/config.json; then
+                                     ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if ! grep -q '"llamaedge_port":' "$gaianet_base_dir"/config.json; then
+
+
+In gaianet line 191:
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                                               ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                                                      ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 196:
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 207:
+        cd $gaianet_base_dir/qdrant
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"/qdrant
+
+
+In gaianet line 211:
+            mkdir -p -m777 $gaianet_base_dir/log
+                     ^---^ SC2174 (warning): When used with -p, -m only applies to the deepest directory.
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            mkdir -p -m777 "$gaianet_base_dir"/log
+
+
+In gaianet line 215:
+        nohup $gaianet_base_dir/bin/qdrant > $log_dir/init-qdrant.log 2>&1 &
+              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                             ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        nohup "$gaianet_base_dir"/bin/qdrant > "$log_dir"/init-qdrant.log 2>&1 &
+
+
+In gaianet line 221:
+    cd $gaianet_base_dir
+       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    cd "$gaianet_base_dir"
+
+
+In gaianet line 230:
+    cd $gaianet_base_dir
+       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    cd "$gaianet_base_dir"
+
+
+In gaianet line 232:
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/$embedding_collection_name \
+                                                                       ^------------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    del_response=$(curl -s -X DELETE http://localhost:6333/collections/"$embedding_collection_name" \
+
+
+In gaianet line 264:
+            mkdir -p -m755 "$snapshots_dir"  # Set reasonable permissions
+                     ^---^ SC2174 (warning): When used with -p, -m only applies to the deepest directory.
+
+
+In gaianet line 369:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 370:
+        response=$(curl -s -X POST http://localhost:6333/collections/$embedding_collection_name/snapshots/upload?priority=snapshot \
+                                                                     ^------------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        response=$(curl -s -X POST http://localhost:6333/collections/"$embedding_collection_name"/snapshots/upload?priority=snapshot \
+
+
+In gaianet line 396:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 400:
+        chat_model_name=$(basename $url_chat_model)
+                                   ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        chat_model_name=$(basename "$url_chat_model")
+
+
+In gaianet line 418:
+        embedding_model_name=$(basename $url_embedding_model)
+                                        ^------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        embedding_model_name=$(basename "$url_embedding_model")
+
+
+In gaianet line 437:
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                                                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                                                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 438:
+            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+                         ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            if lsof -Pi :"$llamaedge_port" -sTCP:LISTEN -t >/dev/null ; then
+
+
+In gaianet line 447:
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                       ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                              ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 466:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 480:
+        nohup $cmd > $log_dir/init-qdrant-gen-collection.log 2>&1 &
+              ^--^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                     ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        nohup "$cmd" > "$log_dir"/init-qdrant-gen-collection.log 2>&1 &
+
+
+In gaianet line 483:
+        echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        echo $llamaedge_pid > "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 487:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 488:
+        doc_filename=$(basename $url_document)
+                                ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        doc_filename=$(basename "$url_document")
+
+
+In gaianet line 489:
+        check_curl_silent $url_document $gaianet_base_dir/$doc_filename
+                          ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                          ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        check_curl_silent "$url_document" "$gaianet_base_dir"/"$doc_filename"
+
+
+In gaianet line 496:
+                kill $(cat $gaianet_base_dir/llamaedge.pid)
+                     ^-- SC2046 (warning): Quote this to prevent word splitting.
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                kill $(cat "$gaianet_base_dir"/llamaedge.pid)
+
+
+In gaianet line 497:
+                rm $gaianet_base_dir/llamaedge.pid
+                   ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                rm "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 508:
+        embedding_response=$(curl -s -X POST http://127.0.0.1:$llamaedge_port/v1/create/rag -F "file=@$doc_filename")
+                                                              ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        embedding_response=$(curl -s -X POST http://127.0.0.1:"$llamaedge_port"/v1/create/rag -F "file=@$doc_filename")
+
+
+In gaianet line 511:
+        rm -f $gaianet_base_dir/$doc_filename
+              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        rm -f "$gaianet_base_dir"/"$doc_filename"
+
+
+In gaianet line 516:
+            kill $(cat $gaianet_base_dir/llamaedge.pid)
+                 ^-- SC2046 (warning): Quote this to prevent word splitting.
+                       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            kill $(cat "$gaianet_base_dir"/llamaedge.pid)
+
+
+In gaianet line 517:
+            rm $gaianet_base_dir/llamaedge.pid
+               ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            rm "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 562:
+    url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
+                                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 563:
+    chat_model=$(basename $url_chat_model)
+                          ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    chat_model=$(basename "$url_chat_model")
+
+
+In gaianet line 565:
+        printf "[+] Downloading $chat_model ...\n"
+               ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 569:
+            check_curl $url_chat_model $gaianet_base_dir/$chat_model
+                       ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                         ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            check_curl "$url_chat_model" "$gaianet_base_dir"/"$chat_model"
+
+
+In gaianet line 573:
+        printf "[+] Using local $chat_model ...\n"
+               ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 586:
+    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
+                                                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 587:
+    embedding_model=$(basename $url_embedding_model)
+                               ^------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    embedding_model=$(basename "$url_embedding_model")
+
+
+In gaianet line 589:
+        printf "[+] Downloading $embedding_model ...\n"
+               ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 593:
+            check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
+                       ^------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                            ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                              ^--------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            check_curl "$url_embedding_model" "$gaianet_base_dir"/"$embedding_model"
+
+
+In gaianet line 597:
+        printf "[+] Using local $embedding_model ...\n"
+               ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 609:
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+                                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 620:
+        check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
+                                                                                                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm "$gaianet_base_dir"/registry.wasm
+
+
+In gaianet line 625:
+    cd $gaianet_base_dir
+       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    cd "$gaianet_base_dir"
+
+
+In gaianet line 631:
+    address=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
+                                                  ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    address=$(awk -F'"' '/"address":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 632:
+    domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+                                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    domain=$(awk -F'"' '/"domain":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 633:
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
+                                                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 635:
+    sed_in_place "s/subdomain = \".*\"/subdomain = \"$address\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+                                                                   ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    sed_in_place "s/subdomain = \".*\"/subdomain = \"$address\"/g" "$gaianet_base_dir"/gaia-frp/frpc.toml
+
+
+In gaianet line 636:
+    sed_in_place "s/name = \".*\"/name = \"$address.$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+                                                                 ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    sed_in_place "s/name = \".*\"/name = \"$address.$domain\"/g" "$gaianet_base_dir"/gaia-frp/frpc.toml
+
+
+In gaianet line 637:
+    sed_in_place "s/localPort = .*/localPort = $llamaedge_port/g" $gaianet_base_dir/gaia-frp/frpc.toml
+                                                                  ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    sed_in_place "s/localPort = .*/localPort = $llamaedge_port/g" "$gaianet_base_dir"/gaia-frp/frpc.toml
+
+
+In gaianet line 638:
+    sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
+                                                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$domain\"/g" "$gaianet_base_dir"/gaia-frp/frpc.toml
+
+
+In gaianet line 641:
+    find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
+         ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    find "$gaianet_base_dir"/gaia-frp -type f -not -name 'frpc' -not -name 'frpc.toml' -exec rm -f {} \;
+
+
+In gaianet line 658:
+        sed_in_place "s/\(\"$key\": \s*\).*\,/\1\"$new_value\",/" $file
+                                                                  ^---^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        sed_in_place "s/\(\"$key\": \s*\).*\,/\1\"$new_value\",/" "$file"
+
+
+In gaianet line 660:
+        sed_in_place "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" $file
+                                                                ^---^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        sed_in_place "/\"$key\":/ s#: \".*\"#: \"$new_value\"#" "$file"
+
+
+In gaianet line 672:
+        mkdir -p -m777 $log_dir
+                 ^---^ SC2174 (warning): When used with -p, -m only applies to the deepest directory.
+                       ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        mkdir -p -m777 "$log_dir"
+
+
+In gaianet line 675:
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+                                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 683:
+    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
+                                                  ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if command -v vector > /dev/null 2>&1 && [ -f "$gaianet_base_dir"/vector.toml ]; then
+
+
+In gaianet line 697:
+    cd $gaianet_base_dir
+       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    cd "$gaianet_base_dir"
+
+
+In gaianet line 712:
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                                                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                                                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 716:
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                       ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                              ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 727:
+                cd $gaianet_base_dir/qdrant
+                   ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                cd "$gaianet_base_dir"/qdrant
+
+
+In gaianet line 728:
+                nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
+                      ^----------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                           ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                nohup "$qdrant_executable" > "$log_dir"/start-qdrant.log 2>&1 &
+
+
+In gaianet line 731:
+                echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
+                                   ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                echo $qdrant_pid > "$gaianet_base_dir"/qdrant.pid
+
+
+In gaianet line 743:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 747:
+        chat_model_name=$(basename $url_chat_model)
+                                   ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        chat_model_name=$(basename "$url_chat_model")
+
+
+In gaianet line 781:
+        embedding_model_name=$(basename $url_embedding_model)
+                                        ^------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        embedding_model_name=$(basename "$url_embedding_model")
+
+
+In gaianet line 819:
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                                                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                                                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 820:
+            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+                         ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            if lsof -Pi :"$llamaedge_port" -sTCP:LISTEN -t >/dev/null ; then
+
+
+In gaianet line 821:
+                printf "    Port $llamaedge_port is in use. Exit ...\n\n"
+                       ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 828:
+                    if [ -f $qdrant_pid ]; then
+                            ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    if [ -f "$qdrant_pid" ]; then
+
+
+In gaianet line 830:
+                        kill -9 $(cat $qdrant_pid)
+                                ^----------------^ SC2046 (warning): Quote this to prevent word splitting.
+                                      ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                        kill -9 $(cat "$qdrant_pid")
+
+
+In gaianet line 831:
+                        rm $qdrant_pid
+                           ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                        rm "$qdrant_pid"
+
+
+In gaianet line 838:
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                       ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                              ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 846:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 854:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 855:
+        cmd=(wasmedge --dir .:./dashboard \
+            ^-- SC2054 (warning): Use spaces, not commas, to separate array elements.
+
+
+In gaianet line 856:
+        --env NODE_VERSION=$installer_version \
+                           ^----------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 857:
+        --nn-preload default:GGML:AUTO:$chat_model_name \
+                                       ^--------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 858:
+        --nn-preload embedding:GGML:AUTO:$embedding_model_name \
+                                         ^-------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 860:
+        --model-name $chat_model_stem,$embedding_model_stem \
+                     ^--------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                      ^-------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 861:
+        --ctx-size $chat_ctx_size,$embedding_ctx_size \
+                   ^------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                  ^-----------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 862:
+        --batch-size $chat_batch_size,$embedding_batch_size \
+                     ^--------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                      ^-------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 863:
+        --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
+                      ^---------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                        ^--------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 864:
+        --prompt-template $prompt_type,embedding \
+                          ^----------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 865:
+        --rag-policy $rag_policy \
+                     ^---------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 866:
+        --qdrant-collection-name $embedding_collection_name \
+                                 ^------------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 867:
+        --qdrant-limit $qdrant_limit \
+                       ^-----------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 868:
+        --qdrant-score-threshold $qdrant_score_threshold \
+                                 ^---------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 869:
+        --context-window $context_window \
+                         ^-------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 872:
+        --socket-addr 0.0.0.0:$llamaedge_port)
+                              ^-------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 900:
+                cmd_string+="--reverse-prompt \"$reverse_prompt\" "
+                             ^-----------------^ SC2089 (warning): Quotes/backslashes will be treated literally. Use an array.
+
+
+In gaianet line 916:
+            echo '#!/bin/bash' > $gaianet_base_dir/run
+                                 ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            echo '#!/bin/bash' > "$gaianet_base_dir"/run
+
+
+In gaianet line 917:
+            echo $cmd_string >> $gaianet_base_dir/run
+                 ^---------^ SC2090 (warning): Quotes/backslashes in this variable will not be respected.
+                 ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            echo "$cmd_string" >> "$gaianet_base_dir"/run
+
+
+In gaianet line 918:
+            chmod u+x $gaianet_base_dir/run
+                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            chmod u+x "$gaianet_base_dir"/run
+
+
+In gaianet line 931:
+                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup supervise "$gaianet_base_dir" > "$log_dir"/start-llamaedge.log 2>&1 &
+
+
+In gaianet line 933:
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
+                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup supervise "$gaianet_base_dir" | vector --config "$gaianet_base_dir"/vector.toml > "$log_dir"/start-vector.log 2>&1 &
+
+
+In gaianet line 937:
+                echo $supervise_pid > $gaianet_base_dir/supervise.pid
+                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                echo $supervise_pid > "$gaianet_base_dir"/supervise.pid
+
+
+In gaianet line 938:
+                printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
+                       ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 941:
+                status=$(svstat $gaianet_base_dir)
+                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                status=$(svstat "$gaianet_base_dir")
+
+
+In gaianet line 943:
+                llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
+                                     ^-----^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                llamaedge_pid=$(echo "$status" | awk '{print $4}' | tr -d ')')
+
+
+In gaianet line 946:
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                echo $llamaedge_pid > "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 952:
+                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup "${cmd[@]}" > "$log_dir"/start-llamaedge.log 2>&1 &
+
+
+In gaianet line 954:
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
+                                                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup "${cmd[@]}" | vector --config "$gaianet_base_dir"/vector.toml > "$log_dir"/start-vector.log 2>&1 &
+
+
+In gaianet line 958:
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                echo $llamaedge_pid > "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 966:
+                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                                             ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    -X POST http://localhost:"$llamaedge_port"/v1/chat/completions \
+
+
+In gaianet line 972:
+                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                                             ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    -X POST http://localhost:"$llamaedge_port"/v1/chat/completions \
+
+
+In gaianet line 984:
+                tail -2 $log_dir/start-llamaedge.log
+                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                tail -2 "$log_dir"/start-llamaedge.log
+
+
+In gaianet line 990:
+                if svok $gaianet_base_dir > /dev/null 2>&1; then
+                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                if svok "$gaianet_base_dir" > /dev/null 2>&1; then
+
+
+In gaianet line 991:
+                    svc -d $gaianet_base_dir
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    svc -d "$gaianet_base_dir"
+
+
+In gaianet line 992:
+                    svc -k $gaianet_base_dir
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    svc -k "$gaianet_base_dir"
+
+
+In gaianet line 993:
+                    svc -x $gaianet_base_dir
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    svc -x "$gaianet_base_dir"
+
+
+In gaianet line 995:
+                    if [ -f $supervise_pid ]; then
+                            ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    if [ -f "$supervise_pid" ]; then
+
+
+In gaianet line 996:
+                        rm $supervise_pid
+                           ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                        rm "$supervise_pid"
+
+
+In gaianet line 998:
+                    rm $gaianet_base_dir/run
+                       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    rm "$gaianet_base_dir"/run
+
+
+In gaianet line 999:
+                    rm -rf $gaianet_base_dir/supervise
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    rm -rf "$gaianet_base_dir"/supervise
+
+
+In gaianet line 1004:
+                if [ -f $llamaedge_pid ]; then
+                        ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                if [ -f "$llamaedge_pid" ]; then
+
+
+In gaianet line 1005:
+                    rm $llamaedge_pid
+                       ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    rm "$llamaedge_pid"
+
+
+In gaianet line 1017:
+                    if [ -f $qdrant_pid ]; then
+                            ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    if [ -f "$qdrant_pid" ]; then
+
+
+In gaianet line 1018:
+                        rm $qdrant_pid
+                           ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                        rm "$qdrant_pid"
+
+
+In gaianet line 1038:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 1042:
+        chat_model_name=$(basename $url_chat_model)
+                                   ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        chat_model_name=$(basename "$url_chat_model")
+
+
+In gaianet line 1068:
+        embedding_model_name=$(basename $url_embedding_model)
+                                        ^------------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        embedding_model_name=$(basename "$url_embedding_model")
+
+
+In gaianet line 1095:
+        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+                                                   ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                                                          ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 1096:
+            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
+                         ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            if lsof -Pi :"$llamaedge_port" -sTCP:LISTEN -t >/dev/null ; then
+
+
+In gaianet line 1100:
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+                       ^----^ SC2308 (info): 'expr substr' has unspecified results. Prefer 'cut' or ${var#???}.
+                              ^---------^ SC2046 (warning): Quote this to prevent word splitting.
+
+
+In gaianet line 1108:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 1116:
+        cd $gaianet_base_dir
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        cd "$gaianet_base_dir"
+
+
+In gaianet line 1117:
+        cmd=(wasmedge --dir .:./dashboard \
+            ^-- SC2054 (warning): Use spaces, not commas, to separate array elements.
+
+
+In gaianet line 1118:
+        --env NODE_VERSION=$installer_version \
+                           ^----------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1119:
+        --nn-preload default:GGML:AUTO:$chat_model_name \
+                                       ^--------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1120:
+        --nn-preload embedding:GGML:AUTO:$embedding_model_name \
+                                         ^-------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1122:
+        --model-name $chat_model_stem,$embedding_model_stem \
+                     ^--------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                      ^-------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1123:
+        --ctx-size $chat_ctx_size,$embedding_ctx_size \
+                   ^------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                  ^-----------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1124:
+        --batch-size $chat_batch_size,$embedding_batch_size \
+                     ^--------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                      ^-------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1125:
+        --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
+                      ^---------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+                                        ^--------------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1126:
+        --prompt-template $prompt_type,embedding \
+                          ^----------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1129:
+        --socket-addr 0.0.0.0:$llamaedge_port)
+                              ^-------------^ SC2206 (warning): Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.
+
+
+In gaianet line 1148:
+                cmd_string+="--reverse-prompt \"$reverse_prompt\" "
+                             ^-----------------^ SC2089 (warning): Quotes/backslashes will be treated literally. Use an array.
+
+
+In gaianet line 1164:
+            echo '#!/bin/bash' > $gaianet_base_dir/run
+                                 ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            echo '#!/bin/bash' > "$gaianet_base_dir"/run
+
+
+In gaianet line 1165:
+            echo $cmd_string >> $gaianet_base_dir/run
+                 ^---------^ SC2090 (warning): Quotes/backslashes in this variable will not be respected.
+                 ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            echo "$cmd_string" >> "$gaianet_base_dir"/run
+
+
+In gaianet line 1166:
+            chmod u+x $gaianet_base_dir/run
+                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            chmod u+x "$gaianet_base_dir"/run
+
+
+In gaianet line 1178:
+                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
+                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup supervise "$gaianet_base_dir" > "$log_dir"/start-llamaedge.log 2>&1 &
+
+
+In gaianet line 1180:
+                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
+                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup supervise "$gaianet_base_dir" | vector --config "$gaianet_base_dir"/vector.toml > "$log_dir"/vector.log 2>&1 &
+
+
+In gaianet line 1187:
+                status=$(svstat $gaianet_base_dir)
+                                ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                status=$(svstat "$gaianet_base_dir")
+
+
+In gaianet line 1189:
+                llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
+                                     ^-----^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                llamaedge_pid=$(echo "$status" | awk '{print $4}' | tr -d ')')
+
+
+In gaianet line 1192:
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                echo $llamaedge_pid > "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 1198:
+                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
+                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup "${cmd[@]}" > "$log_dir"/start-llamaedge.log 2>&1 &
+
+
+In gaianet line 1200:
+                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
+                                                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    nohup "${cmd[@]}" | vector --config "$gaianet_base_dir"/vector.toml > "$log_dir"/vector.log 2>&1 &
+
+
+In gaianet line 1204:
+                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
+                                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                echo $llamaedge_pid > "$gaianet_base_dir"/llamaedge.pid
+
+
+In gaianet line 1212:
+                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                                             ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    -X POST http://localhost:"$llamaedge_port"/v1/chat/completions \
+
+
+In gaianet line 1218:
+                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
+                                             ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    -X POST http://localhost:"$llamaedge_port"/v1/chat/completions \
+
+
+In gaianet line 1230:
+                tail -2 $log_dir/start-llamaedge.log
+                        ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                tail -2 "$log_dir"/start-llamaedge.log
+
+
+In gaianet line 1233:
+                if svok $gaianet_base_dir > /dev/null 2>&1; then
+                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                if svok "$gaianet_base_dir" > /dev/null 2>&1; then
+
+
+In gaianet line 1234:
+                    svc -d $gaianet_base_dir
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    svc -d "$gaianet_base_dir"
+
+
+In gaianet line 1235:
+                    svc -k $gaianet_base_dir
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    svc -k "$gaianet_base_dir"
+
+
+In gaianet line 1236:
+                    svc -x $gaianet_base_dir
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    svc -x "$gaianet_base_dir"
+
+
+In gaianet line 1238:
+                    if [ -f $supervise_pid ]; then
+                            ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    if [ -f "$supervise_pid" ]; then
+
+
+In gaianet line 1239:
+                        rm $supervise_pid
+                           ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                        rm "$supervise_pid"
+
+
+In gaianet line 1241:
+                    rm $gaianet_base_dir/run
+                       ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    rm "$gaianet_base_dir"/run
+
+
+In gaianet line 1242:
+                    rm -rf $gaianet_base_dir/supervise
+                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    rm -rf "$gaianet_base_dir"/supervise
+
+
+In gaianet line 1250:
+                if [ -f $llamaedge_pid ]; then
+                        ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                if [ -f "$llamaedge_pid" ]; then
+
+
+In gaianet line 1251:
+                    rm $llamaedge_pid
+                       ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+                    rm "$llamaedge_pid"
+
+
+In gaianet line 1282:
+        nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
+              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                            ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                   ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        nohup "$gaianet_base_dir"/bin/frpc -c "$gaianet_base_dir"/gaia-frp/frpc.toml > "$log_dir"/start-gaia-frp.log 2>&1 &
+
+
+In gaianet line 1285:
+        echo $gaia_frp_pid > $gaianet_base_dir/gaia-frp.pid
+                             ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        echo $gaia_frp_pid > "$gaianet_base_dir"/gaia-frp.pid
+
+
+In gaianet line 1289:
+        subdomain=$(grep "subdomain" $gaianet_base_dir/gaia-frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+                                     ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        subdomain=$(grep "subdomain" "$gaianet_base_dir"/gaia-frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
+
+
+In gaianet line 1291:
+        domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+                                                    ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        domain=$(awk -F'"' '/"domain":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 1295:
+        printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
+               ^-- SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 1308:
+    system_prompt=$(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)
+    ^-----------^ SC2034 (warning): system_prompt appears unused. Verify use (or export if used externally).
+                                                              ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    system_prompt=$(awk -F'"' '/"system_prompt":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 1310:
+    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)
+                                                        ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' "$gaianet_base_dir"/config.json)
+
+
+In gaianet line 1314:
+    nohup $gaianet_base_dir/bin/gaias --server-socket-addr 127.0.0.1:$llamaedge_port --gaianet-dir $gaianet_base_dir --log $gaianet_base_dir/log/assistant.log --interval 60 > /dev/null 2>&1 &
+          ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                     ^-------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                                   ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+                                                                                                                           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    nohup "$gaianet_base_dir"/bin/gaias --server-socket-addr 127.0.0.1:"$llamaedge_port" --gaianet-dir "$gaianet_base_dir" --log "$gaianet_base_dir"/log/assistant.log --interval 60 > /dev/null 2>&1 &
+
+
+In gaianet line 1324:
+    echo $gaias_pid > $gaianet_base_dir/gaias.pid
+                      ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    echo $gaias_pid > "$gaianet_base_dir"/gaias.pid
+
+
+In gaianet line 1350:
+        printf "Not found $gaianet_base_dir\n"
+               ^-----------------------------^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In gaianet line 1356:
+    if [ -f $qdrant_pid ]; then
+            ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if [ -f "$qdrant_pid" ]; then
+
+
+In gaianet line 1358:
+        kill -9 $(cat $qdrant_pid)
+                ^----------------^ SC2046 (warning): Quote this to prevent word splitting.
+                      ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        kill -9 $(cat "$qdrant_pid")
+
+
+In gaianet line 1359:
+        rm $qdrant_pid
+           ^---------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        rm "$qdrant_pid"
+
+
+In gaianet line 1363:
+    if svok $gaianet_base_dir > /dev/null 2>&1; then
+            ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if svok "$gaianet_base_dir" > /dev/null 2>&1; then
+
+
+In gaianet line 1366:
+        svc -d $gaianet_base_dir
+               ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        svc -d "$gaianet_base_dir"
+
+
+In gaianet line 1367:
+        svc -k $gaianet_base_dir
+               ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        svc -k "$gaianet_base_dir"
+
+
+In gaianet line 1368:
+        svc -x $gaianet_base_dir
+               ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        svc -x "$gaianet_base_dir"
+
+
+In gaianet line 1370:
+        if [ -f $supervise_pid ]; then
+                ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        if [ -f "$supervise_pid" ]; then
+
+
+In gaianet line 1372:
+            rm $supervise_pid
+               ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            rm "$supervise_pid"
+
+
+In gaianet line 1374:
+        rm $gaianet_base_dir/run
+           ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        rm "$gaianet_base_dir"/run
+
+
+In gaianet line 1375:
+        rm -rf $gaianet_base_dir/supervise
+               ^---------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        rm -rf "$gaianet_base_dir"/supervise
+
+
+In gaianet line 1379:
+        if [ -f $llamaedge_pid ]; then
+                ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        if [ -f "$llamaedge_pid" ]; then
+
+
+In gaianet line 1381:
+            kill -9 $(cat $llamaedge_pid)
+                    ^-------------------^ SC2046 (warning): Quote this to prevent word splitting.
+                          ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            kill -9 $(cat "$llamaedge_pid")
+
+
+In gaianet line 1382:
+            rm $llamaedge_pid
+               ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            rm "$llamaedge_pid"
+
+
+In gaianet line 1388:
+        if [ -f $llamaedge_pid ]; then
+                ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        if [ -f "$llamaedge_pid" ]; then
+
+
+In gaianet line 1390:
+            kill -9 $(cat $llamaedge_pid)
+                    ^-------------------^ SC2046 (warning): Quote this to prevent word splitting.
+                          ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            kill -9 $(cat "$llamaedge_pid")
+
+
+In gaianet line 1391:
+            rm $llamaedge_pid
+               ^------------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+            rm "$llamaedge_pid"
+
+
+In gaianet line 1397:
+    if [ -f $gaia_frp_pid ]; then
+            ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    if [ -f "$gaia_frp_pid" ]; then
+
+
+In gaianet line 1399:
+        kill -9 $(cat $gaia_frp_pid)
+                ^------------------^ SC2046 (warning): Quote this to prevent word splitting.
+                      ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        kill -9 $(cat "$gaia_frp_pid")
+
+
+In gaianet line 1400:
+        rm $gaia_frp_pid
+           ^-----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+        rm "$gaia_frp_pid"
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- system_prompt appears unused. Ver...
+  https://www.shellcheck.net/wiki/SC2046 -- Quote this to prevent word splitt...
+  https://www.shellcheck.net/wiki/SC2054 -- Use spaces, not commas, to separa...
