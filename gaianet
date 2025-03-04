@@ -777,7 +777,7 @@ start() {
         cd $gaianet_base_dir
         llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
         if [ ! -f "$llamaedge_wasm" ]; then
-            error "❌ Not found rag-api-server.wasm at $$gaianet_base_dir"
+            error "❌ Not found rag-api-server.wasm at $gaianet_base_dir"
             exit 1
         fi
 
