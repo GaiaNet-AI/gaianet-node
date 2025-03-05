@@ -13,26 +13,71 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Restore cache step - add local cache path for act
+      - name: Restore GaiaNet cache
+        id: cache-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/gaianet
+          key: gaianet-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            gaianet-${{ runner.os }}-
+
       - name: Install apt packages
         run: |
           sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
 
+      # This architecture detection step helps when testing locally with act on Mac/Apple Silicon
+      # GitHub Actions runners are always x86_64, but local testing with act on Apple Silicon needs arm64
+      - name: Detect architecture
+        id: detect-arch
+        run: |
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then
+            echo "wasmedge_arch=amd64" >> $GITHUB_OUTPUT
+          elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+            echo "wasmedge_arch=arm64" >> $GITHUB_OUTPUT
+          else
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+          fi
+
       - name: Run install script
         run: |
           chmod +x ./install.sh
-          ./install.sh
+          WASMEDGE_ARCH=${{ steps.detect-arch.outputs.wasmedge_arch }} ./install.sh
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet --help
+
+      # Note: Directory creation is handled by install.sh
+      # install.sh creates ~/gaianet and subdirectories if they don't exist
+      # If directories exist (from cache), install.sh preserves them
+
       - name: Initialize
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet init
           sleep 10
+
+      # Save cache after init when all files are downloaded
+      - name: Save GaiaNet cache
+        if: success()
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/gaianet
+          key: gaianet-${{ runner.os }}-${{ github.sha }}
+
       - name: Run
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
+          source /root/.wasmedge/env
+          cd ~/gaianet
           gaianet start
           sleep 10
+
       - name: Test localhost API
         continue-on-error: true
         run: |
@@ -40,6 +85,7 @@ jobs:
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}]}'
+
       - name: Test frp API
         continue-on-error: true
         run: |
@@ -49,6 +95,7 @@ jobs:
             -H 'accept: application/json' \
             -H 'Content-Type: application/json' \
             -d '{"messages":[{"role":"system", "content": "You are a helpful assistant."}, {"role":"user", "content": "Where is Paris?"}]}'
+
       - name: Stop
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
@@ -61,3 +108,4 @@ jobs:
           cat ~/gaianet/log/start-qdrant.log
           echo "LOGFILE: start-gaia-frp.log\n\n"
           cat ~/gaianet/log/start-gaia-frp.log
+
