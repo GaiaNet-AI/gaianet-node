@@ -31,23 +31,23 @@ jobs:
 
       # This architecture detection step helps when testing locally with act on Mac/Apple Silicon
       # GitHub Actions runners are always x86_64, but local testing with act on Apple Silicon needs arm64
-      - name: Detect architecture
-        id: detect-arch
-        run: |
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "x86_64" ]; then
-            echo "wasmedge_arch=amd64" >> $GITHUB_OUTPUT
-          elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-            echo "wasmedge_arch=arm64" >> $GITHUB_OUTPUT
-          else
-            echo "Unsupported architecture: $ARCH"
-            exit 1
-          fi
+      # - name: Detect architecture
+      #   id: detect-arch
+      #   run: |
+      #     ARCH=$(uname -m)
+      #     if [ "$ARCH" = "x86_64" ]; then
+      #       echo "wasmedge_arch=amd64" >> $GITHUB_OUTPUT
+      #     elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+      #       echo "wasmedge_arch=arm64" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "Unsupported architecture: $ARCH"
+      #       exit 1
+      #     fi
 
       - name: Run install script
         run: |
           chmod +x ./install.sh
-          WASMEDGE_ARCH=${{ steps.detect-arch.outputs.wasmedge_arch }} ./install.sh
+          ./install.sh
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet --help
 
@@ -73,8 +73,6 @@ jobs:
       - name: Run
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
-          source /root/.wasmedge/env
-          cd ~/gaianet
           gaianet start
           sleep 10
 
