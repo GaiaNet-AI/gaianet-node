@@ -29,21 +29,6 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
 
-      # This architecture detection step helps when testing locally with act on Mac/Apple Silicon
-      # GitHub Actions runners are always x86_64, but local testing with act on Apple Silicon needs arm64
-      # - name: Detect architecture
-      #   id: detect-arch
-      #   run: |
-      #     ARCH=$(uname -m)
-      #     if [ "$ARCH" = "x86_64" ]; then
-      #       echo "wasmedge_arch=amd64" >> $GITHUB_OUTPUT
-      #     elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-      #       echo "wasmedge_arch=arm64" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "Unsupported architecture: $ARCH"
-      #       exit 1
-      #     fi
-
       - name: Run install script
         run: |
           chmod +x ./install.sh
@@ -107,3 +92,12 @@ jobs:
           echo "LOGFILE: start-gaia-frp.log\n\n"
           cat ~/gaianet/log/start-gaia-frp.log
 
+# Cache configuration
+# The cache is tied to the commit SHA and runner OS
+# Cache includes:
+# - Downloaded binaries
+# - Configuration files
+# - Model files
+# for local testing with act on Mac/Apple Silicon you need to use 
+#   1) act for running github actions locally
+#   2) https://github.com/sp-ricard-valverde/github-act-cache-server
