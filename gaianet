@@ -247,8 +247,9 @@ need_snapshot_update() {
     # Get remote commit hash
     local remote_hash=$(get_remote_snapshot_hash "$url")
     if [ -z "$remote_hash" ]; then 
-        # If we can't get remote hash, assume no update needed
-        return 1
+        # If we can't get remote hash, safer to download a fresh copy
+        warning "    ❗ Could not verify remote snapshot version. Will download fresh copy."
+        return 0
     fi
     
     # Compare with local hash
