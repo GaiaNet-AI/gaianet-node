@@ -71,81 +71,81 @@ function print_usage {
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --config)
-            config_url="$2"
-            shift 2
-            ;;
-        --base)
-            gaianet_base_dir="$2"
+    --config)
+        config_url="$2"
+        shift 2
+        ;;
+    --base)
+        gaianet_base_dir="$2"
 
-            if [ ! -n "$gaianet_base_dir" ]; then
-                echo "$gaianet_base_dir should be a valid directory"
-                exit 1
-            fi
-            gaianet_base_dir=$(cd "$gaianet_base_dir" && pwd)
-            if [ "$tmp_dir_updated" -eq 0 ]; then
-                tmp_dir="$gaianet_base_dir/tmp"
-            fi
-            shift 2
-            ;;
-        --reinstall)
-            reinstall=1
-            shift
-            ;;
-        --upgrade)
-            upgrade=1
-            shift
-            ;;
-        --backup)
-            backup_to_file="$2"
-
-            if [ ! -n "$backup_to_file" ]; then
-                echo "Please specify the backup file"
-                exit 1
-            fi
-            backup_to_file=$(cd "$backup_to_file" && pwd)
-            shift 2
-            ;;
-        --migrate)
-            migrated_from_file="$2"
-
-            if [ ! -f "$migrated_from_file" ]; then
-                echo "Cannot find the backup file: $migrated_from_file"
-                exit 1
-            fi
-            migrated_from_file=$(cd "$migrated_from_file" && pwd)
-            shift 2
-            ;;
-        --tmpdir)
-            tmp_dir="$2"
-            tmp_dir_updated=1
-            shift 2
-            ;;
-        --ggmlcuda)
-            ggmlcuda="$2"
-            shift 2
-            ;;
-        # --unprivileged)
-        #     unprivileged=1
-        #     shift
-        #     ;;
-        --enable-vector)
-            enable_vector=1
-            shift
-            ;;
-        --version)
-            echo "Gaianet-node Installer v$version"
-            exit 0
-            ;;
-        --help)
-            print_usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown argument: $key"
-            print_usage
+        if [ ! -n "$gaianet_base_dir" ]; then
+            echo "$gaianet_base_dir should be a valid directory"
             exit 1
-            ;;
+        fi
+        gaianet_base_dir=$(cd "$gaianet_base_dir" && pwd)
+        if [ "$tmp_dir_updated" -eq 0 ]; then
+            tmp_dir="$gaianet_base_dir/tmp"
+        fi
+        shift 2
+        ;;
+    --reinstall)
+        reinstall=1
+        shift
+        ;;
+    --upgrade)
+        upgrade=1
+        shift
+        ;;
+    --backup)
+        backup_to_file="$2"
+
+        if [ ! -n "$backup_to_file" ]; then
+            echo "Please specify the backup file"
+            exit 1
+        fi
+        backup_to_file=$(cd "$backup_to_file" && pwd)
+        shift 2
+        ;;
+    --migrate)
+        migrated_from_file="$2"
+
+        if [ ! -f "$migrated_from_file" ]; then
+            echo "Cannot find the backup file: $migrated_from_file"
+            exit 1
+        fi
+        migrated_from_file=$(cd "$migrated_from_file" && pwd)
+        shift 2
+        ;;
+    --tmpdir)
+        tmp_dir="$2"
+        tmp_dir_updated=1
+        shift 2
+        ;;
+    --ggmlcuda)
+        ggmlcuda="$2"
+        shift 2
+        ;;
+    # --unprivileged)
+    #     unprivileged=1
+    #     shift
+    #     ;;
+    --enable-vector)
+        enable_vector=1
+        shift
+        ;;
+    --version)
+        echo "Gaianet-node Installer v$version"
+        exit 0
+        ;;
+    --help)
+        print_usage
+        exit 0
+        ;;
+    *)
+        echo "Unknown argument: $key"
+        print_usage
+        exit 1
+        ;;
     esac
 done
 
@@ -219,7 +219,6 @@ if [ -n "$backup_to_file" ]; then
     exit 0
 fi
 
-
 printf "\n"
 cat <<EOF
  ██████╗  █████╗ ██╗ █████╗ ███╗   ██╗███████╗████████╗
@@ -242,7 +241,7 @@ if [[ "$os_name" == "Linux" ]]; then
         info "NVIDIA GPU detected!"
 
         # check if nvidia-smi is installed
-        if ! command -v nvidia-smi &> /dev/null; then
+        if ! command -v nvidia-smi &>/dev/null; then
             warning "nvidia-smi is not detected. You can install it manually after the node installation is complete.\n\nInstalling nvidia-smi will enable the system to efficiently allocate resources to nodes, increasing the potential for higher rewards."
         fi
     fi
@@ -254,7 +253,7 @@ if [ -d "$gaianet_base_dir" ]; then
     if [ "$upgrade" -eq 1 ]; then
 
         # check version
-        if ! command -v gaianet &> /dev/null; then
+        if ! command -v gaianet &>/dev/null; then
             current_version=""
         else
             current_version=$(gaianet --version)
@@ -365,7 +364,6 @@ bin_dir=$gaianet_base_dir/bin
 
 # 1. Install `gaianet` CLI tool.
 printf "[+] Installing gaianet CLI tool ...\n"
-check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
 
 if [ "$repo_branch" = "main" ]; then
     check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
@@ -438,7 +436,7 @@ fi
 # 4. Install vector and download vector config file
 if [ "$enable_vector" -eq 1 ]; then
     # Check if vector is installed
-    if ! command -v vector &> /dev/null; then
+    if ! command -v vector &>/dev/null; then
         printf "[+] Installing vector ...\n"
         if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=$vector_version bash -s -- -y; then
             info "    * The vector is installed."
@@ -582,7 +580,7 @@ check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_s
 info "    👍 Done! The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
 
 # 8. Download dashboard to $gaianet_base_dir
-if ! command -v tar &> /dev/null; then
+if ! command -v tar &>/dev/null; then
     echo "tar could not be found, please install it."
     exit 1
 fi
@@ -735,7 +733,7 @@ if [ "$upgrade" -eq 1 ]; then
         error "❌ Failed to recover the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
-elif [ -f "$migrated_from_file" ] && ( tar -tf "$migrated_from_file" | grep -q "gaianet-domain/frpc.toml" || tar -tf "$migrated_from_file" | grep -q "gaia-frp/frpc.toml" ); then
+elif [ -f "$migrated_from_file" ] && (tar -tf "$migrated_from_file" | grep -q "gaianet-domain/frpc.toml" || tar -tf "$migrated_from_file" | grep -q "gaia-frp/frpc.toml"); then
     if tar -tf "$migrated_from_file" | grep -q "gaianet-domain/frpc.toml"; then
         tar -xf "$migrated_from_file" --strip-components=1 -C $gaianet_base_dir/gaia-frp gaianet-domain/frpc.toml
     else
@@ -759,7 +757,6 @@ fi
 # Read domain from config.json
 gaia_frp=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
 
-
 if [ "$upgrade" -eq 1 ]; then
     # recover deviceid.txt
     if [ -f "$gaianet_base_dir/backup/deviceid.txt" ]; then
@@ -781,12 +778,12 @@ if [ -f "$device_id_file" ]; then
     if [ -z "$device_id" ]; then
         # device_id is empty, generate a new one
         device_id="device-$(openssl rand -hex 12)"
-        echo "$device_id" > "$device_id_file"
+        echo "$device_id" >"$device_id_file"
     fi
 else
     # The file does not exist, generate a new device_id and save it to the file
     device_id="device-$(openssl rand -hex 12)"
-    echo "$device_id" > "$device_id_file"
+    echo "$device_id" >"$device_id_file"
 fi
 info "    ❗ The device ID is $device_id"
 
@@ -838,7 +835,6 @@ fi
 
 info "    👍 Done! server assistant is installed in $bin_dir"
 
-
 if [ "$upgrade" -eq 1 ]; then
 
     printf "✅ COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
@@ -859,29 +855,25 @@ else
     # Check if the shell is zsh or bash
     if [[ $shell == *'zsh'* ]]; then
         # If zsh, append to .zprofile
-        if ! grep -Fxq "$cmd" $HOME/.zprofile
-        then
-            echo "$cmd" >> $HOME/.zprofile
+        if ! grep -Fxq "$cmd" $HOME/.zprofile; then
+            echo "$cmd" >>$HOME/.zprofile
         fi
 
         # If zsh, append to .zshrc
-        if ! grep -Fxq "$cmd" $HOME/.zshrc
-        then
-            echo "$cmd" >> $HOME/.zshrc
+        if ! grep -Fxq "$cmd" $HOME/.zshrc; then
+            echo "$cmd" >>$HOME/.zshrc
         fi
 
     elif [[ $shell == *'bash'* ]]; then
 
         # If bash, append to .bash_profile
-        if ! grep -Fxq "$cmd" $HOME/.bash_profile
-        then
-            echo "$cmd" >> $HOME/.bash_profile
+        if ! grep -Fxq "$cmd" $HOME/.bash_profile; then
+            echo "$cmd" >>$HOME/.bash_profile
         fi
 
         # If bash, append to .bashrc
-        if ! grep -Fxq "$cmd" $HOME/.bashrc
-        then
-            echo "$cmd" >> $HOME/.bashrc
+        if ! grep -Fxq "$cmd" $HOME/.bashrc; then
+            echo "$cmd" >>$HOME/.bashrc
         fi
     fi
 
