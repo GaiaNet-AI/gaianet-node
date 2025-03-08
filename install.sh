@@ -152,23 +152,28 @@ BLUE=$'\e[0;34m'
 NC=$'\e[0m'
 
 info() {
-    printf "🔵 ${BLUE}INFO:${NC} $1\n\n"
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    printf "[%s] 🔵 ${BLUE}INFO:${NC} %s\n\n" "$timestamp" "$1"
 }
 
 warning() {
-    printf "🟡 ${YELLOW}WARNING:${NC} $1\n\n"
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    printf "[%s] 🟡 ${YELLOW}WARNING:${NC} %s\n\n" "$timestamp" "$1"
 }
 
 error() {
-    printf "❌ ${RED}ERROR:${NC} $1\n\n"
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    printf "[%s] ❌ ${RED}ERROR:${NC} %s\n\n" "$timestamp" "$1"
 }
 
 success() {
-    printf "✅ ${GREEN}SUCCESS:${NC} $1\n\n"
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    printf "[%s] ✅ ${GREEN}SUCCESS:${NC} %s\n\n" "$timestamp" "$1"
 }
 
 waiting() {
-    printf "⏳ ${YELLOW}WAITING:${NC} $1\n\n"
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    printf "[%s] ⏳ ${YELLOW}WAITING:${NC} %s\n\n" "$timestamp" "$1"
 }
 
 # download target file to destination. If failed, then exit
@@ -849,7 +854,7 @@ success "Done! server assistant is installed in $bin_dir"
 
 if [ "$upgrade" -eq 1 ]; then
 
-    succes "COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
+    success "COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
 
     info "👉 Next, you should run the command 'gaianet init' to initialize the GaiaNet node."
 
