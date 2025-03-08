@@ -41,15 +41,6 @@ ggmlcuda=""
 # 0: disable vector, 1: enable vector
 enable_vector=0
 
-# print in red color
-RED=$'\e[0;31m'
-# print in green color
-GREEN=$'\e[0;32m'
-# print in yellow color
-YELLOW=$'\e[0;33m'
-# No Color
-NC=$'\e[0m'
-
 function print_usage {
     printf "Usage:\n"
     printf "  ./install.sh [Options]\n\n"
@@ -149,16 +140,35 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-info() {
-    printf "${GREEN}$1${NC}\n\n"
-}
+# print in red color
+RED=$'\e[0;31m'
+# print in green color
+GREEN=$'\e[0;32m'
+# print in yellow color
+YELLOW=$'\e[0;33m'
+# print in blue color
+BLUE=$'\e[0;34m'
+# No Color
+NC=$'\e[0m'
 
-error() {
-    printf "${RED}$1${NC}\n\n"
+info() {
+    printf "🔵 ${BLUE}INFO:${NC} $1\n\n"
 }
 
 warning() {
-    printf "${YELLOW}$1${NC}\n\n"
+    printf "🟡 ${YELLOW}WARNING:${NC} $1\n\n"
+}
+
+error() {
+    printf "❌ ${RED}ERROR:${NC} $1\n\n"
+}
+
+success() {
+    printf "✅ ${GREEN}SUCCESS:${NC} $1\n\n"
+}
+
+waiting() {
+    printf "⏳ ${YELLOW}WAITING:${NC} $1\n\n"
 }
 
 # download target file to destination. If failed, then exit
@@ -166,7 +176,7 @@ check_curl() {
     curl --retry 3 --progress-bar -L "$1" -o "$2"
 
     if [ $? -ne 0 ]; then
-        error "    * Failed to download $1"
+        error "Failed to download $1"
         exit 1
     fi
 }
@@ -175,7 +185,7 @@ check_curl_silent() {
     curl --retry 3 -s --progress-bar -L "$1" -o "$2"
 
     if [ $? -ne 0 ]; then
-        error "    * Failed to download $1"
+        error "Failed to download $1"
         exit 1
     fi
 }
@@ -186,24 +196,24 @@ sed_in_place() {
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         sed -i "$@"
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        error "    * For Windows users, please run this script in WSL."
+        error "For Windows users, please run this script in WSL."
         exit 1
     else
-        error "    * Only support Linux, MacOS and Windows."
+        error "Only support Linux, MacOS and Windows."
         exit 1
     fi
 }
 
 # Upgrade and migrate cannot coexist
 if [ "$upgrade" -eq 1 ] && [ -n "$migrated_from_file" ]; then
-    error "    Cannot use both --upgrade and --migrate"
+    error "Cannot use both --upgrade and --migrate"
     exit 1
 fi
 
 # Do backup
 if [ -n "$backup_to_file" ]; then
     if [ ! -d $gaianet_base_dir ]; then
-        error "    Cannot backup because the directory $gaianet_base_dir does not exist"
+        error "Cannot backup because the directory $gaianet_base_dir does not exist"
         exit 1
     fi
 
@@ -267,10 +277,10 @@ if [ -d "$gaianet_base_dir" ]; then
             info "The gaianet node will be upgraded to v$version."
         fi
 
-        printf "[+] Performing backup before upgrading to v$version ...\n\n"
+        info "[+] Performing backup before upgrading to v$version ...\n\n"
 
         if [ ! -d "$gaianet_base_dir/backup" ]; then
-            printf "    * Create $gaianet_base_dir/backup\n"
+            info "Create $gaianet_base_dir/backup\n"
             mkdir -p "$gaianet_base_dir/backup"
         fi
 
@@ -281,7 +291,7 @@ if [ -d "$gaianet_base_dir" ]; then
             exit 1
         else
             if [ -f "$gaianet_base_dir/$keystore_filename" ]; then
-                printf "    * Copy $keystore_filename to $gaianet_base_dir/backup/\n"
+                info "Copy $keystore_filename to $gaianet_base_dir/backup/\n"
                 cp $gaianet_base_dir/$keystore_filename $gaianet_base_dir/backup/
             else
                 error "Failed to copy the keystore file. Reason: the keystore file does not exist in $gaianet_base_dir."
@@ -290,7 +300,7 @@ if [ -d "$gaianet_base_dir" ]; then
         fi
         # backup config.json
         if [ -f "$gaianet_base_dir/config.json" ]; then
-            printf "    * Copy config.json to $gaianet_base_dir/backup/\n"
+            info "Copy config.json to $gaianet_base_dir/backup/\n"
 
             # check if context_window is present in config.json
             if ! grep -q '"context_window":' $gaianet_base_dir/config.json; then
@@ -307,7 +317,7 @@ if [ -d "$gaianet_base_dir" ]; then
         fi
         # backup nodeid.json
         if [ -f "$gaianet_base_dir/nodeid.json" ]; then
-            printf "    * Copy nodeid.json to $gaianet_base_dir/backup/\n"
+            info "Copy nodeid.json to $gaianet_base_dir/backup/\n"
             cp $gaianet_base_dir/nodeid.json $gaianet_base_dir/backup/
         else
             error "Failed to copy the nodeid.json. Reason: the nodeid.json does not exist in $gaianet_base_dir."
@@ -315,10 +325,10 @@ if [ -d "$gaianet_base_dir" ]; then
         fi
         # backup frpc.toml
         if [ -f "$gaianet_base_dir/gaia-frp/frpc.toml" ]; then
-            printf "    * Copy frpc.toml to $gaianet_base_dir/backup/\n"
+            info "Copy frpc.toml to $gaianet_base_dir/backup/\n"
             cp $gaianet_base_dir/gaia-frp/frpc.toml $gaianet_base_dir/backup/
         elif [ -f "$gaianet_base_dir/gaianet-domain/frpc.toml" ]; then
-            printf "    * Copy frpc.toml to $gaianet_base_dir/backup/\n"
+            info "Copy frpc.toml to $gaianet_base_dir/backup/\n"
             cp $gaianet_base_dir/gaianet-domain/frpc.toml $gaianet_base_dir/backup/
         else
             error "Failed to copy the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/gaia-frp."
@@ -326,19 +336,19 @@ if [ -d "$gaianet_base_dir" ]; then
         fi
         # backup deviceid.txt
         if [ -f "$gaianet_base_dir/deviceid.txt" ]; then
-            printf "    * Copy deviceid.txt to $gaianet_base_dir/backup/\n"
+            info "Copy deviceid.txt to $gaianet_base_dir/backup/\n"
             cp $gaianet_base_dir/deviceid.txt $gaianet_base_dir/backup/
         else
-            warning "    * The deviceid.txt does not exist in $gaianet_base_dir."
+            warning "The deviceid.txt does not exist in $gaianet_base_dir."
         fi
 
         # remove the all existing files and subdirectories in the base directory, except for the backup subdirectory and its contents
         find "$gaianet_base_dir" -mindepth 1 -not -name 'backup' -not -path '*/backup/*' -not -name '*.gguf' -exec rm -rf {} +
 
-        printf "    * Backup done\n\n"
+        success "Backup done\n\n"
 
     elif [ "$reinstall" -eq 1 ]; then
-        printf "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
+        info "[+] Removing the existing $gaianet_base_dir directory ...\n\n"
         rm -rf $gaianet_base_dir
     fi
 fi
@@ -363,7 +373,7 @@ fi
 bin_dir=$gaianet_base_dir/bin
 
 # 1. Install `gaianet` CLI tool.
-printf "[+] Installing gaianet CLI tool ...\n"
+info "[+] Installing gaianet CLI tool ...\n"
 
 if [ "$repo_branch" = "main" ]; then
     check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
@@ -372,11 +382,11 @@ else
 fi
 
 chmod u+x $bin_dir/gaianet
-info "    👍 Done! Gaianet CLI tool is installed in $bin_dir"
+success "Done! Gaianet CLI tool is installed in $bin_dir"
 
 # 2. Download default `config.json`
 if [ "$upgrade" -eq 1 ]; then
-    printf "[+] Recovering config.json ...\n"
+    info "[+] Recovering config.json ...\n"
 
     # recover config.json
     if [ -f "$gaianet_base_dir/backup/config.json" ]; then
@@ -410,15 +420,15 @@ if [ "$upgrade" -eq 1 ]; then
             ' "$gaianet_base_dir/config.json"
         fi
 
-        info "    * The config.json is recovered in $gaianet_base_dir"
+        info "The config.json is recovered in $gaianet_base_dir"
     else
-        error "    * Failed to recover the config.json. Reason: the config.json does not exist in $gaianet_base_dir/backup/."
+        error "Failed to recover the config.json. Reason: the config.json does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
 elif [ -f "$migrated_from_file" ] && tar -tf "$migrated_from_file" | grep -q "config.json"; then
     tar -xf "$migrated_from_file" -C $gaianet_base_dir config.json
 else
-    printf "[+] Downloading default config.json ...\n"
+    info "[+] Downloading default config.json ...\n"
 
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
         if [ "$repo_branch" = "main" ]; then
@@ -427,9 +437,9 @@ else
             check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/config.json $gaianet_base_dir/config.json
         fi
 
-        info "    👍 Done! The default config file is downloaded in $gaianet_base_dir"
+        success "Done! The default config file is downloaded in $gaianet_base_dir"
     else
-        warning "    ❗ Use the cached config file in $gaianet_base_dir"
+        warning "Use the cached config file in $gaianet_base_dir"
     fi
 fi
 
@@ -437,47 +447,47 @@ fi
 if [ "$enable_vector" -eq 1 ]; then
     # Check if vector is installed
     if ! command -v vector &>/dev/null; then
-        printf "[+] Installing vector ...\n"
+        info "[+] Installing vector ...\n"
         if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=$vector_version bash -s -- -y; then
-            info "    * The vector is installed."
+            info "The vector is installed."
         else
-            error "    * Failed to install vector"
+            error "Failed to install vector"
             exit 1
         fi
     fi
     # Check if vector.toml exists
     if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
-        printf "[+] Downloading vector config file ...\n"
+        info "[+] Downloading vector config file ...\n"
 
         check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/vector.toml $gaianet_base_dir/vector.toml
 
-        info "    * The vector.toml is downloaded in $gaianet_base_dir"
+        success "Done! The vector.toml is downloaded in $gaianet_base_dir"
     fi
 fi
 
 # 5. Install WasmEdge and ggml plugin
-printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
+info "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
 if [ -n "$ggmlcuda" ]; then
     if [ "$ggmlcuda" != "11" ] && [ "$ggmlcuda" != "12" ]; then
-        error "❌ Invalid argument to '--ggmlcuda' option. Possible values: 11, 12."
+        error "Invalid argument to '--ggmlcuda' option. Possible values: 11, 12."
         exit 1
     fi
 
     if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --tmpdir=$tmp_dir --ggmlcuda=$ggmlcuda; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
-        info "\n    👍 Done! The $wasmedge_version is installed in $wasmedge_path."
+        success "Done! The $wasmedge_version is installed in $wasmedge_path."
     else
-        error "\n    ❌ Failed to install WasmEdge"
+        error "Failed to install WasmEdge"
         exit 1
     fi
 else
     if curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install_v2.sh | bash -s -- -v $wasmedge_version --ggmlbn=$ggml_bn --tmpdir=$tmp_dir; then
         source $HOME/.wasmedge/env
         wasmedge_path=$(which wasmedge)
-        info "\n    👍 Done! The $wasmedge_version is installed in $wasmedge_path."
+        success "Done! The $wasmedge_version is installed in $wasmedge_path."
     else
-        error "\n    ❌ Failed to install WasmEdge"
+        error "Failed to install WasmEdge"
         exit 1
     fi
 fi
@@ -485,9 +495,9 @@ fi
 # 6. Install Qdrant binary and prepare directories
 
 # 6.1 Inatall Qdrant binary
-printf "[+] Installing Qdrant binary...\n"
+info "[+] Installing Qdrant binary...\n"
 if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
-    printf "    * Download Qdrant binary\n"
+    info "Download Qdrant binary\n"
     if [ "$(uname)" == "Darwin" ]; then
         # download qdrant binary
         if [ "$target" = "x86_64" ]; then
@@ -496,16 +506,16 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
             tar -xzf $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
 
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+            success "Done! The Qdrant binary is downloaded in $bin_dir"
 
         elif [ "$target" = "arm64" ]; then
             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
 
             tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+            success "Done! The Qdrant binary is downloaded in $bin_dir"
         else
-            error "      ❌ Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+            error "Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
             exit 1
         fi
 
@@ -517,34 +527,34 @@ if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
             tar -xzf $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
 
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+            success "Done! The Qdrant binary is downloaded in $bin_dir"
 
         elif [ "$target" = "aarch64" ]; then
             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
 
             tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $bin_dir
             rm $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+            success "Done! The Qdrant binary is downloaded in $bin_dir"
         else
-            error "      ❌ Unsupported architecture: $target, only support x86_64 and aarch64 on Linux"
+            error "Unsupported architecture: $target, only support x86_64 and aarch64 on Linux"
             exit 1
         fi
 
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        error "      ❌ For Windows users, please run this script in WSL."
+        error "For Windows users, please run this script in WSL."
         exit 1
     else
-        error "      ❌ Only support Linux, MacOS and Windows."
+        error "Only support Linux, MacOS and Windows."
         exit 1
     fi
 
 else
-    warning "      ❗ Use the cached Qdrant binary in $gaianet_base_dir/bin"
+    warning "Use the cached Qdrant binary in $gaianet_base_dir/bin"
 fi
 
 # 6.2 Init qdrant directory
 if [ ! -d "$gaianet_base_dir/qdrant" ]; then
-    printf "    * Initialize Qdrant directory\n"
+    info "Initialize Qdrant directory\n"
     mkdir -p -m777 $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
     # download qdrant binary
@@ -557,34 +567,35 @@ if [ ! -d "$gaianet_base_dir/qdrant" ]; then
     cp -r $qdrant_version/config .
     rm -rf $qdrant_version
 
-    info "      👍 Done!"
+    success "Done!"
 
     # disable telemetry in the `config.yaml` file
-    printf "    * Disable telemetry\n"
+    info "Disable telemetry\n"
     config_file="$gaianet_base_dir/qdrant/config/config.yaml"
 
     if [ -f "$config_file" ]; then
         sed_in_place 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
     fi
 
-    info "      👍 Done!"
+    success "Done!"
 fi
 
 # 7. Download LlamaEdge API server
-printf "[+] Downloading LlamaEdge API server ...\n"
+info "[+] Downloading LlamaEdge API server ...\n"
 # download rag-api-server.wasm
 check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/$rag_api_server_version/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
 # download llama-api-server.wasm
 check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
-info "    👍 Done! The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
+success "Done! The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
 
 # 8. Download dashboard to $gaianet_base_dir
 if ! command -v tar &>/dev/null; then
     echo "tar could not be found, please install it."
     exit 1
 fi
-printf "[+] Downloading dashboard ...\n"
+
+info "[+] Downloading dashboard ...\n"
 if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
     if [ -d "$gaianet_base_dir/gaianet-node" ]; then
         rm -rf $gaianet_base_dir/gaianet-node
@@ -594,80 +605,81 @@ if [ ! -d "$gaianet_base_dir/dashboard" ] || [ "$reinstall" -eq 1 ]; then
     tar xzf $gaianet_base_dir/dashboard.tar.gz -C $gaianet_base_dir
     rm -rf $gaianet_base_dir/dashboard.tar.gz
 
-    info "    👍 Done! The dashboard is downloaded in $gaianet_base_dir"
+    success "Done! The dashboard is downloaded in $gaianet_base_dir"
 else
-    warning "    ❗ Use the cached dashboard in $gaianet_base_dir"
+    warning "Use the cached dashboard in $gaianet_base_dir"
 fi
 
 # 9. Download registry.wasm
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
-    printf "[+] Downloading registry.wasm ...\n"
+    info "[+] Downloading registry.wasm ...\n"
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
-    info "    👍 Done! The registry.wasm is downloaded in $gaianet_base_dir"
+    success "Done! The registry.wasm is downloaded in $gaianet_base_dir"
 else
-    warning "    ❗ Use the cached registry.wasm in $gaianet_base_dir"
+    warning "Use the cached registry.wasm in $gaianet_base_dir"
 fi
 
 # 10. Generate node ID
 if [ "$upgrade" -eq 1 ]; then
-    printf "[+] Recovering node ID ...\n"
+    info "[+] Recovering node ID ...\n"
 
     # recover the keystore file
     if [ -f "$gaianet_base_dir/backup/$keystore_filename" ]; then
         cp $gaianet_base_dir/backup/$keystore_filename $gaianet_base_dir/
-        info "    👍 Done! The keystore file is recovered in $gaianet_base_dir"
+        success "Done! The keystore file is recovered in $gaianet_base_dir"
     else
-        error "❌ Failed to recover the keystore file. Reason: the keystore file does not exist in $gaianet_base_dir/backup/."
+        error "Failed to recover the keystore file. Reason: the keystore file does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
 
     # recover the nodeid.json
     if [ -f "$gaianet_base_dir/backup/nodeid.json" ]; then
         cp $gaianet_base_dir/backup/nodeid.json $gaianet_base_dir/nodeid.json
-        info "    👍 Done! The node ID is recovered in $gaianet_base_dir"
+        success "Done! The node ID is recovered in $gaianet_base_dir"
     else
-        error "❌ Failed to recover the node ID. Reason: the nodeid.json does not exist in $gaianet_base_dir/backup/."
+        error "Failed to recover the node ID. Reason: the nodeid.json does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
 elif [ -f "$migrated_from_file" ] && tar -tf "$migrated_from_file" | grep -q "nodeid.json"; then
     tar -xf "$migrated_from_file" -C $gaianet_base_dir nodeid.json
     migrate_keystore_filename=$(grep '"keystore":' $gaianet_base_dir/nodeid.json | awk -F'"' '{print $4}')
     if [ -z "$migrate_keystore_filename" ]; then
-        error "❌ Failed to read the 'keystore' field from backup nodeid.json."
+        error "Failed to read the 'keystore' field from backup nodeid.json."
         exit 1
     else
         if tar -tf "$migrated_from_file" | grep -q "$migrate_keystore_filename"; then
             tar -xf "$migrated_from_file" -C $gaianet_base_dir $migrate_keystore_filename
         else
-            error "❌ Failed to copy the keystore file. Reason: the keystore file does not exist in backup file."
+            error "Failed to copy the keystore file. Reason: the keystore file does not exist in backup file."
             exit 1
         fi
     fi
 else
-    printf "[+] Generating node ID ...\n"
+    info "[+] Generating node ID ...\n"
 
     # download the default nodeid.json
     if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
         printf "    * Download nodeid.json ...⏳\n"
         check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
-        info "      👍 Done!"
+        success "Done!"
     fi
 
-    printf "    * Generate node ID ...⏳\n"
+    info "Generate node ID ...⏳\n"
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
-    info "      👍 Done!"
+    success "Done!"
 fi
 
 # 11. Install gaia-frp
-printf "[+] Installing gaia-frp...\n"
+info "[+] Installing gaia-frp...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaia-frp" ]; then
     mkdir -p -m777 $gaianet_base_dir/gaia-frp
 fi
 cd $gaianet_base_dir
 gaia_frp_version="v0.1.3"
-printf "    * Download gaia-frp binary\n"
+
+info "Download gaia-frp binary\n"
 if [ "$(uname)" == "Darwin" ]; then
     if [ "$target" = "x86_64" ]; then
         check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz
@@ -675,16 +687,16 @@ if [ "$(uname)" == "Darwin" ]; then
         tar -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
         rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_amd64.tar.gz
 
-        info "      👍 Done! gaia-frp is downloaded in $gaianet_base_dir"
+        success "Done! gaia-frp is downloaded in $gaianet_base_dir"
     elif [ "$target" = "arm64" ] || [ "$target" = "aarch64" ]; then
         check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz
 
         tar -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
         rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_darwin_arm64.tar.gz
 
-        info "      👍 Done! gaia-frp is downloaded in $gaianet_base_dir"
+        success "Done! gaia-frp is downloaded in $gaianet_base_dir"
     else
-        error "      ❌ Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        error "Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
         exit 1
     fi
 
@@ -696,41 +708,41 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_amd64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
         rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_amd64.tar.gz
 
-        info "      👍 Done! gaia-frp is downloaded in $gaianet_base_dir"
+        success "Done! gaia-frp is downloaded in $gaianet_base_dir"
     elif [ "$target" = "arm64" ] || [ "$target" = "aarch64" ]; then
         check_curl https://github.com/GaiaNet-AI/gaia-frp/releases/download/$gaia_frp_version/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz
 
         tar --warning=no-unknown-keyword -xzf $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz --strip-components=1 -C $gaianet_base_dir/gaia-frp
         rm $gaianet_base_dir/gaia_frp_${gaia_frp_version}_linux_arm64.tar.gz
 
-        info "      👍 Done! gaia-frp is downloaded in $gaianet_base_dir"
+        success "Done! gaia-frp is downloaded in $gaianet_base_dir"
     else
-        error "      ❌ Unsupported architecture: $target, only support x86_64 and arm64 on Linux"
+        error "Unsupported architecture: $target, only support x86_64 and arm64 on Linux"
         exit 1
     fi
 
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    error "❌ For Windows users, please run this script in WSL."
+    error "For Windows users, please run this script in WSL."
     exit 1
 else
-    error "❌ Only support Linux, MacOS and Windows."
+    error "Only support Linux, MacOS and Windows."
     exit 1
 fi
 
 # Copy frpc binary from $gaianet_base_dir/gaia-frp to $gaianet_base_dir/bin
-printf "    * Install frpc binary\n"
+info "Install frpc binary\n"
 cp $gaianet_base_dir/gaia-frp/frpc $gaianet_base_dir/bin/
-info "      👍 Done! frpc binary is installed in $gaianet_base_dir/bin"
+success "Done! frpc binary is installed in $gaianet_base_dir/bin"
 
 # 12. Download frpc.toml, generate a subdomain and print it
 if [ "$upgrade" -eq 1 ]; then
     # recover the frpc.toml
     if [ -f "$gaianet_base_dir/backup/frpc.toml" ]; then
-        printf "    * Recover frpc.toml\n"
+        info "Recover frpc.toml\n"
         cp $gaianet_base_dir/backup/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
-        info "      👍 Done! frpc.toml is recovered in $gaianet_base_dir/gaia-frp"
+        success "Done! frpc.toml is recovered in $gaianet_base_dir/gaia-frp"
     else
-        error "❌ Failed to recover the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/backup/."
+        error "Failed to recover the frpc.toml. Reason: the frpc.toml does not exist in $gaianet_base_dir/backup/."
         exit 1
     fi
 elif [ -f "$migrated_from_file" ] && (tar -tf "$migrated_from_file" | grep -q "gaianet-domain/frpc.toml" || tar -tf "$migrated_from_file" | grep -q "gaia-frp/frpc.toml"); then
@@ -740,9 +752,9 @@ elif [ -f "$migrated_from_file" ] && (tar -tf "$migrated_from_file" | grep -q "g
         tar -xf "$migrated_from_file" --strip-components=1 -C $gaianet_base_dir/gaia-frp gaia-frp/frpc.toml
     fi
 else
-    printf "    * Download frpc.toml\n"
+    info "Download frpc.toml\n"
     check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
-    info "      👍 Done! frpc.toml is downloaded in $gaianet_base_dir/gaia-frp"
+    success "Done! frpc.toml is downloaded in $gaianet_base_dir/gaia-frp"
 fi
 
 # Read address from config.json as node subdomain
@@ -750,7 +762,7 @@ subdomain=$(awk -F'"' '/"address":/ {print $4}' $gaianet_base_dir/config.json)
 
 # Check if the subdomain was read correctly
 if [ -z "$subdomain" ]; then
-    error "❌ Failed to read the address from config.json."
+    error "Failed to read the address from config.json."
     exit 1
 fi
 
@@ -762,9 +774,9 @@ if [ "$upgrade" -eq 1 ]; then
     if [ -f "$gaianet_base_dir/backup/deviceid.txt" ]; then
         cp $gaianet_base_dir/backup/deviceid.txt $gaianet_base_dir/deviceid.txt
 
-        info "    👍 Done! The deviceid.txt is recovered in $gaianet_base_dir"
+        success "Done! The deviceid.txt is recovered in $gaianet_base_dir"
     else
-        warning "    ❗ The deviceid.txt does not exist in $gaianet_base_dir/backup/. Will generate a new one."
+        warning "The deviceid.txt does not exist in $gaianet_base_dir/backup/. Will generate a new one."
     fi
 fi
 
@@ -785,7 +797,7 @@ else
     device_id="device-$(openssl rand -hex 12)"
     echo "$device_id" >"$device_id_file"
 fi
-info "    ❗ The device ID is $device_id"
+info "The device ID is $device_id"
 
 sed_in_place "s/subdomain = \".*\"/subdomain = \"$subdomain\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
 sed_in_place "s/serverAddr = \".*\"/serverAddr = \"$gaia_frp\"/g" $gaianet_base_dir/gaia-frp/frpc.toml
@@ -796,7 +808,7 @@ sed_in_place "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/
 find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc.toml' -exec rm -f {} \;
 
 # 13. Install server assistant
-printf "[+] Installing server assistant...\n"
+info "[+] Installing server assistant...\n"
 if [ "$(uname)" == "Darwin" ]; then
 
     if [ "$target" = "x86_64" ]; then
@@ -806,7 +818,7 @@ if [ "$(uname)" == "Darwin" ]; then
         check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-aarch64-apple-darwin.tar.gz $bin_dir/server-assistant.tar.gz
 
     else
-        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        error "Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
         exit 1
     fi
 
@@ -818,7 +830,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         check_curl https://github.com/GaiaNet-AI/server-assistant/releases/download/$assistant_version/server-assistant-aarch64-unknown-linux-gnu.tar.gz $bin_dir/server-assistant.tar.gz
 
     else
-        error " * Unsupported architecture: $target, only support x86_64 on Linux"
+        error "Unsupported architecture: $target, only support x86_64 on Linux"
         exit 1
     fi
 
@@ -833,16 +845,16 @@ if [ -f $bin_dir/SHA256SUM ]; then
     rm $bin_dir/SHA256SUM
 fi
 
-info "    👍 Done! server assistant is installed in $bin_dir"
+success "Done! server assistant is installed in $bin_dir"
 
 if [ "$upgrade" -eq 1 ]; then
 
-    printf "✅ COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
+    succes "COMPLETED! The gaianet node has been upgraded to v$version.\n\n"
 
     info "👉 Next, you should run the command 'gaianet init' to initialize the GaiaNet node."
 
 else
-    printf "✅ COMPLETED! The gaianet node has been installed successfully.\n\n"
+    success "COMPLETED! The gaianet node has been installed successfully.\n\n"
 
     info "✨ Your node ID is $subdomain. 🌟 Please register it in your portal account to receive rewards!"
 
