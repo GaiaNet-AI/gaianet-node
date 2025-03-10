@@ -10,8 +10,8 @@ cwd=$(pwd)
 
 repo_branch="main"
 version="0.4.27"
-rag_api_server_version="0.13.15"
 llama_api_server_version="0.16.16"
+gaia_nexus_version="0.1.0"
 wasmedge_version="0.14.1"
 ggml_bn="b5074"
 vector_version="0.38.0"
@@ -581,7 +581,47 @@ check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_s
 
 info "    👍 Done! The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
 
-# 8. Download dashboard to $gaianet_base_dir
+
+# 8. Install LlamaEdge-Nexus
+printf "[+] Installing llama-nexus ...\n"
+if [ "$(uname)" == "Darwin" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-apple-darwin-x86_64.tar.gz $bin_dir/llama-nexus.tar.gz
+
+    elif [ "$target" = "arm64" ]; then
+        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-apple-darwin-aarch64.tar.gz $bin_dir/llama-nexus.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        exit 1
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-unknown-linux-gnu-x86_64.tar.gz $bin_dir/llama-nexus.tar.gz
+
+    elif [ "$target" = "aarch64" ]; then
+        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-unknown-linux-gnu-aarch64.tar.gz $bin_dir/llama-nexus.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 on Linux"
+        exit 1
+    fi
+
+else
+    error "Only support Linux, MacOS and Windows(WSL)."
+    exit 1
+fi
+# extract the llama-nexus binary
+tar -xzf $bin_dir/llama-nexus.tar.gz -C $bin_dir llama-nexus
+rm $bin_dir/llama-nexus.tar.gz
+
+info "    👍 Done! The llama-nexus is downloaded in $bin_dir"
+
+
+# 9. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
     echo "tar could not be found, please install it."
     exit 1
@@ -601,7 +641,7 @@ else
     warning "    ❗ Use the cached dashboard in $gaianet_base_dir"
 fi
 
-# 9. Download registry.wasm
+# 10. Download registry.wasm
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading registry.wasm ...\n"
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
@@ -610,7 +650,7 @@ else
     warning "    ❗ Use the cached registry.wasm in $gaianet_base_dir"
 fi
 
-# 10. Generate node ID
+# 11. Generate node ID
 if [ "$upgrade" -eq 1 ]; then
     printf "[+] Recovering node ID ...\n"
 
@@ -661,7 +701,7 @@ else
     info "      👍 Done!"
 fi
 
-# 11. Install gaia-frp
+# 12. Install gaia-frp
 printf "[+] Installing gaia-frp...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaia-frp" ]; then
@@ -724,7 +764,7 @@ printf "    * Install frpc binary\n"
 cp $gaianet_base_dir/gaia-frp/frpc $gaianet_base_dir/bin/
 info "      👍 Done! frpc binary is installed in $gaianet_base_dir/bin"
 
-# 12. Download frpc.toml, generate a subdomain and print it
+# 13. Download frpc.toml, generate a subdomain and print it
 if [ "$upgrade" -eq 1 ]; then
     # recover the frpc.toml
     if [ -f "$gaianet_base_dir/backup/frpc.toml" ]; then
@@ -798,7 +838,7 @@ sed_in_place "s/metadatas.deviceId = \".*\"/metadatas.deviceId = \"$device_id\"/
 # Remove all files in the directory except for frpc and frpc.toml
 find $gaianet_base_dir/gaia-frp -type f -not -name 'frpc.toml' -exec rm -f {} \;
 
-# 13. Install server assistant
+# 14. Install server assistant
 printf "[+] Installing server assistant...\n"
 if [ "$(uname)" == "Darwin" ]; then
 
