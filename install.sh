@@ -574,12 +574,10 @@ fi
 
 # 7. Download LlamaEdge API server
 printf "[+] Downloading LlamaEdge API server ...\n"
-# download rag-api-server.wasm
-check_curl https://github.com/LlamaEdge/rag-api-server/releases/download/$rag_api_server_version/rag-api-server.wasm $gaianet_base_dir/rag-api-server.wasm
 # download llama-api-server.wasm
 check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
-info "    👍 Done! The rag-api-server.wasm and llama-api-server.wasm are downloaded in $gaianet_base_dir"
+info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
 
 # 8. Install LlamaEdge-Nexus
