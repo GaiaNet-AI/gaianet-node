@@ -182,6 +182,17 @@ check_config_options() {
         exit 1
     fi
 
+    # check if the `llamaedge_chat_port` field exists or not
+    if ! grep -q '"llamaedge_chat_port":' $gaianet_base_dir/config.json; then
+        error "❌ Not found the 'llamaedge_chat_port' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
+
+    # check if the `llamaedge_embedding_port` field exists or not
+    if ! grep -q '"llamaedge_embedding_port":' $gaianet_base_dir/config.json; then
+        error "❌ Not found the 'llamaedge_embedding_port' field in $gaianet_base_dir/config.json\n"
+        exit 1
+    fi
 }
 
 # create or recover a qdrant collection
