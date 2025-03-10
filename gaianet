@@ -1449,6 +1449,8 @@ show_config_help() {
     printf "  --embedding-ubatch-size <val>  Update the ubatch size of embedding model.\n"
     printf "  --prompt-template <val>        Update the prompt template of chat model.\n"
     printf "  --port <val>                   Update the port of LlamaEdge API Server.\n"
+    printf "  --chat-port <val>              Update the port of chat server.\n"
+    printf "  --embedding-port <val>         Update the port of embedding server.\n"
     printf "  --system-prompt <val>          Update the system prompt.\n"
     printf "  --rag-prompt <val>             Update the rag prompt.\n"
     printf "  --rag-policy <val>             Update the rag policy [Possible values: system-message, last-user-message].\n"
@@ -1518,6 +1520,8 @@ case $subcommand in
         embedding_batch_size=""
         prompt_template=""
         port=""
+        llamaedge_chat_port=""
+        llamaedge_embedding_port=""
         system_prompt=""
         rag_prompt=""
         rag_policy=""
@@ -1587,6 +1591,18 @@ case $subcommand in
                 --port)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         port=$2
+                        shift 2
+                    fi
+                    ;;
+                --chat-port)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        llamaedge_chat_port=$2
+                        shift 2
+                    fi
+                    ;;
+                --embedding-port)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        llamaedge_embedding_port=$2
                         shift 2
                     fi
                     ;;
@@ -1765,7 +1781,7 @@ case $subcommand in
             update_config reverse_prompt $reverse_prompt
         fi
 
-        # update port
+        # update llamaedge_port
         if [ -n "$port" ]; then
             printf "[+] Updating the port of LlamaEdge API Server ...\n"
             printf "    * Old port: $(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)\n"
@@ -1773,6 +1789,26 @@ case $subcommand in
 
             # update
             update_config llamaedge_port $port
+        fi
+
+        # update llamaedge_chat_port
+        if [ -n "$llamaedge_chat_port" ]; then
+            printf "[+] Updating the port of LlamaEdge Chat API Server ...\n"
+            printf "    * Old port: $(awk -F'"' '/"llamaedge_chat_port":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New port: $llamaedge_chat_port"
+
+            # update
+            update_config llamaedge_chat_port $llamaedge_chat_port
+        fi
+
+        # update llamaedge_embedding_port
+        if [ -n "$llamaedge_embedding_port" ]; then
+            printf "[+] Updating the port of LlamaEdge Embedding API Server ...\n"
+            printf "    * Old port: $(awk -F'"' '/"llamaedge_embedding_port":/ {print $4}' $gaianet_base_dir/config.json)\n"
+            info "    * New port: $llamaedge_embedding_port"
+
+            # update
+            update_config llamaedge_embedding_port $llamaedge_embedding_port
         fi
 
         # update system prompt
