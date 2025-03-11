@@ -6,10 +6,6 @@ set -e
 # Note that the version should kept same as the version of installer
 version="0.4.27"
 
-# version of the GaiaNet node
-# Note that the version should kept same as the version of installer
-installer_version="0.4.27"
-
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
@@ -455,6 +451,514 @@ update_config() {
 
 # * start subcommand
 
+start_chat_server() {
+    # parse cli options for chat model
+    url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
+    # gguf filename
+    chat_model_name=$(basename $url_chat_model)
+    # Directly attempt to extract "chat_name" and fallback to extracting from "chat" if empty
+    chat_name=$(grep '"chat_name":' $gaianet_base_dir/config.json | sed -E 's/.*"chat_name": *"([^"]*)".*/\1/')
+    if [ -z "$chat_name" ]; then
+        chat_model_stem=$(basename "${url_chat_model%.*}")
+    else
+        chat_model_stem=$chat_name
+    fi
+
+    # parse context size for chat model
+    chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse batch size for chat model
+    chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse ubatch size for chat model
+    if grep -q '"chat_ubatch_size":' $gaianet_base_dir/config.json; then
+        chat_ubatch_size=$(awk -F'"' '/"chat_ubatch_size":/ {print $4}' $gaianet_base_dir/config.json)
+    else
+        chat_ubatch_size=$chat_batch_size
+    fi
+
+    # parse prompt type for chat model
+    prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse reverse prompt for chat model
+    reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse port for chat server
+    if grep -q '"llamaedge_chat_port":' $gaianet_base_dir/config.json; then
+        llamaedge_chat_port=$(awk -F'"' '/"llamaedge_chat_port":/ {print $4}' $gaianet_base_dir/config.json)
+    else
+        llamaedge_chat_port=9068
+    fi
+    # check if the port for chat server is in use
+    if lsof -Pi :$llamaedge_chat_port -sTCP:LISTEN -t >/dev/null ; then
+        printf "    Port $llamaedge_chat_port is in use. Exit ...\n\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+
+
+    # command to start LlamaEdge API Server
+    cd $gaianet_base_dir
+    cmd=(wasmedge --dir .:./dashboard \
+    --nn-preload default:GGML:AUTO:$chat_model_name \
+    llama-api-server.wasm \
+    --model-name $chat_model_stem \
+    --ctx-size $chat_ctx_size \
+    --batch-size $chat_batch_size \
+    --ubatch-size $chat_ubatch_size \
+    --prompt-template $prompt_type \
+    --include-usage \
+    --port $llamaedge_chat_port)
+
+    # Add reverse prompt if it exists
+    if [ -n "$reverse_prompt" ]; then
+        cmd+=("--reverse-prompt" "$reverse_prompt")
+    fi
+
+    for i in "${cmd[@]}"; do
+        if [[ $i == *" "* ]]; then
+            printf "\"%s\" " "$i"
+        else
+            printf "%s " "$i"
+        fi
+    done
+    printf "\n\n"
+
+    cd $gaianet_base_dir
+    llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+    if [ ! -f "$llamaedge_wasm" ]; then
+        error "❌ Not found llama-api-server.wasm in $gaianet_base_dir\n"
+        exit 1
+    fi
+
+    # start chat server
+    retry_count=0
+    max_retries=3
+    while true; do
+        # start chat server with nohup
+        nohup "${cmd[@]}" > $log_dir/chat-server.log 2>&1 &
+        chat_server_pid=$!
+        echo $chat_server_pid > $gaianet_base_dir/chat_server.pid
+        sleep 10
+        info "      👍 Chat server started with pid: $chat_server_pid"
+
+        # verify the chat server
+        printf "    * Verify the chat server. Please wait seconds ...⏳\n\n"
+        if [[ "$prompt_type" == *"tool"* ]]; then
+            status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+                -X POST http://localhost:$llamaedge_chat_port/v1/chat/completions \
+                -H 'accept:application/json' \
+                -H 'Content-Type: application/json' \
+                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"get_name\",\"description\":\"Return your name\"}}], \"model\":\"$chat_model_stem\"}")
+        else
+            status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+                -X POST http://localhost:$llamaedge_chat_port/v1/chat/completions \
+                -H 'accept:application/json' \
+                -H 'Content-Type: application/json' \
+                -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
+        fi
+        curl_exit_status=$?
+
+        if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+            info "      ✅ Chat server is ready."
+            break
+        else
+            tail -2 $log_dir/chat-server.log
+
+            # stop the api-server
+            pkill -9 wasmedge || true
+
+            # remove the pid file
+            chat_server_pid=$gaianet_base_dir/chat_server.pid
+            if [ -f $chat_server_pid ]; then
+                rm $chat_server_pid
+            fi
+
+            sleep 10  # wait for 10 seconds before retrying
+
+            ((retry_count++))
+            if [ $retry_count -ge $((max_retries + 1)) ]; then
+                error "    ❌ Failed to start the chat server after $max_retries retries. Exiting ..."
+
+                # stop
+                store_force
+
+                exit 1
+            else
+                error "    ❌ Failed to start the chat server. Retrying ($retry_count)..."
+            fi
+        fi
+    done
+}
+
+start_embedding_server() {
+    # parse cli options for embedding model
+    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
+    # gguf filename
+    embedding_model_name=$(basename $url_embedding_model)
+    # Directly attempt to extract "embedding_name" and fallback to extracting from "embedding" if empty
+    embedding_name=$(grep '"embedding_name":' $gaianet_base_dir/config.json | sed -E 's/.*"embedding_name": *"([^"]*)".*/\1/')
+    if [ -z "$embedding_name" ]; then
+        embedding_model_stem=$(basename "${url_embedding_model%.*}")
+    else
+        embedding_model_stem=$embedding_name
+    fi
+
+    # parse context size for embedding model
+    embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse batch size for embedding model
+    embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse ubatch size for embedding model
+    if grep -q '"embedding_ubatch_size":' $gaianet_base_dir/config.json; then
+        embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' config.json)
+    else
+        embedding_ubatch_size=$embedding_batch_size
+    fi
+
+    # parse port for embedding server
+    if grep -q '"llamaedge_embedding_port":' $gaianet_base_dir/config.json; then
+        llamaedge_embedding_port=$(awk -F'"' '/"llamaedge_embedding_port":/ {print $4}' $gaianet_base_dir/config.json)
+    else
+        llamaedge_embedding_port=9069
+    fi
+    # check if the port for embedding server is in use
+    if lsof -Pi :$llamaedge_embedding_port -sTCP:LISTEN -t >/dev/null ; then
+        printf "    Port $llamaedge_embedding_port is in use. Exit ...\n\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+
+    # check if llama-api-server.wasm exists
+    llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+    if [ ! -f "$llamaedge_wasm" ]; then
+        error "❌ Not found llama-api-server.wasm at $gaianet_base_dir"
+        exit 1
+    fi
+
+    # command to start LlamaEdge API Server
+    cd $gaianet_base_dir
+    cmd=(wasmedge --dir .:. \
+    --nn-preload default:GGML:AUTO:$embedding_model_name \
+    llama-api-server.wasm \
+    --model-name $embedding_model_stem \
+    --ctx-size $embedding_ctx_size \
+    --batch-size $embedding_batch_size \
+    --ubatch-size $embedding_ubatch_size \
+    --prompt-template embedding \
+    --port $llamaedge_embedding_port)
+
+
+    for i in "${cmd[@]}"; do
+        if [[ $i == *" "* ]]; then
+            printf "\"%s\" " "$i"
+        else
+            printf "%s " "$i"
+        fi
+    done
+    printf "\n\n"
+
+    cd $gaianet_base_dir
+    llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
+    if [ ! -f "$llamaedge_wasm" ]; then
+        error "❌ Not found llama-api-server.wasm in $gaianet_base_dir\n"
+        exit 1
+    fi
+
+    # start api-server
+    retry_count=0
+    start_retry_cout=0
+    max_retries=3
+    while true; do
+        # start embedding server with nohup
+        nohup "${cmd[@]}" > $log_dir/embedding-server.log 2>&1 &
+        embedding_server_pid=$!
+        echo $embedding_server_pid > $gaianet_base_dir/embedding_server.pid
+        sleep 10
+        info "      👍 Embedding server started with pid: $embedding_server_pid"
+
+        # verify the embedding server
+        printf "    * Verify the embedding server. Please wait seconds ...⏳\n\n"
+        status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
+            -X POST http://localhost:$llamaedge_embedding_port/v1/embeddings \
+            -H 'Content-Type: application/json' \
+            -d '{"model": "nomic-embed-text-v1.5","input": ["Gaianet is revolutionizing the AI landscape."]}')
+        curl_exit_status=$?
+
+        if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
+            info "      ✅ Embedding server is ready"
+            break
+        else
+            tail -2 $log_dir/embedding-server.log
+
+            # stop the api-server
+            pkill -9 wasmedge || true
+
+            # remove the pid file
+            embedding_server_pid=$gaianet_base_dir/embedding_server.pid
+            if [ -f $embedding_server_pid ]; then
+                rm $embedding_server_pid
+            fi
+
+            sleep 10  # wait for 10 seconds before retrying
+
+            ((start_retry_cout++))
+            if [ $start_retry_cout -ge $((max_retries + 1)) ]; then
+                error "    ❌ Failed to start embedding server after $max_retries retries. Exiting ..."
+
+                # stop
+                store_force
+
+                exit 1
+            else
+                error "    ❌ Embedding server is not ready. Retrying ($start_retry_cout)..."
+            fi
+        fi
+
+    done
+}
+
+start_qdrant_instance() {
+    qdrant_already_running=false
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
+            qdrant_already_running=true
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+
+    if [ "$qdrant_already_running" = false ]; then
+        qdrant_executable="$gaianet_base_dir/bin/qdrant"
+        if [ -f "$qdrant_executable" ]; then
+            cd $gaianet_base_dir/qdrant
+            nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
+            sleep 2
+            qdrant_pid=$!
+            echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
+            qdrant_already_running=true
+            info "\n      👍 Done! Qdrant instance started with pid: $qdrant_pid"
+        else
+            error "      ❌ Qdrant binary not found at $qdrant_executable\n\n"
+
+            # stop
+            stop_force
+
+            exit 1
+        fi
+    fi
+
+}
+
+start_llama_nexus() {
+
+    # parse domain for llama-nexus
+    domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse deviceId for llama-nexus
+    deviceId=$(grep '^metadatas.deviceId' $gaianet_base_dir/gaia-frp/frpc.toml | sed 's/.*= "//; s/"//g')
+
+    qdrant_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
+    if [[ -z "$qdrant_collection_name" ]]; then
+        qdrant_collection_name="default"
+    fi
+
+    # parse qdrant score threshold
+    qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse qdrant limit
+    qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse system prompt for chat model
+    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse context window
+    # check if context window is present in config.json
+    if grep -q '"context_window":' $gaianet_base_dir/config.json; then
+        context_window=$(awk -F'"' '/"context_window":/ {print $4}' $gaianet_base_dir/config.json)
+    else
+        context_window=1
+    fi
+
+    # parse rag policy
+    if grep -q '"rag_policy":' $gaianet_base_dir/config.json; then
+        rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' $gaianet_base_dir/config.json)
+    else
+        rag_policy="system-message"
+    fi
+
+    # parse port for LlamaEdge API Server
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # set node version for llama-nexus
+    export NODE_VERSION=version
+
+    # check if llama-nexus binary exists
+    llama_nexus="$gaianet_base_dir/bin/llama-nexus"
+    if [ ! -f "$llama_nexus" ]; then
+        error "❌ Not found llama-nexus binary at $gaianet_base_dir/bin"
+        exit 1
+    fi
+
+    # start llama-nexus
+    cd $gaianet_base_dir
+    if [ "$rag_mode" = true ]; then
+        nohup $gaianet_base_dir/bin/llama-nexus \
+        --rag \
+        --check-health \
+        --check-health-interval 60 \
+        --web-ui $gaianet_base_dir/dashboard \
+        --log-destination file \
+        --log-file $log_dir/llama-nexus.log \
+        gaia \
+        --domain $domain \
+        --device-id $deviceId \
+        --vdb-url http://localhost:6333 \
+        --vdb-collection-name $qdrant_collection_name \
+        --vdb-limit $qdrant_limit \
+        --vdb-score-threshold $qdrant_score_threshold \
+        --rag-prompt "'$rag_prompt'" \
+        --rag-context-window $context_window \
+        --rag-policy $rag_policy \
+        --port $llamaedge_port > $log_dir/start-llama-nexus.log 2>&1 &
+    else
+        nohup $gaianet_base_dir/bin/llama-nexus \
+        --check-health \
+        --check-health-interval 60 \
+        --web-ui $gaianet_base_dir/dashboard \
+        --log-destination file \
+        --log-file $log_dir/llama-nexus.log \
+        gaia \
+        --domain $domain \
+        --device-id $deviceId \
+        --port $llamaedge_port > $log_dir/start-llama-nexus.log 2>&1 &
+    fi
+    llama_nexus_pid=$!
+
+    # Check if the command started successfully
+    sleep 3
+    if ! ps -p $llama_nexus_pid > /dev/null 2>&1; then
+        error "    ❌ Failed to start llama-nexus. Please check the log at $log_dir/start-llama-nexus.log"
+        # Output the last few lines of the log file to help diagnose the problem
+        if [ -f "$log_dir/start-llama-nexus.log" ]; then
+            printf "\nLast few lines of the log file:\n"
+            tail -5 $log_dir/start-llama-nexus.log
+            printf "\n"
+        fi
+        stop_force
+        exit 1
+    fi
+    echo $llama_nexus_pid > $gaianet_base_dir/llama_nexus.pid
+    info "      👍 Done! llama-nexus started with pid: $llama_nexus_pid"
+}
+
+register_embedding_server() {
+    # parse port for embedding server
+    llamaedge_embedding_port=$(awk -F'"' '/"llamaedge_embedding_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse port for llama-nexus
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # register embedding server
+    local response
+    local status_code
+
+    # Create temporary file to store response headers
+    local headers_file=$(mktemp)
+
+    # Execute curl command, save response content to variable and get status code
+    response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:$llamaedge_port/admin/servers/register \
+    -H "Content-Type: application/json" \
+    -D $headers_file \
+    -d '{"url": "http://localhost:'$llamaedge_embedding_port'", "kind": "embeddings"}')
+
+    # Extract status code from response (last line)
+    status_code=$(echo "$response" | tail -n1)
+    # Get actual response body (excluding the last line)
+    response_body=$(echo "$response" | sed '$d')
+
+    # Check if status code indicates success (2xx means success)
+    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
+        info "      👍 Successfully registered embedding server at http://localhost:$llamaedge_embedding_port"
+
+        # Delete temporary file
+        rm -f $headers_file
+
+    else
+        error "      ❌ Failed to register embedding server. Status code: $status_code"
+        error "      Response: $response_body"
+        error "      Headers: $(cat $headers_file)"
+
+        # Delete temporary file
+        rm -f $headers_file
+
+        exit 1
+    fi
+}
+
+register_chat_server() {
+    # parse port for chat server
+    llamaedge_chat_port=$(awk -F'"' '/"llamaedge_chat_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse port for llama-nexus
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # register chat server
+    local response
+    local status_code
+
+    # Create temporary file to store response headers
+    local headers_file=$(mktemp)
+
+    # Execute curl command, save response content to variable and get status code
+    response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:$llamaedge_port/admin/servers/register \
+    -H "Content-Type: application/json" \
+    -D $headers_file \
+    -d '{"url": "http://localhost:'$llamaedge_chat_port'", "kind": "chat"}')
+
+    # Extract status code from response (last line)
+    status_code=$(echo "$response" | tail -n1)
+    # Get actual response body (excluding the last line)
+    response_body=$(echo "$response" | sed '$d')
+
+    # Check if status code indicates success (2xx means success)
+    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
+        info "      👍 Successfully registered chat server at http://localhost:$llamaedge_chat_port"
+
+        # Delete temporary file
+        rm -f $headers_file
+
+    else
+        error "      ❌ Failed to register chat server. Status code: $status_code"
+        error "      Response: $response_body"
+        error "      Headers: $(cat $headers_file)"
+
+        # Delete temporary file
+        rm -f $headers_file
+
+        exit 1
+    fi
+}
+
 # start rag-api-server and a qdrant instance
 start() {
     local_only=$1
@@ -471,601 +975,53 @@ start() {
     fi
 
     if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
-        use_rag_api_server=true
+        rag_mode=true
     else
-        use_rag_api_server=false
+        rag_mode=false
     fi
 
-    local_log_storage=1
-    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
-        local_log_storage=0
-    fi
-
-    # check if config.json exists or not
-    if [ "$use_rag_api_server" = true ]; then
-        printf "[1/5] Checking the config.json file ...\n"
-    else
-        printf "[1/4] Checking the config.json file ...\n"
-    fi
+    # 1. check if config.json exists or not
+    printf "[1/4] Checking the config.json file ...\n"
     check_config_options
-    info "    👍 Done!"
+    info "\n    👍 Done!"
 
     # sync the config.json to dashboard/config_pub.json
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
 
-    # check if supervise is installed or not
-    use_supervise=true
-    if ! command -v supervise &> /dev/null; then
-        use_supervise=false
+
+    # 2. start downstream servers
+    printf "[2/4] Starting downstream servers ...\n\n"
+
+    # start chat server
+    printf "    * Start chat server ...⏳\n\n"
+    start_chat_server
+
+    # start embedding server
+    printf "    * Start embedding server ...⏳\n\n"
+    start_embedding_server
+
+    # start Qdrant instance if rag mode is true
+    if [ "$rag_mode" = true ]; then
+        printf "    * Starting Qdrant instance ...⏳\n"
+        start_qdrant_instance
     fi
 
-    if [ "$use_rag_api_server" = true ]; then
+    # start llama-nexus
+    printf "[3/4] Starting llama-nexus ...\n\n"
+    start_llama_nexus
+
+    # register downstream servers
+    printf "    * Register embedding server ...⏳\n\n"
+    register_embedding_server
+    printf "    * Registering chat server ...⏳\n\n"
+    register_chat_server
 
-        # 1. start a Qdrant instance
-        printf "[2/5] Starting Qdrant instance ...\n"
-
-        qdrant_already_running=false
-        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            if lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null ; then
-                qdrant_already_running=true
-            fi
-        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            printf "For Windows users, please run this script in WSL.\n"
-            exit 1
-        else
-            printf "Only support Linux, MacOS and Windows.\n"
-            exit 1
-        fi
-
-        if [ "$qdrant_already_running" = false ]; then
-            qdrant_executable="$gaianet_base_dir/bin/qdrant"
-            if [ -f "$qdrant_executable" ]; then
-                cd $gaianet_base_dir/qdrant
-                nohup $qdrant_executable > $log_dir/start-qdrant.log 2>&1 &
-                sleep 2
-                qdrant_pid=$!
-                echo $qdrant_pid > $gaianet_base_dir/qdrant.pid
-                info "\n    👍 Done! Qdrant instance started with pid: $qdrant_pid"
-            else
-                error "    ❌ Qdrant binary not found at $qdrant_executable\n\n"
-                exit 1
-            fi
-        fi
-
-        # 2. start rag-api-server
-        printf "[3/5] Starting LlamaEdge API Server ...\n\n"
-
-        # parse cli options for chat model
-        cd $gaianet_base_dir
-
-        url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
-        # gguf filename
-        chat_model_name=$(basename $url_chat_model)
-        # Directly attempt to extract "chat_name" and fallback to extracting from "chat" if empty
-        chat_name=$(grep '"chat_name":' config.json | sed -E 's/.*"chat_name": *"([^"]*)".*/\1/')
-        if [ -z "$chat_name" ]; then
-            chat_model_stem=$(basename "${url_chat_model%.*}")
-        else
-            chat_model_stem=$chat_name
-        fi
-
-        # parse context size for chat model
-        chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
-        # parse batch size for chat model
-        chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' config.json)
-        # parse ubatch size for chat model
-        if grep -q '"chat_ubatch_size":' config.json; then
-            chat_ubatch_size=$(awk -F'"' '/"chat_ubatch_size":/ {print $4}' config.json)
-        else
-            chat_ubatch_size=$chat_batch_size
-        fi
-        # parse prompt type for chat model
-        prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
-        # parse system prompt for chat model
-        rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' config.json)
-        # parse reverse prompt for chat model
-        reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-        # parse rag policy
-        if grep -q '"rag_policy":' config.json; then
-            rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' config.json)
-        else
-            rag_policy="system-message"
-        fi
-
-        url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
-        # gguf filename
-        embedding_model_name=$(basename $url_embedding_model)
-        # Directly attempt to extract "embedding_name" and fallback to extracting from "embedding" if empty
-        embedding_name=$(grep '"embedding_name":' config.json | sed -E 's/.*"embedding_name": *"([^"]*)".*/\1/')
-        if [ -z "$embedding_name" ]; then
-            embedding_model_stem=$(basename "${url_embedding_model%.*}")
-        else
-            embedding_model_stem=$embedding_name
-        fi
-
-        # parse context size for embedding model
-        embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
-        # parse batch size for embedding model
-        embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' config.json)
-        # parse ubatch size for embedding model
-        if grep -q '"embedding_ubatch_size":' config.json; then
-            embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' config.json)
-        else
-            embedding_ubatch_size=$embedding_batch_size
-        fi
-        # parse port for LlamaEdge API Server
-        llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
-        # parse qdrant limit
-        qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' config.json)
-        # parse qdrant score threshold
-        qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' config.json)
-        # parse context window
-        # check if context window is present in config.json
-        if grep -q '"context_window":' config.json; then
-            context_window=$(awk -F'"' '/"context_window":/ {print $4}' config.json)
-        else
-            context_window=1
-        fi
-
-        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-                printf "    Port $llamaedge_port is in use. Exit ...\n\n"
-
-                # stop the qdrant instance
-                if [ "$qdrant_already_running" = false ]; then
-
-                    # stop the Qdrant instance
-                    qdrant_pid=$gaianet_base_dir/qdrant.pid
-                    if [ -f $qdrant_pid ]; then
-                        printf "    Stopping Qdrant instance ...\n"
-                        kill -9 $(cat $qdrant_pid)
-                        rm $qdrant_pid
-                    fi
-
-                fi
-
-                exit 1
-            fi
-        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            printf "For Windows users, please run this script in WSL.\n"
-            exit 1
-        else
-            printf "Only support Linux, MacOS and Windows.\n"
-            exit 1
-        fi
-
-        cd $gaianet_base_dir
-        llamaedge_wasm="$gaianet_base_dir/rag-api-server.wasm"
-        if [ ! -f "$llamaedge_wasm" ]; then
-            error "❌ Not found rag-api-server.wasm at $gaianet_base_dir"
-            exit 1
-        fi
-
-        # command to start LlamaEdge API Server
-        cd $gaianet_base_dir
-        cmd=(wasmedge --dir .:./dashboard \
-        --env NODE_VERSION=$installer_version \
-        --nn-preload default:GGML:AUTO:$chat_model_name \
-        --nn-preload embedding:GGML:AUTO:$embedding_model_name \
-        rag-api-server.wasm \
-        --model-name $chat_model_stem,$embedding_model_stem \
-        --ctx-size $chat_ctx_size,$embedding_ctx_size \
-        --batch-size $chat_batch_size,$embedding_batch_size \
-        --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
-        --prompt-template $prompt_type,embedding \
-        --rag-policy $rag_policy \
-        --qdrant-collection-name $embedding_collection_name \
-        --qdrant-limit $qdrant_limit \
-        --qdrant-score-threshold $qdrant_score_threshold \
-        --context-window $context_window \
-        --include-usage \
-        --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port)
-
-        if $use_supervise; then
-            cmd_string=""
-            for i in "${cmd[@]}"; do
-                if [[ $i == *" "* ]]; then
-                    cmd_string+=\""$i"\"
-                else
-                    cmd_string+="$i"
-                fi
-                cmd_string+=" "
-            done
-        fi
-
-        # Add rag prompt if it exists
-        if [ -n "$rag_prompt" ]; then
-            cmd+=("--rag-prompt" "$rag_prompt")
-
-            if $use_supervise; then
-                cmd_string+="--rag-prompt \"$rag_prompt\" "
-            fi
-        fi
-
-        # Add reverse prompt if it exists
-        if [ -n "$reverse_prompt" ]; then
-            cmd+=("--reverse-prompt" "$reverse_prompt")
-
-            if $use_supervise; then
-                cmd_string+="--reverse-prompt \"$reverse_prompt\" "
-            fi
-        fi
-
-        printf "    * Start server with the command below ...⏳\n\n"
-        for i in "${cmd[@]}"; do
-            if [[ $i == *" "* ]]; then
-                printf "\"%s\" " "$i"
-            else
-                printf "%s " "$i"
-            fi
-        done
-        printf "\n\n"
-
-        if $use_supervise; then
-            # create `run` file for supervise
-            echo '#!/bin/bash' > $gaianet_base_dir/run
-            echo $cmd_string >> $gaianet_base_dir/run
-            chmod u+x $gaianet_base_dir/run
-        fi
-
-        # start api-server
-        retry_count=0
-        start_retry_cout=0
-        max_retries=3
-        while true; do
-
-            # start api-server
-            if $use_supervise; then
-                # start LlamaEdge API Server with supervise
-                if [ "$local_log_storage" -eq 1 ]; then
-                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
-                else
-                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
-                fi
-                sleep 2
-                supervise_pid=$!
-                echo $supervise_pid > $gaianet_base_dir/supervise.pid
-                printf "\n    Daemotools-Supervise started with pid: $supervise_pid\n"
-
-                # Get the status of the service
-                status=$(svstat $gaianet_base_dir)
-                # Extract the PID from the status
-                llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
-                # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
-                llamaedge_pid=$((llamaedge_pid + 1))
-                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-                info "\n    👍 LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
-
-            else
-                # start LlamaEdge API Server with nohup
-                if [ "$local_log_storage" -eq 1 ]; then
-                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
-                else
-                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/start-vector.log 2>&1 &
-                fi
-                sleep 2
-                llamaedge_pid=$!
-                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-                info "      👍 Done! LlamaEdge API Server started with pid: $llamaedge_pid"
-            fi
-
-            sleep 10
-            printf "    * Verify the LlamaEdge-RAG API Server. Please wait seconds ...⏳\n\n"
-            if [[ "$prompt_type" == *"tool"* ]]; then
-                status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
-                    -H 'accept:application/json' \
-                    -H 'Content-Type: application/json' \
-                    -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"get_name\",\"description\":\"Return your name\"}}], \"model\":\"$chat_model_stem\"}")
-            else
-                status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
-                    -H 'accept:application/json' \
-                    -H 'Content-Type: application/json' \
-                    -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
-            fi
-
-            curl_exit_status=$?
-
-            if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
-                info "      👍 Done! LlamaEdge-RAG API Server is ready"
-                break
-            else
-                tail -2 $log_dir/start-llamaedge.log
-
-                # stop the api-server
-                pkill -9 wasmedge || true
-
-                # stop supervise if it is running
-                if svok $gaianet_base_dir > /dev/null 2>&1; then
-                    svc -d $gaianet_base_dir
-                    svc -k $gaianet_base_dir
-                    svc -x $gaianet_base_dir
-                    supervise_pid=$gaianet_base_dir/supervise.pid
-                    if [ -f $supervise_pid ]; then
-                        rm $supervise_pid
-                    fi
-                    rm $gaianet_base_dir/run
-                    rm -rf $gaianet_base_dir/supervise
-                fi
-
-                # remove the pid file
-                llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-                if [ -f $llamaedge_pid ]; then
-                    rm $llamaedge_pid
-                fi
-
-                sleep 10  # wait for 10 seconds before retrying
-
-                ((start_retry_cout++))
-                if [ $start_retry_cout -ge $((max_retries + 1)) ]; then
-                    error "    ❌ Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
-
-                    # stop the Qdrant instance
-                    pkill -9 qdrant || true
-                    qdrant_pid=$gaianet_base_dir/qdrant.pid
-                    if [ -f $qdrant_pid ]; then
-                        rm $qdrant_pid
-                    fi
-
-                    # wait for 3 seconds before exiting
-                    sleep 3
-
-                    exit 1
-                else
-                    error "    ❌ LlamaEdge API Server is not ready. Retrying ($start_retry_cout)..."
-                fi
-            fi
-
-        done
-
-    else
-
-        # 2. start llama-api-server
-        printf "[2/4] Starting LlamaEdge API Server ...\n\n"
-
-        # parse cli options for chat model
-        cd $gaianet_base_dir
-
-        url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' config.json)
-        # gguf filename
-        chat_model_name=$(basename $url_chat_model)
-        # Directly attempt to extract "chat_name" and fallback to extracting from "chat" if empty
-        chat_name=$(grep '"chat_name":' config.json | sed -E 's/.*"chat_name": *"([^"]*)".*/\1/')
-        if [ -z "$chat_name" ]; then
-            chat_model_stem=$(basename "${url_chat_model%.*}")
-        else
-            chat_model_stem=$chat_name
-        fi
-
-        # parse context size for chat model
-        chat_ctx_size=$(awk -F'"' '/"chat_ctx_size":/ {print $4}' config.json)
-        # parse batch size for chat model
-        chat_batch_size=$(awk -F'"' '/"chat_batch_size":/ {print $4}' config.json)
-        # parse ubatch size for chat model
-        if grep -q '"chat_ubatch_size":' config.json; then
-            chat_ubatch_size=$(awk -F'"' '/"chat_ubatch_size":/ {print $4}' config.json)
-        else
-            chat_ubatch_size=$chat_batch_size
-        fi
-        # parse prompt type for chat model
-        prompt_type=$(awk -F'"' '/"prompt_template":/ {print $4}' config.json)
-        # parse reverse prompt for chat model
-        reverse_prompt=$(awk -F'"' '/"reverse_prompt":/ {print $4}' config.json)
-
-        url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' config.json)
-        # gguf filename
-        embedding_model_name=$(basename $url_embedding_model)
-        # Directly attempt to extract "embedding_name" and fallback to extracting from "embedding" if empty
-        embedding_name=$(grep '"embedding_name":' config.json | sed -E 's/.*"embedding_name": *"([^"]*)".*/\1/')
-        if [ -z "$embedding_name" ]; then
-            embedding_model_stem=$(basename "${url_embedding_model%.*}")
-        else
-            embedding_model_stem=$embedding_name
-        fi
-
-        # parse context size for embedding model
-        embedding_ctx_size=$(awk -F'"' '/"embedding_ctx_size":/ {print $4}' config.json)
-        # parse batch size for embedding model
-        embedding_batch_size=$(awk -F'"' '/"embedding_batch_size":/ {print $4}' config.json)
-        # parse ubatch size for embedding model
-        if grep -q '"embedding_ubatch_size":' config.json; then
-            embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' config.json)
-        else
-            embedding_ubatch_size=$embedding_batch_size
-        fi
-        # parse port for LlamaEdge API Server
-        llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' config.json)
-        # check port
-        if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            if lsof -Pi :$llamaedge_port -sTCP:LISTEN -t >/dev/null ; then
-                error "    ❌ Port $llamaedge_port is in use. Exit ..."
-                exit 1
-            fi
-        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            error "❌ For Windows users, please run this script in WSL. Exit ..."
-            exit 1
-        else
-            error "❌ Only support Linux, MacOS and Windows. Exit ..."
-            exit 1
-        fi
-
-        cd $gaianet_base_dir
-        llamaedge_wasm="$gaianet_base_dir/llama-api-server.wasm"
-        if [ ! -f "$llamaedge_wasm" ]; then
-            error "❌ Not found llama-api-server.wasm in $gaianet_base_dir\n"
-            exit 1
-        fi
-
-        # command to start LlamaEdge API Server
-        cd $gaianet_base_dir
-        cmd=(wasmedge --dir .:./dashboard \
-        --env NODE_VERSION=$installer_version \
-        --nn-preload default:GGML:AUTO:$chat_model_name \
-        --nn-preload embedding:GGML:AUTO:$embedding_model_name \
-        llama-api-server.wasm \
-        --model-name $chat_model_stem,$embedding_model_stem \
-        --ctx-size $chat_ctx_size,$embedding_ctx_size \
-        --batch-size $chat_batch_size,$embedding_batch_size \
-        --ubatch-size $chat_ubatch_size,$embedding_ubatch_size \
-        --prompt-template $prompt_type,embedding \
-        --include-usage \
-        --web-ui ./ \
-        --socket-addr 0.0.0.0:$llamaedge_port)
-
-        if $use_supervise; then
-            cmd_string=""
-            for i in "${cmd[@]}"; do
-                if [[ $i == *" "* ]]; then
-                    cmd_string+=\""$i"\"
-                else
-                    cmd_string+="$i"
-                fi
-                cmd_string+=" "
-            done
-        fi
-
-        # Add reverse prompt if it exists
-        if [ -n "$reverse_prompt" ]; then
-            cmd+=("--reverse-prompt" "$reverse_prompt")
-
-            if $use_supervise; then
-                cmd_string+="--reverse-prompt \"$reverse_prompt\" "
-            fi
-        fi
-
-        printf "    * Start server with the command below ...⏳\n\n"
-        for i in "${cmd[@]}"; do
-            if [[ $i == *" "* ]]; then
-                printf "\"%s\" " "$i"
-            else
-                printf "%s " "$i"
-            fi
-        done
-        printf "\n\n"
-
-        if $use_supervise; then
-            # create `run` file for supervise
-            echo '#!/bin/bash' > $gaianet_base_dir/run
-            echo $cmd_string >> $gaianet_base_dir/run
-            chmod u+x $gaianet_base_dir/run
-        fi
-
-        # start api-server
-        retry_count=0
-        max_retries=3
-        while true; do
-
-            # start api-server
-            if $use_supervise; then
-                # start LlamaEdge API Server with supervise
-                if [ "$local_log_storage" -eq 1 ]; then
-                    nohup supervise $gaianet_base_dir > $log_dir/start-llamaedge.log 2>&1 &
-                else
-                    nohup supervise $gaianet_base_dir | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
-                fi
-                sleep 2
-                supervise_pid=$!
-                echo $supervise_pid > $gaianet_base_dir/supervise.pid
-                info "    Daemotools-Supervise started with pid: $supervise_pid"
-
-                # Get the status of the service
-                status=$(svstat $gaianet_base_dir)
-                # Extract the PID from the status
-                llamaedge_pid=$(echo $status | awk '{print $4}' | tr -d ')')
-                # The reason of incrementing the PID by 1 is that the PID returned by `svstat` is less 1 than the PID returned by `pgrep`
-                llamaedge_pid=$((llamaedge_pid + 1))
-                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-                info "    LlamaEdge-RAG API Server started with pid: $llamaedge_pid"
-
-            else
-                # start LlamaEdge API Server with nohup
-                if [ "$local_log_storage" -eq 1 ]; then
-                    nohup "${cmd[@]}" > $log_dir/start-llamaedge.log 2>&1 &
-                else
-                    nohup "${cmd[@]}" | vector --config $gaianet_base_dir/vector.toml > $log_dir/vector.log 2>&1 &
-                fi
-                sleep 2
-                llamaedge_pid=$!
-                echo $llamaedge_pid > $gaianet_base_dir/llamaedge.pid
-                info "      👍 Done! LlamaEdge API Server started with pid: $llamaedge_pid"
-            fi
-
-            sleep 10
-            printf "    * Verify the LlamaEdge API Server. Please wait seconds ...⏳\n\n"
-            if [[ "$prompt_type" == *"tool"* ]]; then
-                status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
-                    -H 'accept:application/json' \
-                    -H 'Content-Type: application/json' \
-                    -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"get_name\",\"description\":\"Return your name\"}}], \"model\":\"$chat_model_stem\"}")
-            else
-                status_code=$(curl -o /dev/null -s -w "%{http_code}\n" \
-                    -X POST http://localhost:$llamaedge_port/v1/chat/completions \
-                    -H 'accept:application/json' \
-                    -H 'Content-Type: application/json' \
-                    -d "{\"messages\":[{\"role\":\"user\", \"content\": \"What is your name?\"}], \"model\":\"$chat_model_stem\"}")
-            fi
-
-            curl_exit_status=$?
-
-            if [ $curl_exit_status -eq 0 ] && [ "$status_code" -eq 200 ]; then
-                info "      👍 Done! LlamaEdge API Server is ready."
-                break
-            else
-                tail -2 $log_dir/start-llamaedge.log
-
-                # stop supervise if it is running
-                if svok $gaianet_base_dir > /dev/null 2>&1; then
-                    svc -d $gaianet_base_dir
-                    svc -k $gaianet_base_dir
-                    svc -x $gaianet_base_dir
-                    supervise_pid=$gaianet_base_dir/supervise.pid
-                    if [ -f $supervise_pid ]; then
-                        rm $supervise_pid
-                    fi
-                    rm $gaianet_base_dir/run
-                    rm -rf $gaianet_base_dir/supervise
-                fi
-
-                # stop the api-server
-                pkill -9 wasmedge || true
-
-                # remove the pid file
-                llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-                if [ -f $llamaedge_pid ]; then
-                    rm $llamaedge_pid
-                fi
-
-                sleep 10  # wait for 10 seconds before retrying
-
-                ((retry_count++))
-                if [ $retry_count -ge $((max_retries + 1)) ]; then
-                    error "    ❌ Failed to start LlamaEdge API Server after $max_retries retries. Exiting ..."
-
-                    # wait for 3 seconds before exiting
-                    sleep 3
-
-                    exit 1
-                else
-                    error "    ❌ Failed to start LlamaEdge API Server. Retrying ($retry_count)..."
-                fi
-            fi
-
-        done
-
-    fi
 
     # 3. start gaia-frp
     if [ "$local_only" -eq 0 ]; then
         # start gaia-frp
-        if [ "$use_rag_api_server" = true ]; then
-            printf "[4/5] Starting gaia-frp ...\n\n"
-        else
-            printf "[3/4] Starting gaia-frp ...\n\n"
-        fi
+        printf "[4/4] Starting gaia-frp ...\n\n"
 
         nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
         sleep 2
@@ -1078,50 +1034,10 @@ start() {
 
         domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
         info "    ❗ The GaiaNet node is started at: https://$subdomain.$domain"
-    fi
-    if [ "$local_only" -eq 1 ]; then
+    else
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
     fi
 
-
-    # 4. start server assistant
-    if [ "$use_rag_api_server" = true ]; then
-        printf "[5/5] Starting Server Assistant ...\n\n"
-    else
-        printf "[4/4] Starting Server Assistant ...\n\n"
-    fi
-    sleep 2
-
-    # parse system prompt
-    system_prompt=$(awk -F'"' '/"system_prompt":/ {print $4}' $gaianet_base_dir/config.json)
-    # parse rag prompt
-    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)
-
-    # start assistant
-    export RUST_LOG=info
-    nohup $gaianet_base_dir/bin/gaias --server-socket-addr 127.0.0.1:$llamaedge_port --gaianet-dir $gaianet_base_dir --log $gaianet_base_dir/log/assistant.log --interval 60 > /dev/null 2>&1 &
-
-    sleep 2
-
-    # capture the pid of the assistant
-    gaias_pid=$!
-
-    # capture the exit status
-    status=$?
-
-    echo $gaias_pid > $gaianet_base_dir/gaias.pid
-
-    # check if the assistant has started successfully
-    if [ $status -ne 0 ]; then
-        error "    ❌ Failed to start Server Assistant. Exiting ..."
-
-        # stop the running services
-        stop_force
-
-        exit 1
-    else
-        info "    👍 Done! Server assistant started with pid: $gaias_pid"
-    fi
 
     printf "✅ COMPLETED! GaiaNet node is started successfully.\n\n"
     info "👉 To stop the GaiaNet node, run the command: gaianet stop\n❗ You can close this terminal window safely now."
@@ -1131,96 +1047,13 @@ start() {
 
 # * stop subcommand
 
-# deprecated: stop the Qdrant instance, rag-api-server, and gaia-frp
-stop() {
-    # Check if "gaianet" directory exists in $HOME
-    if [ ! -d "$gaianet_base_dir" ]; then
-        printf "Not found $gaianet_base_dir\n"
-        exit 1
-    fi
-
-    # stop the Qdrant instance
-    qdrant_pid=$gaianet_base_dir/qdrant.pid
-    if [ -f $qdrant_pid ]; then
-        printf "[+] Stopping Qdrant instance ...\n"
-        kill -9 $(cat $qdrant_pid)
-        rm $qdrant_pid
-    fi
-
-    # stop api-server
-    if svok $gaianet_base_dir > /dev/null 2>&1; then
-        # stop supervise
-        printf "[+] Stopping Daemontools-Supervise ...\n"
-        svc -d $gaianet_base_dir
-        svc -k $gaianet_base_dir
-        svc -x $gaianet_base_dir
-        supervise_pid=$gaianet_base_dir/supervise.pid
-        if [ -f $supervise_pid ]; then
-            # kill -9 $(cat $supervise_pid)
-            rm $supervise_pid
-        fi
-        rm $gaianet_base_dir/run
-        rm -rf $gaianet_base_dir/supervise
-
-        # stop api-server
-        llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-        if [ -f $llamaedge_pid ]; then
-            printf "[+] Stopping API server ...\n"
-            kill -9 $(cat $llamaedge_pid)
-            rm $llamaedge_pid
-        fi
-
-    else
-        # stop api-server
-        llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-        if [ -f $llamaedge_pid ]; then
-            printf "[+] Stopping API server ...\n"
-            kill -9 $(cat $llamaedge_pid)
-            rm $llamaedge_pid
-        fi
-    fi
-
-    # stop gaia-frp
-    gaia_frp_pid=$gaianet_base_dir/gaia-frp.pid
-    if [ -f $gaia_frp_pid ]; then
-        printf "[+] Stopping gaia-frp ...\n"
-        kill -9 $(cat $gaia_frp_pid)
-        rm $gaia_frp_pid
-    fi
-
-    exit 0
-}
-
 # force stop the Qdrant instance, rag-api-server, and gaia-frp
 stop_force() {
-    local_log_storage=1
-    if command -v vector > /dev/null 2>&1 && [ -f $gaianet_base_dir/vector.toml ]; then
-        local_log_storage=0
-    fi
-
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
 
-    if command -v supervise &> /dev/null; then
-        # stop supervise if it is running
-        if svok $gaianet_base_dir > /dev/null 2>&1; then
-            svc -d $gaianet_base_dir
-            svc -k $gaianet_base_dir
-            svc -x $gaianet_base_dir
-            supervise_pid=$gaianet_base_dir/supervise.pid
-            if [ -f $supervise_pid ]; then
-                rm $supervise_pid
-            fi
-            rm $gaianet_base_dir/run
-            rm -rf $gaianet_base_dir/supervise
-        fi
-    fi
-
     pkill -9 qdrant || true
-    pkill -9 gaias || true
+    pkill -9 llama-nexus || true
     pkill -9 wasmedge || true
-    if [ "$local_log_storage" -eq 0 ]; then
-        pkill -9 vector || true
-    fi
     pkill -9 frpc || true
 
     qdrant_pid=$gaianet_base_dir/qdrant.pid
@@ -1228,19 +1061,19 @@ stop_force() {
         rm $qdrant_pid
     fi
 
-    gaias_pid=$gaianet_base_dir/gaias.pid
-    if [ -f $gaias_pid ]; then
-        rm $gaias_pid
+    chat_server_pid=$gaianet_base_dir/chat_server.pid
+    if [ -f $chat_server_pid ]; then
+        rm $chat_server_pid
     fi
 
-    llamaedge_pid=$gaianet_base_dir/llamaedge.pid
-    if [ -f $llamaedge_pid ]; then
-        rm $llamaedge_pid
+    embedding_server_pid=$gaianet_base_dir/embedding_server.pid
+    if [ -f $embedding_server_pid ]; then
+        rm $embedding_server_pid
     fi
 
-    vector_pid=$gaianet_base_dir/vector.pid
-    if [ -f $vector_pid ]; then
-        rm $vector_pid
+    llama_nexus_pid=$gaianet_base_dir/llama_nexus.pid
+    if [ -f $llama_nexus_pid ]; then
+        rm $llama_nexus_pid
     fi
 
     gaia_frp_pid=$gaianet_base_dir/gaia-frp.pid
@@ -1848,7 +1681,7 @@ case $subcommand in
     run|start)
         local=0
 
-	force_rag=false
+	    force_rag=false
 
         while (( "$#" )); do
             case "$1" in
