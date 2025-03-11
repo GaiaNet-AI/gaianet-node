@@ -412,6 +412,20 @@ if [ "$upgrade" -eq 1 ]; then
             ' "$gaianet_base_dir/config.json"
         fi
 
+        if ! grep -q '"llamaedge_chat_port":' $gaianet_base_dir/config.json; then
+            # Prepend the field to the beginning of the JSON object
+            sed_in_place '2i\
+  "llamaedge_chat_port": "9068",
+            ' "$gaianet_base_dir/config.json"
+        fi
+
+        if ! grep -q '"llamaedge_embedding_port":' $gaianet_base_dir/config.json; then
+            # Prepend the field to the beginning of the JSON object
+            sed_in_place '2i\
+  "llamaedge_embedding_port": "9069",
+            ' "$gaianet_base_dir/config.json"
+        fi
+
         info "    * The config.json is recovered in $gaianet_base_dir"
     else
         error "    * Failed to recover the config.json. Reason: the config.json does not exist in $gaianet_base_dir/backup/."
