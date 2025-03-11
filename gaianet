@@ -810,7 +810,7 @@ start_llama_nexus() {
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
     # set node version for llama-nexus
-    export NODE_VERSION=version
+    export NODE_VERSION=$version
 
     # check if llama-nexus binary exists
     llama_nexus="$gaianet_base_dir/bin/llama-nexus"
