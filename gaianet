@@ -866,6 +866,8 @@ start_llama_nexus() {
         fi
         stop_force
         exit 1
+    else
+        rm $log_dir/start-gaia-nexus.log
     fi
     echo $llama_nexus_pid > $gaianet_base_dir/llama_nexus.pid
     info "      👍 Done! gaia-nexus started with pid: $llama_nexus_pid"
@@ -906,12 +908,12 @@ register_embedding_server() {
     else
         error "      ❌ Failed to register embedding server. Status code: $status_code"
         error "      Response: $response_body"
-        error "      Headers: $(cat $headers_file)"
+        # error "      Headers: $(cat $headers_file)"
 
         # Delete temporary file
         rm -f $headers_file
 
-        exit 1
+        # exit 1
     fi
 }
 
@@ -950,12 +952,12 @@ register_chat_server() {
     else
         error "      ❌ Failed to register chat server. Status code: $status_code"
         error "      Response: $response_body"
-        error "      Headers: $(cat $headers_file)"
+        # error "      Headers: $(cat $headers_file)"
 
         # Delete temporary file
         rm -f $headers_file
 
-        exit 1
+        # exit 1
     fi
 }
 
