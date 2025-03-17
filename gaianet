@@ -771,10 +771,10 @@ start_qdrant_instance() {
 
 start_llama_nexus() {
 
-    # parse domain for llama-nexus
+    # parse domain for gaia-nexus
     domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
 
-    # parse deviceId for llama-nexus
+    # parse deviceId for gaia-nexus
     deviceId=$(grep '^metadatas.deviceId' $gaianet_base_dir/gaia-frp/frpc.toml | sed 's/.*= "//; s/"//g')
 
     qdrant_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
@@ -809,26 +809,26 @@ start_llama_nexus() {
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
-    # set node version for llama-nexus
+    # set node version for gaia-nexus
     export NODE_VERSION=$version
 
-    # check if llama-nexus binary exists
-    llama_nexus="$gaianet_base_dir/bin/llama-nexus"
+    # check if gaia-nexus binary exists
+    llama_nexus="$gaianet_base_dir/bin/gaia-nexus"
     if [ ! -f "$llama_nexus" ]; then
-        error "❌ Not found llama-nexus binary at $gaianet_base_dir/bin"
+        error "❌ Not found gaia-nexus binary at $gaianet_base_dir/bin"
         exit 1
     fi
 
-    # start llama-nexus
+    # start gaia-nexus
     cd $gaianet_base_dir
     if [ "$rag_mode" = true ]; then
-        nohup $gaianet_base_dir/bin/llama-nexus \
+        nohup $gaianet_base_dir/bin/gaia-nexus \
         --rag \
         --check-health \
         --check-health-interval 60 \
         --web-ui $gaianet_base_dir/dashboard \
         --log-destination file \
-        --log-file $log_dir/llama-nexus.log \
+        --log-file $log_dir/gaia-nexus.log \
         gaia \
         --domain $domain \
         --device-id $deviceId \
@@ -839,43 +839,43 @@ start_llama_nexus() {
         --rag-prompt "'$rag_prompt'" \
         --rag-context-window $context_window \
         --rag-policy $rag_policy \
-        --port $llamaedge_port > $log_dir/start-llama-nexus.log 2>&1 &
+        --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
     else
-        nohup $gaianet_base_dir/bin/llama-nexus \
+        nohup $gaianet_base_dir/bin/gaia-nexus \
         --check-health \
         --check-health-interval 60 \
         --web-ui $gaianet_base_dir/dashboard \
         --log-destination file \
-        --log-file $log_dir/llama-nexus.log \
+        --log-file $log_dir/gaia-nexus.log \
         gaia \
         --domain $domain \
         --device-id $deviceId \
-        --port $llamaedge_port > $log_dir/start-llama-nexus.log 2>&1 &
+        --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
     fi
     llama_nexus_pid=$!
 
     # Check if the command started successfully
     sleep 3
     if ! ps -p $llama_nexus_pid > /dev/null 2>&1; then
-        error "    ❌ Failed to start llama-nexus. Please check the log at $log_dir/start-llama-nexus.log"
+        error "    ❌ Failed to start gaia-nexus. Please check the log at $log_dir/start-gaia-nexus.log"
         # Output the last few lines of the log file to help diagnose the problem
-        if [ -f "$log_dir/start-llama-nexus.log" ]; then
+        if [ -f "$log_dir/start-gaia-nexus.log" ]; then
             printf "\nLast few lines of the log file:\n"
-            tail -5 $log_dir/start-llama-nexus.log
+            tail -5 $log_dir/start-gaia-nexus.log
             printf "\n"
         fi
         stop_force
         exit 1
     fi
     echo $llama_nexus_pid > $gaianet_base_dir/llama_nexus.pid
-    info "      👍 Done! llama-nexus started with pid: $llama_nexus_pid"
+    info "      👍 Done! gaia-nexus started with pid: $llama_nexus_pid"
 }
 
 register_embedding_server() {
     # parse port for embedding server
     llamaedge_embedding_port=$(awk -F'"' '/"llamaedge_embedding_port":/ {print $4}' $gaianet_base_dir/config.json)
 
-    # parse port for llama-nexus
+    # parse port for gaia-nexus
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
     # register embedding server
@@ -919,7 +919,7 @@ register_chat_server() {
     # parse port for chat server
     llamaedge_chat_port=$(awk -F'"' '/"llamaedge_chat_port":/ {print $4}' $gaianet_base_dir/config.json)
 
-    # parse port for llama-nexus
+    # parse port for gaia-nexus
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
     # register chat server
@@ -1007,8 +1007,8 @@ start() {
         start_qdrant_instance
     fi
 
-    # start llama-nexus
-    printf "[3/4] Starting llama-nexus ...\n\n"
+    # start gaia-nexus
+    printf "[3/4] Starting gaia-nexus ...\n\n"
     start_llama_nexus
 
     # register downstream servers
@@ -1052,7 +1052,7 @@ stop_force() {
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
 
     pkill -9 qdrant || true
-    pkill -9 llama-nexus || true
+    pkill -9 gaia-nexus || true
     pkill -9 wasmedge || true
     pkill -9 frpc || true
 
