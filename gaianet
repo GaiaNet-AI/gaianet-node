@@ -908,12 +908,15 @@ register_embedding_server() {
     else
         error "      ❌ Failed to register embedding server. Status code: $status_code"
         error "      Response: $response_body"
-        # error "      Headers: $(cat $headers_file)"
+        error "      Headers: $(cat $headers_file)"
 
         # Delete temporary file
         rm -f $headers_file
 
-        # exit 1
+        # stop
+        stop_force
+
+        exit 1
     fi
 }
 
@@ -952,12 +955,15 @@ register_chat_server() {
     else
         error "      ❌ Failed to register chat server. Status code: $status_code"
         error "      Response: $response_body"
-        # error "      Headers: $(cat $headers_file)"
+        error "      Headers: $(cat $headers_file)"
 
         # Delete temporary file
         rm -f $headers_file
 
-        # exit 1
+        # stop
+        stop_force
+
+        exit 1
     fi
 }
 
