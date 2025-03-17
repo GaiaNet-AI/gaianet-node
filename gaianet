@@ -769,7 +769,7 @@ start_qdrant_instance() {
 
 }
 
-start_llama_nexus() {
+start_gaia_nexus() {
 
     # parse domain for gaia-nexus
     domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
@@ -830,8 +830,7 @@ start_llama_nexus() {
         --log-destination file \
         --log-file $log_dir/gaia-nexus.log \
         gaia \
-        --domain $domain \
-        --device-id $deviceId \
+        --gaianet-dir $gaianet_base_dir \
         --vdb-url http://localhost:6333 \
         --vdb-collection-name $qdrant_collection_name \
         --vdb-limit $qdrant_limit \
@@ -848,8 +847,7 @@ start_llama_nexus() {
         --log-destination file \
         --log-file $log_dir/gaia-nexus.log \
         gaia \
-        --domain $domain \
-        --device-id $deviceId \
+        --gaianet-dir $gaianet_base_dir \
         --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
     fi
     llama_nexus_pid=$!
@@ -1017,7 +1015,7 @@ start() {
 
     # start gaia-nexus
     printf "[3/4] Starting gaia-nexus ...\n\n"
-    start_llama_nexus
+    start_gaia_nexus
 
     # register downstream servers
     printf "    * Register embedding server ...⏳\n\n"
