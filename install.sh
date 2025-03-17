@@ -595,14 +595,14 @@ info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_di
 
 
 # 8. Install LlamaEdge-Nexus
-printf "[+] Installing llama-nexus ...\n"
+printf "[+] Installing gaia-nexus ...\n"
 if [ "$(uname)" == "Darwin" ]; then
 
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-apple-darwin-x86_64.tar.gz $bin_dir/llama-nexus.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-nexus-release/releases/download/$gaia_nexus_version/gaia-nexus-apple-darwin-x86_64.tar.gz $bin_dir/gaia-nexus.tar.gz
 
     elif [ "$target" = "arm64" ]; then
-        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-apple-darwin-aarch64.tar.gz $bin_dir/llama-nexus.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-nexus-release/releases/download/$gaia_nexus_version/gaia-nexus-apple-darwin-aarch64.tar.gz $bin_dir/gaia-nexus.tar.gz
 
     else
         error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
@@ -612,10 +612,10 @@ if [ "$(uname)" == "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-unknown-linux-gnu-x86_64.tar.gz $bin_dir/llama-nexus.tar.gz
+        check_curl https://github.com/GaiaNet-AI/gaia-nexus-release/releases/download/$gaia_nexus_version/gaia-nexus-unknown-linux-gnu-x86_64.tar.gz $bin_dir/gaia-nexus.tar.gz
 
-    elif [ "$target" = "aarch64" ]; then
-        check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$llama_nexus_version/llama-nexus-unknown-linux-gnu-aarch64.tar.gz $bin_dir/llama-nexus.tar.gz
+    # elif [ "$target" = "aarch64" ]; then
+    #     check_curl https://github.com/LlamaEdge/LlamaEdge-Nexus/releases/download/$gaia_nexus_version/llama-nexus-unknown-linux-gnu-aarch64.tar.gz $bin_dir/llama-nexus.tar.gz
 
     else
         error " * Unsupported architecture: $target, only support x86_64 on Linux"
@@ -626,11 +626,11 @@ else
     error "Only support Linux, MacOS and Windows(WSL)."
     exit 1
 fi
-# extract the llama-nexus binary
-tar -xzf $bin_dir/llama-nexus.tar.gz -C $bin_dir llama-nexus
-rm $bin_dir/llama-nexus.tar.gz
+# extract the gaia-nexus binary
+tar -xzf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus
+rm $bin_dir/gaia-nexus.tar.gz
 
-info "    👍 Done! The llama-nexus is downloaded in $bin_dir"
+info "    👍 Done! The gaia-nexus is downloaded in $bin_dir"
 
 
 # 9. Download dashboard to $gaianet_base_dir
