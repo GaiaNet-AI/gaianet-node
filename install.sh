@@ -17,7 +17,7 @@ ggml_bn="b4875"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 assistant_version="0.4.3"
-qdrant_version="v1.11.4"
+qdrant_version="v1.13.4"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
