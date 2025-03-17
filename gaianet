@@ -853,7 +853,7 @@ start_gaia_nexus() {
     llama_nexus_pid=$!
 
     # Check if the command started successfully
-    sleep 3
+    sleep 10
     if ! ps -p $llama_nexus_pid > /dev/null 2>&1; then
         error "    ❌ Failed to start gaia-nexus. Please check the log at $log_dir/start-gaia-nexus.log"
         # Output the last few lines of the log file to help diagnose the problem
