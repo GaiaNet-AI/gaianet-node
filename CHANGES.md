@@ -4,8 +4,8 @@
 
 In the `log` directory, there are the following log files:
 
-- `start-llama-nexus.log` keeps the log messages related to starting the `llama-nexus` server. If empty, means the server is running correctly.
-- `llama-nexus.log` keeps the log messages related to the running `llama-nexus` server.
+- `start-gaia-nexus.log` keeps the log messages related to starting the `gaia-nexus` server. If empty, means the server is running correctly.
+- `gaia-nexus.log` keeps the log messages related to the running `gaia-nexus` server.
 - `chat-server.log` keeps the log messages related to the running chat server.
 - `embedding-server.log` keeps the log messages related to the running embedding server.
 
@@ -71,7 +71,7 @@ The `/v1/info` endpoint returns the server info of a Gaia node. The following JS
   - `chat-server-cb38ab65-877d-4a55-baff-5ccc5e82af70`: the `ServerId` of the running chat server.
   - `embeddings-server-dd14e37d-defb-4088-95bf-34ae2ca389c3`: the `ServerId` of the running embedding server.
 
-Note that from `0.5.0`, the server info is ONLY pushed after a new downstream node is registered to the `llama-nexus` server. The `push` operation will try 3 times if it fails.
+Note that from `0.5.0`, the server info is ONLY pushed after a new downstream node is registered to the `gaia-nexus` server. The `push` operation will try 3 times if it fails.
 
 ## Health Status
 
