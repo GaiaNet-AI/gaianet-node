@@ -10,7 +10,6 @@ cwd=$(pwd)
 
 repo_branch="feat-integrate-nexus"
 version="0.4.24"
-rag_api_server_version="0.13.12"
 llama_api_server_version="0.16.13"
 gaia_nexus_version="0.1.0"
 wasmedge_version="0.14.1"
