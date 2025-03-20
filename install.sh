@@ -9,9 +9,9 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
-version="0.4.23"
-rag_api_server_version="0.13.10"
-llama_api_server_version="0.16.11"
+version="0.4.24"
+rag_api_server_version="0.13.11"
+llama_api_server_version="0.16.12"
 wasmedge_version="0.14.1"
 ggml_bn="b4917"
 vector_version="0.38.0"
