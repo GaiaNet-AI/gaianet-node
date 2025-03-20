@@ -829,7 +829,6 @@ start_gaia_nexus() {
         --web-ui $gaianet_base_dir/dashboard \
         --log-destination file \
         --log-file $log_dir/gaia-nexus.log \
-        gaia \
         --gaianet-dir $gaianet_base_dir \
         --vdb-url http://localhost:6333 \
         --vdb-collection-name $qdrant_collection_name \
@@ -846,7 +845,6 @@ start_gaia_nexus() {
         --web-ui $gaianet_base_dir/dashboard \
         --log-destination file \
         --log-file $log_dir/gaia-nexus.log \
-        gaia \
         --gaianet-dir $gaianet_base_dir \
         --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
     fi
