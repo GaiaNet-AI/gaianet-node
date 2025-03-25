@@ -1011,8 +1011,24 @@ start() {
         start_qdrant_instance
     fi
 
-    # start gaia-nexus
-    printf "[3/4] Starting gaia-nexus ...\n\n"
+    # 3. start gaia-frp
+    if [ "$local_only" -eq 0 ]; then
+        # start gaia-frp
+        printf "[3/4] Starting gaia-frp ...\n\n"
+
+        nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
+        sleep 2
+        gaia_frp_pid=$!
+        echo $gaia_frp_pid > $gaianet_base_dir/gaia-frp.pid
+        info "    👍 Done! gaia-frp started with pid: $gaia_frp_pid"
+
+    else
+        printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
+    fi
+
+
+    # 4. start gaia-nexus
+    printf "[4/4] Starting gaia-nexus ...\n\n"
     start_gaia_nexus
 
     # register downstream servers
@@ -1022,28 +1038,19 @@ start() {
     register_chat_server
 
 
-    # 3. start gaia-frp
+
     if [ "$local_only" -eq 0 ]; then
-        # start gaia-frp
-        printf "[4/4] Starting gaia-frp ...\n\n"
-
-        nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
-        sleep 2
-        gaia_frp_pid=$!
-        echo $gaia_frp_pid > $gaianet_base_dir/gaia-frp.pid
-        info "    👍 Done! gaia-frp started with pid: $gaia_frp_pid"
-
         # Extract the subdomain from frpc.toml
         subdomain=$(grep "subdomain" $gaianet_base_dir/gaia-frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
-
         domain=$(awk -F'"' '/"domain":/ {print $4}' $gaianet_base_dir/config.json)
-        info "    ❗ The GaiaNet node is started at: https://$subdomain.$domain"
+
+        info "✅ COMPLETED! The GaiaNet node is started at: https://$subdomain.$domain"
+
     else
-        printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
+
+        info "✅ COMPLETED! The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port"
     fi
 
-
-    printf "✅ COMPLETED! GaiaNet node is started successfully.\n\n"
     info "👉 To stop the GaiaNet node, run the command: gaianet stop\n❗ You can close this terminal window safely now."
 
     exit 0
