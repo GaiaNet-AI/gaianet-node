@@ -17,7 +17,7 @@
     "embedding_ctx_size": "8192",
     "embedding_batch_size": "8192",
     "embedding_ubatch_size": "8192",
-    "snapshot": "https://huggingface.co/datasets/gaianet/paris/resolve/main/paris_768_nomic-embed-text-v1.5-f16.snapshot",
+    "snapshot": "",
     "embedding_collection_name": "default",
     "qdrant_limit": "1",
     "qdrant_score_threshold": "0.5",
