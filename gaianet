@@ -823,6 +823,7 @@ start_gaia_nexus() {
     cd $gaianet_base_dir
     if [ "$rag_mode" = true ]; then
         nohup $gaianet_base_dir/bin/gaia-nexus \
+        --mcp \
         --rag \
         --check-health \
         --check-health-interval 60 \
@@ -840,6 +841,7 @@ start_gaia_nexus() {
         --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
     else
         nohup $gaianet_base_dir/bin/gaia-nexus \
+        --mcp \
         --check-health \
         --check-health-interval 60 \
         --web-ui $gaianet_base_dir/dashboard \
