@@ -12,7 +12,7 @@
   </a>
 </p>
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | [Russian (русскийة)](README-ru.md) | Нам нужна ваша помощь, чтобы перевести этот README на ваш родной язык.
+[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | [Russian (русский)](README-ru.md) | Нам нужна ваша помощь, чтобы перевести этот README на ваш родной язык.
 
 Нравится наша работа? ⭐ Поставьте нам звезду!
 
