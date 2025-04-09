@@ -269,7 +269,7 @@ Have fun!
 
 Looking for the docs? Check the [documentation](https://docs.gaianet.ai/intro) or the [Contributing Guide](https://github.com/Gaianet-AI/gaianet-node/blob/main/.github/CONTRIBUTING.md) out. We also recommend reading [Awesome-Gaia](https://github.com/GaiaNet-AI/awesome-gaia) for a curated list of tools, projects, and resources from the Gaia community
 
-Want to talk to the community? Hop in our [Telegram](https://t.me/Gaianet_AI) and share your ideas and what you've build with Gaianet.
+Want to talk to the community? Hop in our [Telegram](https://t.me/+a0bJInD5lsYxNDJl) and share your ideas and what you've build with Gaianet.
 
 Find a bug? Head over to our [issue tracker](https://github.com/GaiaNet-AI/gaianet-node/issues) and we'll do our best to help. We love pull requests, too!
 
