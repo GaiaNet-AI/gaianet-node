@@ -55,9 +55,5 @@ jobs:
           gaianet stop
           echo "LOGFILE: start-llamaedge.log\n\n"
           cat ~/gaianet/log/start-llamaedge.log
-          echo "LOGFILE: init-qdrant.log\n\n"
-          cat ~/gaianet/log/init-qdrant.log
-          echo "LOGFILE: start-qdrant.log\n\n"
-          cat ~/gaianet/log/start-qdrant.log
           echo "LOGFILE: start-gaia-frp.log\n\n"
           cat ~/gaianet/log/start-gaia-frp.log
