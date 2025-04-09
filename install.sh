@@ -9,11 +9,11 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="main"
-version="0.4.25"
-rag_api_server_version="0.13.13"
-llama_api_server_version="0.16.14"
+version="0.4.26"
+rag_api_server_version="0.13.14"
+llama_api_server_version="0.16.15"
 wasmedge_version="0.14.1"
-ggml_bn="b4917"
+ggml_bn="b5074"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 assistant_version="0.4.3"
