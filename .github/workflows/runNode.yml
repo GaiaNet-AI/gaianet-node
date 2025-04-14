@@ -53,7 +53,5 @@ jobs:
         run: |
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet stop
-          echo "LOGFILE: start-llamaedge.log\n\n"
-          cat ~/gaianet/log/start-llamaedge.log
           echo "LOGFILE: start-gaia-frp.log\n\n"
           cat ~/gaianet/log/start-gaia-frp.log
