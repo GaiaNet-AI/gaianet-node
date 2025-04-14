@@ -8,9 +8,9 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="feat-integrate-nexus"
+repo_branch="main"
 version="0.4.27"
-llama_api_server_version="0.16.16"
+llama_api_server_version="0.17.0"
 gaia_nexus_version="0.1.0"
 wasmedge_version="0.14.1"
 ggml_bn="b5074"
@@ -590,12 +590,13 @@ fi
 printf "[+] Downloading LlamaEdge API server ...\n"
 # download llama-api-server.wasm
 # check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
-check_curl https://github.com/GaiaNet-AI/gaia-nexus-release/releases/download/$gaia_nexus_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+# check_curl https://github.com/GaiaNet-AI/gaia-nexus-release/releases/download/$gaia_nexus_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+check_curl check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
 info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
 
-# 8. Install LlamaEdge-Nexus
+# 8. Install gaia-nexus
 printf "[+] Installing gaia-nexus ...\n"
 if [ "$(uname)" == "Darwin" ]; then
 
