@@ -836,7 +836,7 @@ start_gaia_nexus() {
         --vdb-collection-name $qdrant_collection_name \
         --vdb-limit $qdrant_limit \
         --vdb-score-threshold $qdrant_score_threshold \
-        --rag-prompt "'$rag_prompt'" \
+        --rag-prompt "$rag_prompt" \
         --rag-context-window $context_window \
         --rag-policy $rag_policy \
         --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
