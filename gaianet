@@ -1234,8 +1234,17 @@ start() {
         start_qdrant_instance
 
         if [ "$gaia_qdrant" = false ]; then
+            # enable gaia_qdrant in mcp_config.toml
+            toggle_mcp_server $gaianet_base_dir/mcp_config.toml "gaia-qdrant"
+
             printf "    * Starting Qdrant MCP server ...⏳\n"
             start_qdrant_mcp_server
+        fi
+
+    else
+        if [ "$gaia_qdrant" = true ]; then
+            # disable gaia_qdrant in mcp_config.toml
+            toggle_mcp_server $gaianet_base_dir/mcp_config.toml "gaia-qdrant"
         fi
     fi
 
