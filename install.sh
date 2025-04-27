@@ -632,8 +632,8 @@ else
 fi
 # extract the gaia-nexus binary
 tar -xzf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus
-tar -xzf $bin_dir/gaia-nexus.tar.gz -C $bin_dir mcp_config.toml
-mv $bin_dir/mcp_config.toml $gaianet_base_dir/mcp_config.toml
+tar -xzf $bin_dir/gaia-nexus.tar.gz -C $gaianet_base_dir mcp_config.toml
+# mv $bin_dir/mcp_config.toml $gaianet_base_dir/mcp_config.toml
 rm $bin_dir/gaia-nexus.tar.gz
 
 info "    👍 Done! The gaia-nexus is downloaded in $bin_dir"
