@@ -967,13 +967,13 @@ start_kw_search_mcp_server() {
     fi
 
     if [ "$kwsearch_mcp_server_running" = false ]; then
-        kwsearch_mcp_server_executable="$gaianet_base_dir/bin/gaia-kw-search-mcp-server"
+        kwsearch_mcp_server_executable="$gaianet_base_dir/bin/gaia-kwsearch-mcp-server"
         if [ -f "$kwsearch_mcp_server_executable" ]; then
-            nohup $kwsearch_mcp_server_executable > $log_dir/start-kw-search-mcp-server.log 2>&1 &
+            nohup $kwsearch_mcp_server_executable > $log_dir/start-kwsearch-mcp-server.log 2>&1 &
             sleep 5
             kwsearch_mcp_server_pid=$!
-            echo $kwsearch_mcp_server_pid > $gaianet_base_dir/kw-search-mcp-server.pid
-            info "\n      👍 Done! kw-search-mcp-server started with pid: $kwsearch_mcp_server_pid"
+            echo $kwsearch_mcp_server_pid > $gaianet_base_dir/kwsearch-mcp-server.pid
+            info "\n      👍 Done! kwsearch-mcp-server started with pid: $kwsearch_mcp_server_pid"
         else
             error "      ❌ kw-search-mcp-server binary not found at $kwsearch_mcp_server_executable\n\n"
 
@@ -1236,10 +1236,10 @@ start() {
         if [ "$gaia_qdrant" = false ]; then
             # enable gaia_qdrant in mcp_config.toml
             toggle_mcp_server $gaianet_base_dir/mcp_config.toml "gaia-qdrant"
-
-            printf "    * Starting Qdrant MCP server ...⏳\n"
-            start_qdrant_mcp_server
         fi
+
+        printf "    * Starting Qdrant MCP server ...⏳\n"
+        start_qdrant_mcp_server
 
     else
         if [ "$gaia_qdrant" = true ]; then
@@ -1249,12 +1249,19 @@ start() {
     fi
 
     # start kw-search-mcp-server
-    if [ "$gaia_keyword_search" = true ]; then
-        printf "    * Starting kw-search-server ...⏳\n"
-        start_kw_search_server
+    if [ "$rag_mode" = true ]; then
+        if [ "$gaia_keyword_search" = true ]; then
+            printf "    * Starting kw-search-server ...⏳\n"
+            start_kw_search_server
 
-        printf "    * Starting kw-search-mcp-server ...⏳\n"
-        start_kw_search_mcp_server
+            printf "    * Starting kw-search-mcp-server ...⏳\n"
+            start_kw_search_mcp_server
+        fi
+    else
+        if [ "$gaia_keyword_search" = true ]; then
+            # disable gaia_keyword_search in mcp_config.toml
+            toggle_mcp_server $gaianet_base_dir/mcp_config.toml "gaia-keyword-search"
+        fi
     fi
 
     # 4. start gaia-frp
@@ -1309,13 +1316,32 @@ stop_force() {
     printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
 
     pkill -9 qdrant || true
+    pkill -9 gaia-qdrant-mcp-server || true
+    pkill -9 kw-search-server || true
+    pkill -9 gaia-kwsearch-mcp-server || true
     pkill -9 gaia-nexus || true
     pkill -9 wasmedge || true
     pkill -9 frpc || true
 
+
     qdrant_pid=$gaianet_base_dir/qdrant.pid
     if [ -f $qdrant_pid ]; then
         rm $qdrant_pid
+    fi
+
+    qdrant_mcp_server_pid=$gaianet_base_dir/qdrant-mcp-server.pid
+    if [ -f $qdrant_mcp_server_pid ]; then
+        rm $qdrant_mcp_server_pid
+    fi
+
+    kw_search_server_pid=$gaianet_base_dir/kw-search-server.pid
+    if [ -f $kw_search_server_pid ]; then
+        rm $kw_search_server_pid
+    fi
+
+    kw_search_mcp_server_pid=$gaianet_base_dir/kwsearch-mcp-server.pid
+    if [ -f $kw_search_mcp_server_pid ]; then
+        rm $kw_search_mcp_server_pid
     fi
 
     chat_server_pid=$gaianet_base_dir/chat_server.pid
