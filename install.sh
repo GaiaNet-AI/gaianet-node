@@ -593,7 +593,7 @@ printf "[+] Downloading LlamaEdge API server ...\n"
 # download llama-api-server.wasm
 # check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 # check_curl https://github.com/GaiaNet-AI/gaia-nexus-release/releases/download/$gaia_nexus_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
-check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
 info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
