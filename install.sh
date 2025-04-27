@@ -10,14 +10,16 @@ cwd=$(pwd)
 
 repo_branch="feat-nexus-mcp"
 version="0.5.0"
-llama_api_server_version="0.17.0"
-gaia_nexus_version="0.1.0"
+llama_api_server_version="0.17.1"
+gaia_nexus_version="0.2.0"
 wasmedge_version="0.14.1"
 ggml_bn="b5201"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-assistant_version="0.4.3"
+# assistant_version="0.4.3"
 qdrant_version="v1.13.4"
+mcp_version="0.1.1"
+kw_search_server_version="0.1.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -630,12 +632,93 @@ else
 fi
 # extract the gaia-nexus binary
 tar -xzf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus
+tar -xzf $bin_dir/gaia-nexus.tar.gz -C $bin_dir mcp_config.toml
 rm $bin_dir/gaia-nexus.tar.gz
 
 info "    👍 Done! The gaia-nexus is downloaded in $bin_dir"
 
 
-# 9. Download dashboard to $gaianet_base_dir
+
+# 9 Download MCP Servers
+printf "[+] Downloading MCP Servers ...\n"
+if [ "$(uname)" == "Darwin" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/apepkuss/mcp-examples/releases/download/$mcp_version/gaia-mcp-servers-apple-darwin-x86_64.tar.gz $bin_dir/gaia-mcp-servers.tar.gz
+
+    elif [ "$target" = "arm64" ]; then
+        check_curl https://github.com/apepkuss/mcp-examples/releases/download/$mcp_version/gaia-mcp-servers-apple-darwin-aarch64.tar.gz $bin_dir/gaia-mcp-servers.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        exit 1
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/apepkuss/mcp-examples/releases/download/$mcp_version/gaia-mcp-servers-unknown-linux-gnu-x86_64.tar.gz $bin_dir/gaia-mcp-servers.tar.gz
+
+    # elif [ "$target" = "aarch64" ]; then
+    #     check_curl https://github.com/apepkuss/mcp-examples/releases/download/$mcp_version/gaia-mcp-servers-unknown-linux-gnu-aarch64.tar.gz $bin_dir/gaia-mcp-servers.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 on Linux"
+        exit 1
+    fi
+
+else
+    error "Only support Linux, MacOS and Windows(WSL)."
+    exit 1
+fi
+# extract the gaia-mcp-servers binary
+tar -xzvf $bin_dir/gaia-mcp-servers.tar.gz -C $bin_dir
+rm $bin_dir/gaia-mcp-servers.tar.gz
+
+info "    👍 Done! The MCP Servers are downloaded in $bin_dir"
+
+
+# 10. Download kw-search-server
+printf "[+] Downloading kw-search-server ...\n"
+if [ "$(uname)" == "Darwin" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/LlamaEdge/kw-search-server/releases/download/$kw_search_server_version/kw-search-server-x86_64-apple-darwin.tar.gz $bin_dir/kw-search-server.tar.gz
+
+    elif [ "$target" = "arm64" ]; then
+        check_curl https://github.com/LlamaEdge/kw-search-server/releases/download/$kw_search_server_version/kw-search-server-aarch64-apple-darwin.tar.gz $bin_dir/kw-search-server.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+        exit 1
+    fi
+
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+
+    if [ "$target" = "x86_64" ]; then
+        check_curl https://github.com/LlamaEdge/kw-search-server/releases/download/$kw_search_server_version/kw-search-server-x86_64-unknown-linux-gnu.tar.gz $bin_dir/kw-search-server.tar.gz
+
+    # elif [ "$target" = "aarch64" ]; then
+    #     check_curl https://github.com/LlamaEdge/kw-search-server/releases/download/$kw_search_server_version/kw-search-server-aarch64-unknown-linux-gnu.tar.gz $bin_dir/kw-search-server.tar.gz
+
+    else
+        error " * Unsupported architecture: $target, only support x86_64 on Linux"
+        exit 1
+    fi
+
+else
+    error "Only support Linux, MacOS and Windows(WSL)."
+    exit 1
+fi
+# extract the gaia-mcp-servers binary
+tar -xzvf $bin_dir/kw-search-server.tar.gz -C $bin_dir kw-search-server
+rm $bin_dir/kw-search-server.tar.gz
+
+info "    👍 Done! The kw-search-server is downloaded in $bin_dir"
+
+
+
+# 11. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
     echo "tar could not be found, please install it."
     exit 1
@@ -655,7 +738,7 @@ else
     warning "    ❗ Use the cached dashboard in $gaianet_base_dir"
 fi
 
-# 10. Download registry.wasm
+# 12. Download registry.wasm
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading registry.wasm ...\n"
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
@@ -664,7 +747,7 @@ else
     warning "    ❗ Use the cached registry.wasm in $gaianet_base_dir"
 fi
 
-# 11. Generate node ID
+# 13. Generate node ID
 if [ "$upgrade" -eq 1 ]; then
     printf "[+] Recovering node ID ...\n"
 
@@ -715,7 +798,7 @@ else
     info "      👍 Done!"
 fi
 
-# 12. Install gaia-frp
+# 14. Install gaia-frp
 printf "[+] Installing gaia-frp...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaia-frp" ]; then
@@ -778,7 +861,7 @@ printf "    * Install frpc binary\n"
 cp $gaianet_base_dir/gaia-frp/frpc $gaianet_base_dir/bin/
 info "      👍 Done! frpc binary is installed in $gaianet_base_dir/bin"
 
-# 13. Download frpc.toml, generate a subdomain and print it
+# 15. Download frpc.toml, generate a subdomain and print it
 if [ "$upgrade" -eq 1 ]; then
     # recover the frpc.toml
     if [ -f "$gaianet_base_dir/backup/frpc.toml" ]; then

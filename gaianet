@@ -9,6 +9,15 @@ version="0.5.0"
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
+# port of kw-search-server
+kwsearch_server_port=12306
+
+# port of qdrant mcp server
+qdrant_mcp_server_port=8003
+
+# port of kw-search mcp server
+kwsearch_mcp_server_port=8005
+
 # We will make sure that the path is setup in case the user runs gaianet immediately after init
 source $HOME/.wasmedge/env
 
@@ -26,6 +35,88 @@ NC=$'\e[0m'
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     ulimit -n 10000
 fi
+
+# Preset all service corresponding variables, initially set to false
+gaia_calculator=false
+gaia_weather=false
+gaia_qdrant=false
+gaia_keyword_search=false
+
+# Check MCP servers
+check_mcp_servers() {
+    # Usage hint
+    if [ $# -ne 1 ]; then
+        echo "Usage: $0 <config_file>"
+        exit 1
+    fi
+
+    # Define configuration file path
+    # CONFIG_FILE="$gaianet_base_dir/mcp_config.toml"
+    CONFIG_FILE="$1"
+
+    # Parse configuration file
+    current_name=""
+    while IFS= read -r line; do
+        # Match name field
+        if [[ $line =~ name\ *=\ *\"([^\"]+)\" ]]; then
+            # Replace "-" in name with "_" to use as variable name
+            current_name=$(echo "${BASH_REMATCH[1]}" | sed 's/-/_/g')
+        fi
+
+        # Match enable field
+        if [[ $line =~ enable\ *=\ *(true|false) ]]; then
+            enable_value="${BASH_REMATCH[1]}"
+            if [[ "$enable_value" == "true" ]]; then
+                eval "${current_name}=true"
+            fi
+        fi
+    done < "$CONFIG_FILE"
+}
+
+# Enable/disable specified mcp-server in `gaianet/mcp_config.toml`
+toggle_mcp_server() {
+    # Usage hint
+    if [ $# -ne 2 ]; then
+        echo "Usage: $0 <config_file> <service_name>"
+        exit 1
+    fi
+
+    CONFIG_FILE="$1"
+    TARGET_SERVICE="$2"
+    TMP_FILE="${CONFIG_FILE}.tmp"
+
+    found_service=false
+
+    # Process file
+    while IFS= read -r line; do
+        # Check if this is the name line for the target service
+        if [[ $line =~ name\ *=\ *\"${TARGET_SERVICE}\" ]]; then
+            found_service=true
+            echo "$line" >> "$TMP_FILE"
+            continue
+        fi
+
+        # If in target service block and encountered enable field
+        if $found_service && [[ $line =~ enable\ *=\ *(true|false) ]]; then
+            current_status="${BASH_REMATCH[1]}"
+            if [[ "$current_status" == "true" ]]; then
+                new_status="false"
+            else
+                new_status="true"
+            fi
+            echo "enable = ${new_status}" >> "$TMP_FILE"
+            found_service=false
+            # echo "Toggled ${TARGET_SERVICE} to ${new_status}"
+            continue
+        fi
+
+        # Write other lines directly
+        echo "$line" >> "$TMP_FILE"
+    done < "$CONFIG_FILE"
+
+    # Replace original file
+    mv "$TMP_FILE" "$CONFIG_FILE"
+}
 
 info() {
     printf "${GREEN}$1${NC}\n\n"
@@ -770,6 +861,130 @@ start_qdrant_instance() {
 
 }
 
+start_qdrant_mcp_server() {
+    qdrant_mcp_server_running=false
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if lsof -Pi :$qdrant_mcp_server_port -sTCP:LISTEN -t >/dev/null ; then
+            qdrant_mcp_server_running=true
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+
+    if [ "$qdrant_mcp_server_running" = false ]; then
+        qdrant_mcp_server_executable="$gaianet_base_dir/bin/gaia-qdrant-mcp-server"
+        if [ -f "$qdrant_mcp_server_executable" ]; then
+            nohup $qdrant_mcp_server_executable > $log_dir/start-qdrant-mcp-server.log 2>&1 &
+            sleep 5
+            qdrant_mcp_server_pid=$!
+            echo $qdrant_mcp_server_pid > $gaianet_base_dir/qdrant-mcp-server.pid
+            info "\n      👍 Done! Qdrant MCP server started with pid: $qdrant_mcp_server_pid"
+        else
+            error "      ❌ Qdrant MCP server binary not found at $qdrant_mcp_server_executable\n\n"
+
+            # stop
+            stop_force
+
+            exit 1
+        fi
+    fi
+
+}
+
+start_kw_search_server() {
+    kwsearch_server_running=false
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if lsof -Pi :$kwsearch_server_port -sTCP:LISTEN -t >/dev/null ; then
+            kwsearch_server_running=true
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+
+    if [ "$kwsearch_server_running" = false ]; then
+        kwsearch_server_executable="$gaianet_base_dir/bin/kw-search-server"
+        if [ -f "$kwsearch_server_executable" ]; then
+            nohup $kwsearch_server_executable > $log_dir/start-kw-search-server.log 2>&1 &
+            sleep 2
+            kwsearch_server_pid=$!
+            echo $kwsearch_server_pid > $gaianet_base_dir/kw-search-server.pid
+            info "\n      👍 Done! kw-search-server started with pid: $kwsearch_server_pid"
+        else
+            error "      ❌ kw-search-server binary not found at $kwsearch_server_executable\n\n"
+
+            # stop
+            stop_force
+
+            exit 1
+        fi
+    fi
+}
+
+start_kw_search_mcp_server() {
+    kwsearch_mcp_server_running=false
+    if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+        if lsof -Pi :$kwsearch_mcp_server_port -sTCP:LISTEN -t >/dev/null ; then
+            kwsearch_mcp_server_running=true
+        fi
+    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+        printf "For Windows users, please run this script in WSL.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    else
+        printf "Only support Linux, MacOS and Windows.\n"
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+
+    if [ "$kwsearch_mcp_server_running" = false ]; then
+        kwsearch_mcp_server_executable="$gaianet_base_dir/bin/gaia-kw-search-mcp-server"
+        if [ -f "$kwsearch_mcp_server_executable" ]; then
+            nohup $kwsearch_mcp_server_executable > $log_dir/start-kw-search-mcp-server.log 2>&1 &
+            sleep 5
+            kwsearch_mcp_server_pid=$!
+            echo $kwsearch_mcp_server_pid > $gaianet_base_dir/kw-search-mcp-server.pid
+            info "\n      👍 Done! kw-search-mcp-server started with pid: $kwsearch_mcp_server_pid"
+        else
+            error "      ❌ kw-search-mcp-server binary not found at $kwsearch_mcp_server_executable\n\n"
+
+            # stop
+            stop_force
+
+            exit 1
+        fi
+    fi
+}
+
 start_gaia_nexus() {
 
     # parse domain for gaia-nexus
@@ -997,9 +1212,13 @@ start() {
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
 
+    # 2. check mcp servers
+    printf "[2/4] Checking the mcp servers ...\n"
+    check_mcp_servers $gaianet_base_dir/mcp_config.toml
+    info "\n    👍 Done!"
 
-    # 2. start downstream servers
-    printf "[2/4] Starting downstream servers ...\n\n"
+    # 3. start downstream servers
+    printf "[3/4] Starting downstream servers ...\n\n"
 
     # start chat server
     printf "    * Start chat server ...⏳\n\n"
@@ -1013,12 +1232,26 @@ start() {
     if [ "$rag_mode" = true ]; then
         printf "    * Starting Qdrant instance ...⏳\n"
         start_qdrant_instance
+
+        if [ "$gaia_qdrant" = false ]; then
+            printf "    * Starting Qdrant MCP server ...⏳\n"
+            start_qdrant_mcp_server
+        fi
     fi
 
-    # 3. start gaia-frp
+    # start kw-search-mcp-server
+    if [ "$gaia_keyword_search" = true ]; then
+        printf "    * Starting kw-search-server ...⏳\n"
+        start_kw_search_server
+
+        printf "    * Starting kw-search-mcp-server ...⏳\n"
+        start_kw_search_mcp_server
+    fi
+
+    # 4. start gaia-frp
     if [ "$local_only" -eq 0 ]; then
         # start gaia-frp
-        printf "[3/4] Starting gaia-frp ...\n\n"
+        printf "[4/4] Starting gaia-frp ...\n\n"
 
         nohup $gaianet_base_dir/bin/frpc -c $gaianet_base_dir/gaia-frp/frpc.toml > $log_dir/start-gaia-frp.log 2>&1 &
         sleep 2
@@ -1031,8 +1264,8 @@ start() {
     fi
 
 
-    # 4. start gaia-nexus
-    printf "[4/4] Starting gaia-nexus ...\n\n"
+    # 5. start gaia-nexus
+    printf "[5/5] Starting gaia-nexus ...\n\n"
     start_gaia_nexus
 
     # register downstream servers
