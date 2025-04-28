@@ -21,6 +21,7 @@ YELLOW=$'\e[0;33m'
 # No Color
 NC=$'\e[0m'
 
+
 # Mac OS requires this hack in order to run qdrant reliablly
 if [ "$(uname)" == "Darwin" ] || [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     ulimit -n 10000
@@ -865,7 +866,7 @@ start_gaia_nexus() {
     else
         rm $log_dir/start-gaia-nexus.log
     fi
-    sleep 20
+    sleep $wait_for_ready
     echo $llama_nexus_pid > $gaianet_base_dir/llama_nexus.pid
     info "      👍 Done! gaia-nexus started with pid: $llama_nexus_pid"
 }
@@ -1184,6 +1185,7 @@ show_start_help() {
     printf "  --local-only               Start the program in local mode.\n"
     printf "  --base <path>              The base directory of GaiaNet.\n"
     printf "  --force-rag                Force start rag-api-server even if the 'snapshot' field of config.json is empty. Users should ensure the qdrant has been initialized with the desired snapshot.\n"
+    printf "  --wait <val>               Wait for the ready state of the gaia-nexus for <val> seconds.\n"
     printf "  --help                     Show this help message\n\n"
 }
 
@@ -1692,8 +1694,9 @@ case $subcommand in
         ;;
     run|start)
         local=0
-
 	    force_rag=false
+        # sleep time after starting gaia-nexus
+        wait_for_ready=20
 
         while (( "$#" )); do
             case "$1" in
@@ -1711,6 +1714,10 @@ case $subcommand in
                 --force-rag)
                     force_rag=true
                     shift
+                    ;;
+                --wait)
+                    wait_for_ready=$2
+                    shift 2
                     ;;
                 *)
                     show_start_help
