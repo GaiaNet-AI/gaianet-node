@@ -10,7 +10,7 @@ cwd=$(pwd)
 
 repo_branch="feat-nexus-mcp"
 version="0.5.0"
-llama_api_server_version="0.17.1"
+llama_api_server_version="0.18.0"
 gaia_nexus_version="0.2.0"
 wasmedge_version="0.14.1"
 ggml_bn="b5201"
