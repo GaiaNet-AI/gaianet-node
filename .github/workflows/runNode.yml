@@ -33,6 +33,12 @@ jobs:
           export PATH=$HOME/gaianet/bin:$PATH
           gaianet start
           sleep 10
+
+      - name: Print logs
+        if: failure()
+        run: |
+          cat $HOME/gaianet/log/chat-server.log
+
       - name: Test localhost API
         continue-on-error: true
         run: |
