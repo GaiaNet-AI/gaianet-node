@@ -8,8 +8,8 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="release-0.4.28"
-version="0.4.27"
+repo_branch="main"
+version="0.4.28"
 rag_api_server_version="0.13.15"
 llama_api_server_version="0.16.16"
 wasmedge_version="0.14.1"
