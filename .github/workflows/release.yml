@@ -43,7 +43,7 @@ jobs:
           echo "release_name=GaiaNet-Node v${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
 
       - name: Create Release and Upload Release Asset
-        if: ${{ github.event.inputs.create_release == 'true' && github.ref == 'refs/heads/main'}}
+        if: ${{ github.event.inputs.create_release == 'true' && github.ref == 'refs/heads/release-0.4.28'}}
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ steps.tag_and_release_names.outputs.release_name }}
