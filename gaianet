@@ -1288,9 +1288,10 @@ start() {
     # register downstream servers
     printf "    * Register embedding server ...⏳\n\n"
     register_embedding_server
+    sleep 3
     printf "    * Registering chat server ...⏳\n\n"
     register_chat_server
-
+    sleep 3
 
 
     if [ "$local_only" -eq 0 ]; then
