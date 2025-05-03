@@ -1282,6 +1282,7 @@ start() {
 
     # 5. start gaia-nexus
     printf "[5/5] Starting gaia-nexus ...\n\n"
+    printf "      ❗ The process may take a few minutes. Please wait ...\n\n"
     start_gaia_nexus
 
     # register downstream servers
