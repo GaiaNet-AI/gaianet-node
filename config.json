@@ -12,7 +12,7 @@
     "chat_ubatch_size": "128",
     "prompt_template": "llama-3-chat",
     "reverse_prompt": "",
-    "system_prompt": "You are a tour guide in Paris, France. Please answer the question from a Paris visitor accurately.",
+    "system_prompt": "You are a helpful AI assistant. Please answer questions as clearly and concisely as possible.",
     "context_window": "1",
     "embedding": "https://huggingface.co/gaianet/Nomic-embed-text-v1.5-Embedding-GGUF/resolve/main/nomic-embed-text-v1.5.f16.gguf",
     "embedding_name": "Nomic-embed-text-v1.5",
@@ -24,5 +24,5 @@
     "qdrant_limit": "1",
     "qdrant_score_threshold": "0.5",
     "rag_policy": "system-message",
-    "rag_prompt": "You are a tour guide in Paris, France. Use information in the following context to directly answer the question from a Paris visitor.\n----------------\n"
+    "rag_prompt": "Use the following information to answer the question.\n----------------\n"
 }
