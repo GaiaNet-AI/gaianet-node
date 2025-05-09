@@ -12,7 +12,7 @@
   </a>
 </p>
 
-[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | [Russian (русскийة)](README-ru.md) | Нам нужна ваша помощь, чтобы перевести этот README на ваш родной язык.
+[Japanese(日本語)](README-ja.md) | [Chinese(中文)](README-cn.md) | [Turkish (Türkçe)](README-tr.md) | [Arabic (العربية)](README-ar.md) | [Russian (русский)](README-ru.md) | Нам нужна ваша помощь, чтобы перевести этот README на ваш родной язык.
 
 Нравится наша работа? ⭐ Поставьте нам звезду!
 
@@ -177,7 +177,7 @@ gaianet start
 
 [+] Starting LlamaEdge API Server ...
 
-    Выполните следкющую команду для запуска LlamaEdge API Server:
+    Выполните следующую команду для запуска LlamaEdge API Server:
 
     wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q5_K_M.gguf --nn-preload embedding:GGML:AUTO:all-MiniLM-L6-v2-ggml-model-f16.gguf rag-api-server.wasm --model-name Llama-2-7b-chat-hf-Q5_K_M,all-MiniLM-L6-v2-ggml-model-f16 --ctx-size 4096,384 --prompt-template llama-2-chat --qdrant-collection-name default --web-ui ./ --socket-addr 0.0.0.0:8080 --log-prompts --log-stat --rag-prompt "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n"
 
