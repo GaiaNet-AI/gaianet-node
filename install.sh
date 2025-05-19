@@ -8,15 +8,14 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="ci-ggml-b5361"
-version="0.5.0"
+repo_branch="main"
+version="0.5.1"
 llama_api_server_version="0.18.5"
 gaia_nexus_version="0.1.0"
 wasmedge_version="0.14.1"
 ggml_bn="b5361"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-assistant_version="0.4.3"
 qdrant_version="v1.13.4"
 
 # 0: do not reinstall, 1: reinstall
@@ -589,8 +588,8 @@ fi
 # 7. Download LlamaEdge API server
 printf "[+] Downloading LlamaEdge API server ...\n"
 # download llama-api-server.wasm
-check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
-# check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+# check_curl https://github.com/LlamaEdge/LlamaEdge/releases/download/$llama_api_server_version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
+check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/llama-api-server.wasm $gaianet_base_dir/llama-api-server.wasm
 
 info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
