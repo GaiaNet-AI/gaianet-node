@@ -1696,7 +1696,7 @@ case $subcommand in
         local=0
 	    force_rag=false
         # sleep time after starting gaia-nexus
-        wait_for_ready=20
+        wait_for_ready=30
 
         while (( "$#" )); do
             case "$1" in
