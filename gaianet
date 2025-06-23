@@ -803,9 +803,13 @@ check_nexus_with_retry() {
 
     # if gaia-nexus is not ready, then exit
     if [ "$success" = false ]; then
+        # stop
+        stop_force
+
         printf "❌ Failed after $max_retries retries\n"
         printf "❌ Final exit status code: $exit_status\n"
         printf "❌ Final error message: %s\n" "$output"
+
         return 1
     fi
 }
