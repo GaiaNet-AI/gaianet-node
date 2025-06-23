@@ -787,10 +787,9 @@ check_nexus_with_retry() {
 
         # check curl command exit status
         if [ $exit_status -ne 0 ]; then
-            printf "    ❌ gaia-nexus is not ready (exit status: $exit_status)\n"
-
             if [ $retry_count -lt $max_retries ]; then
                 local wait_time=$((retry_count * 10))
+                printf "      ❌ gaia-nexus is not ready (exit status: $exit_status). Retrying in $wait_time seconds ...⏳\n"
                 sleep $wait_time
             fi
 
@@ -806,9 +805,9 @@ check_nexus_with_retry() {
         # stop
         stop_force
 
-        printf "❌ Failed after $max_retries retries\n"
-        printf "❌ Final exit status code: $exit_status\n"
-        printf "❌ Final error message: %s\n" "$output"
+        printf "    ❌ Failed after $max_retries retries\n"
+        printf "    ❌ Final exit status code: $exit_status\n"
+        printf "    ❌ Final error message: %s\n" "$output"
 
         return 1
     fi
