@@ -1077,7 +1077,8 @@ start() {
 
 
     # 4. start gaia-nexus
-    printf "[4/4] Starting gaia-nexus ...\n\n"
+    printf "[4/4] Starting gaia-nexus ...\n"
+    printf "    ❗ The process may take a few minutes. Please wait ...\n\n"
     start_gaia_nexus
 
     # register downstream servers
