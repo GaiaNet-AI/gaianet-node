@@ -153,23 +153,32 @@ gaianet init --config https://raw.githubusercontent.com/GaiaNet-AI/node-configs/
 
 대체 디렉토리에 설치된 노드를 `init`해야 하는 경우 다음과 같이 하세요.
 
+설정 목록 확인:
+
+```bash
+gaianet init --help
+```
+
+대체 경로 초기화:
+
 ```bash
 gaianet init --base $HOME/gaianet.alt
 ```
 
-## 노드 시작하기
+## 노드 시작
 
-```
+```bash
 gaianet start
 ```
+
 <details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
 ```bash
 [+] Starting Qdrant instance ...
-    Qdrant instance started with pid: 39762
+    Qdrant 인스턴스 시작됨 (pid: 39762)
 [+] Starting LlamaEdge API Server ...
     Run the following command to start the LlamaEdge API Server:
 wasmedge --dir .:./dashboard --nn-preload default:GGML:AUTO:Llama-2-7b-chat-hf-Q5_K_M.gguf --nn-preload embedding:GGML:AUTO:all-MiniLM-L6-v2-ggml-model-f16.gguf rag-api-server.wasm --model-name Llama-2-7b-chat-hf-Q5_K_M,all-MiniLM-L6-v2-ggml-model-f16 --ctx-size 4096,384 --prompt-template llama-2-chat --qdrant-collection-name default --web-ui ./ --socket-addr 0.0.0.0:8080 --log-prompts --log-stat --rag-prompt "Use the following pieces of context to answer the user's question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\n"
-    LlamaEdge API Server started with pid: 39796
+[+] LlamaEdge API 서버 시작됨 (pid: 39796)
 ```
 </details>
 
@@ -191,13 +200,15 @@ gaianet start --base $HOME/gaianet.alt
 gaianet stop
 ```
 
-<details><summary> 출력 결과는 다음과 같을 것입니다 :  </summary>
+<details><summary> 출력 예시 보기 </summary>
+
 ```bash
-[+] Stopping WasmEdge, Qdrant and frpc ...
+[+] WasmEdge, Qdrant, frpc 중지 중...
 ```
+
 </details>
 
-다른 대체경로에 설치된 노드를 중지하려면 다음 명령어를 사용합니다.
+대체 경로 노드 중지:
 
 ```bash
 gaianet stop --base $HOME/gaianet.alt
@@ -215,6 +226,7 @@ gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-
 예를 들어 `chat_ctx_size` 필드를 업데이트하려면 다음 명령을 사용하세요 :
 
 ```bash
+gaianet config --chat-url "모델 URL"
 gaianet config --chat-ctx-size 5120
 ```
 
@@ -243,3 +255,20 @@ Options:
 ```
 
 즐거운 사용 되세요!
+
+## 리소스 & 커뮤니티
+
+- [공식 문서](https://docs.gaianet.ai/intro)
+- [기여 가이드](https://github.com/Gaianet-AI/gaianet-node/blob/main/CONTRIBUTING.md)
+- [Awesome-Gaia 도구 모음](https://github.com/GaiaNet-AI/awesome-gaia)
+- [Telegram 커뮤니티](https://t.me/+a0bJInD5lsYxNDJl)
+- [이슈 제보](https://github.com/GaiaNet-AI/gaianet-node/issues)
+- [행동 강령](https://github.com/GaiaNet-AI/gaianet-node/blob/main/CODE_OF_CONDUCT.md)
+
+[**→ GitHub에서 기여 시작하기**](https://github.com/GaiaNet-AI/gaianet-node/blob/main/CONTRIBUTING.md)
+
+### 기여자
+
+<a href="https://github.com/GaiaNet-AI/gaianet-node/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=GaiaNet-AI/gaianet-node" alt="Gaia 프로젝트 기여자" />
+</a>
