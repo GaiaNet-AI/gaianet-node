@@ -14,11 +14,24 @@
 
 [일본어(日本語)](README-ja.md) | [중국어(中文)](README-cn.md)  | [터키어 (Türkçe)](README-tr.md) | [페르시아어(فارسی)](README-fa.md) | [아랍어 (العربية)](README-ar.md) | [인도네시아어](README-id.md) | [러시아어 (русский)](README-ru.md) | [포르투갈어 (português)](README-pt.md) | 여러분의 언어로 README를 번역하는 데 도움을 주세요.
 
-우리의 작업이 마음에 드시나요? ⭐ 별표를 눌러주세요!
+우리의 작업이 마음에 드시나요? ⭐ Star로 응원해 주세요!
 
-공식 문서와 오픈 소스 모델을 커스터마이징하는 방법에 대해 [공식문서](https://docs.gaianet.ai/) 와 [매닝 이북](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer) 을 확인해보세요.
+[공식 문서](https://docs.gaianet.ai/) 및 [Manning ebook](https://www.manning.com/liveprojectseries/open-source-llms-on-your-own-computer)에서 오픈소스 모델을 커스터마이징하는 방법을 확인하세요.
+
+---
 
 ## 빠른 시작
+
+Mac, Linux 또는 Windows WSL에서 한 줄의 명령어로 기본 노드 소프트웨어를 설치할 수 있습니다.
+
+```bash
+curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
+```
+
+> 설치 후, 화면에 표시되는 안내에 따라 환경 경로를 설정하세요. 명령어는 `source`로 시작됩니다.
+
+노드를 초기화합니다. 이 과정에서는 `$HOME/gaianet/config.json` 파일에 명시된 모델 파일과 벡터 데이터베이스 파일을 다운로드하며, 파일 크기가 크기 때문에 몇 분이 소요될 수 있습니다.
+
 
 Mac, Linux 또는 Windows WSL에서 다음 단일 명령줄로 기본 노드 소프트웨어 스택을 설치하세요.
 
@@ -27,6 +40,9 @@ curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/
 ```
 
 그런 다음 화면에 나타나는 안내에 따라 환경 경로를 설정하세요. 커맨드 라인은 `source`로 시작될 것입니다.
+
+![이미지](https://github.com/user-attachments/assets/dc75817c-9a54-4994-ab90-1efb1a018b17)
+
 
 노드를 초기화합니다. `$HOME/gaianet/config.json` 파일에 지정된 모델 파일과 벡터 데이터베이스 파일을 다운로드합니다. 파일들의 용량이 크기 때문에 몇 분 정도 걸릴 수 있습니다.
 ```bash
