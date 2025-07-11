@@ -1,4 +1,18 @@
-# GaiaNet 노드 직접 실행하기
+# 나만의 GaiaNet 노드 실행하기
+
+<p align="center">
+  <a href="https://discord.gg/gaianet-ai">
+    <img src="https://img.shields.io/badge/chat-Discord-7289DA?logo=discord" alt="GaiaNet Discord">
+  </a>
+  <a href="https://twitter.com/Gaianet_AI">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&amp;logoColor=white" alt="GaiaNet Twitter">
+  </a>
+   <a href="https://www.gaianet.ai/">
+    <img src="https://img.shields.io/website?up_message=Website&url=https://www.gaianet.ai/" alt="Gaianet website">
+  </a>
+</p>
+
+[일본어(日本語)](README-ja.md) | [중국어(中文)](README-cn.md)  | [터키어 (Türkçe)](README-tr.md) | [페르시아어(فارسی)](README-fa.md) | [아랍어 (العربية)](README-ar.md) | [인도네시아어](README-id.md) | [러시아어 (русский)](README-ru.md) | [포르투갈어 (português)](README-pt.md) | 여러분의 언어로 README를 번역하는 데 도움을 주세요.
 
 우리의 작업이 마음에 드시나요? ⭐ 별표를 눌러주세요!
 
