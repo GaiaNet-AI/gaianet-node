@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 
 # version of CLI tool
 # Note that the version should kept same as the version of installer
@@ -770,6 +770,49 @@ start_qdrant_instance() {
 
 }
 
+check_nexus_with_retry() {
+    local url=$1
+    local max_retries=6
+    local retry_count=1
+    local success=false
+    local output
+    local exit_status
+
+    while [ $retry_count -lt $max_retries ] && [ "$success" = false ]; do
+        ((retry_count++))
+
+        # execute curl command and capture output
+        output=$(curl --location "$url" 2>&1)
+        exit_status=$?
+
+        # check curl command exit status
+        if [ $exit_status -ne 0 ]; then
+            if [ $retry_count -lt $max_retries ]; then
+                local wait_time=$((retry_count * 10))
+                printf "      ❌ gaia-nexus is not ready (exit status: $exit_status). Retrying in $wait_time seconds ...⏳\n"
+                sleep $wait_time
+            fi
+
+        else
+
+            success=true
+
+        fi
+    done
+
+    # if gaia-nexus is not ready, then exit
+    if [ "$success" = false ]; then
+        # stop
+        stop_force
+
+        printf "    ❌ Failed after $max_retries retries\n"
+        printf "    ❌ Final exit status code: $exit_status\n"
+        printf "    ❌ Final error message: %s\n" "$output"
+
+        return 1
+    fi
+}
+
 start_gaia_nexus() {
 
     # parse domain for gaia-nexus
@@ -867,6 +910,10 @@ start_gaia_nexus() {
         rm $log_dir/start-gaia-nexus.log
     fi
     sleep $wait_for_ready
+
+    printf "    * Verify gaia-nexus. Please wait seconds ...⏳\n\n"
+    check_nexus_with_retry "http://localhost:$llamaedge_port/admin/servers"
+
     echo $llama_nexus_pid > $gaianet_base_dir/llama_nexus.pid
     info "      👍 Done! gaia-nexus started with pid: $llama_nexus_pid"
 }
@@ -1030,15 +1077,15 @@ start() {
 
 
     # 4. start gaia-nexus
-    printf "[4/4] Starting gaia-nexus ...\n\n"
+    printf "[4/4] Starting gaia-nexus ...\n"
+    printf "    ❗ The process may take a few minutes. Please wait ...\n\n"
     start_gaia_nexus
 
     # register downstream servers
-    printf "    * Register embedding server ...⏳\n\n"
-    register_embedding_server
     printf "    * Registering chat server ...⏳\n\n"
     register_chat_server
-
+    printf "    * Register embedding server ...⏳\n\n"
+    register_embedding_server
 
 
     if [ "$local_only" -eq 0 ]; then
