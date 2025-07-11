@@ -22,7 +22,7 @@
 
 ## 빠른 시작
 
-Mac, Linux 또는 Windows WSL에서 한 줄의 명령어로 기본 노드 소프트웨어를 설치할 수 있습니다.
+Mac, Linux 또는 Windows WSL에서 다음 단일 명령줄로 기본 노드 소프트웨어 스택을 설치하세요.
 
 ```bash
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
@@ -30,21 +30,10 @@ curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/
 
 > 설치 후, 화면에 표시되는 안내에 따라 환경 경로를 설정하세요. 명령어는 `source`로 시작됩니다.
 
-노드를 초기화합니다. 이 과정에서는 `$HOME/gaianet/config.json` 파일에 명시된 모델 파일과 벡터 데이터베이스 파일을 다운로드하며, 파일 크기가 크기 때문에 몇 분이 소요될 수 있습니다.
-
-
-Mac, Linux 또는 Windows WSL에서 다음 단일 명령줄로 기본 노드 소프트웨어 스택을 설치하세요.
-
-```bash
-curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
-```
-
-그런 다음 화면에 나타나는 안내에 따라 환경 경로를 설정하세요. 커맨드 라인은 `source`로 시작될 것입니다.
-
 ![이미지](https://github.com/user-attachments/assets/dc75817c-9a54-4994-ab90-1efb1a018b17)
 
+노드를 초기화합니다. 이 과정에서는 `$HOME/gaianet/config.json` 파일에 명시된 모델 파일과 벡터 데이터베이스 파일을 다운로드하며, 파일 크기가 크기 때문에 몇 분이 소요될 수 있습니다.
 
-노드를 초기화합니다. `$HOME/gaianet/config.json` 파일에 지정된 모델 파일과 벡터 데이터베이스 파일을 다운로드합니다. 파일들의 용량이 크기 때문에 몇 분 정도 걸릴 수 있습니다.
 ```bash
 gaianet init
 ```
@@ -226,7 +215,7 @@ gaianet config --chat-url "https://huggingface.co/second-state/Llama-2-13B-Chat-
 예를 들어 `chat_ctx_size` 필드를 업데이트하려면 다음 명령을 사용하세요 :
 
 ```bash
-gaianet config --chat-url "모델 URL"
+gaianet config --chat-url "https://your-model-url"
 gaianet config --chat-ctx-size 5120
 ```
 

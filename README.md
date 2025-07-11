@@ -220,7 +220,7 @@ Stop a node installed in an alternative base directory.
 ```bash
 gaianet stop --base $HOME/gaianet.alt
 ```
-
+9
 ### Update configuration
 
 Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
