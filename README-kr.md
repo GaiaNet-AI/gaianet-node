@@ -61,7 +61,7 @@ gaianet start
 ... ... https://0xf63939431ee11267f4855a166e11cc44d24960c0.us.gaianet.network
 ```
 
-노드를 멈추려면 다음 스크립트를 실행하세요.
+노드를 중지하려면 다음 명령어를 실행하세요.
 
 ```bash
 gaianet stop
@@ -73,20 +73,16 @@ gaianet stop
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash
 ```
 
-<details><summary> 출력 결과는 다음과 같을 것입니다 : </summary>
+<details><summary> 출력 예시 보기 </summary>
 
 ```console
-[+] Downloading default config file ...
-[+] Downloading nodeid.json ...
-[+] Installing WasmEdge with wasi-nn_ggml plugin ...
-Info: Detected Linux-x86_64
-Info: WasmEdge Installation at /home/azureuser/.wasmedge
-Info: Fetching WasmEdge-0.13.5
-/tmp/wasmedge.2884467 ~/gaianet
-######################################################################## 100.0%
-~/gaianet
-Info: Fetching WasmEdge-GGML-Plugin
-Info: Detected CUDA version:
+[+] 기본 설정 파일 다운로드 중...
+[+] nodeid.json 다운로드 중...
+[+] WasmEdge 설치 중 (wasi-nn_ggml 플러그인 포함)...
+Info: Linux-x86_64 감지됨
+Info: WasmEdge 설치 경로: /home/azureuser/.wasmedge
+Info: WasmEdge-0.13.5 가져오는 중
+
 /tmp/wasmedge.2884467 ~/gaianet
 ######################################################################## 100.0%
 ~/gaianet
@@ -101,16 +97,18 @@ WasmEdge binaries accessible
 ################################################################################################## 100.0%
 [+] Downloading dashboard ...
 ################################################################################################## 100.0%
+...
+설치 완료!
 ```
 </details>
 
-기본설정으로 `$HOME/gaianet` 경로의 디렉토리에 설치됩니다. 다른 디렉토리에 설치하도록 선택할 수도 있습니다.
+기본적으로 `$HOME/gaianet`에 설치됩니다. 다른 디렉토리에 설치하려면:
 
 ```bash
 curl -sSfL 'https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/install.sh' | bash -s -- --base $HOME/gaianet.alt
 ```
 
-## 노드 초기화 하기
+## 노드 초기화
 
 ```bash
 gaianet init
