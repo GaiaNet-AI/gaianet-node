@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="main"
+repo_branch="test-qdrant-1.14.1"
 version="0.5.2"
 llama_api_server_version="0.18.5"
 gaia_nexus_version="0.1.0"
@@ -16,7 +16,7 @@ wasmedge_version="0.14.1"
 ggml_bn="b5896"
 vector_version="0.38.0"
 dashboard_version="v3.1"
-qdrant_version="v1.13.4"
+qdrant_version="v1.14.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
