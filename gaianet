@@ -936,7 +936,7 @@ register_embedding_server() {
     response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:$llamaedge_port/admin/servers/register \
     -H "Content-Type: application/json" \
     -D $headers_file \
-    -d '{"url": "http://localhost:'$llamaedge_embedding_port'", "kind": "embeddings"}')
+    -d '{"url": "http://localhost:'$llamaedge_embedding_port'/v1", "kind": "embeddings"}')
 
     # Extract status code from response (last line)
     status_code=$(echo "$response" | tail -n1)
@@ -983,7 +983,7 @@ register_chat_server() {
     response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:$llamaedge_port/admin/servers/register \
     -H "Content-Type: application/json" \
     -D $headers_file \
-    -d '{"url": "http://localhost:'$llamaedge_chat_port'", "kind": "chat"}')
+    -d '{"url": "http://localhost:'$llamaedge_chat_port'/v1", "kind": "chat"}')
 
     # Extract status code from response (last line)
     status_code=$(echo "$response" | tail -n1)
