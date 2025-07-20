@@ -4,7 +4,7 @@
 
 # version of CLI tool
 # Note that the version should kept same as the version of installer
-version="0.5.2"
+version="0.5.3"
 
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
