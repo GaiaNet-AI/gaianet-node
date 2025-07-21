@@ -885,6 +885,9 @@ start_gaia_nexus() {
         nohup $gaianet_base_dir/bin/gaia-nexus \
         --gaianet-dir $gaianet_base_dir \
         --rag \
+        --rag-prompt "'$rag_prompt'" \
+        --rag-context-window $context_window \
+        --rag-policy $rag_policy \
         --check-health \
         --check-health-interval 60 \
         --web-ui $gaianet_base_dir/dashboard \
