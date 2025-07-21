@@ -634,8 +634,7 @@ else
     exit 1
 fi
 # extract the gaia-nexus binary
-# tar -xzvf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus mcp_config.toml
-tar -xzvf $bin_dir/gaia-nexus.tar.gz $bin_dir/gaia-nexus $gaianet_base_dir/mcp_config.toml --strip-components=1
+tar -xzvf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus mcp_config.toml
 mv $bin_dir/mcp_config.toml $gaianet_base_dir/mcp_config.toml
 rm $bin_dir/gaia-nexus.tar.gz
 
