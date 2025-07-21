@@ -866,30 +866,41 @@ start_gaia_nexus() {
     # start gaia-nexus
     cd $gaianet_base_dir
     if [ "$rag_mode" = true ]; then
+        # check if cardea-qdrant-mcp-server exists
+        cardea_qdrant_mcp_server="$gaianet_base_dir/bin/cardea-qdrant-mcp-server"
+        if [ ! -f "$cardea_qdrant_mcp_server" ]; then
+            error "❌ Not found cardea-qdrant-mcp-server binary at $gaianet_base_dir/bin"
+            exit 1
+        fi
+
+        # start cardea-qdrant-mcp-server
+        nohup $gaianet_base_dir/bin/cardea-qdrant-mcp-server \
+        --collection $qdrant_collection_name \
+        --limit $qdrant_limit \
+        --score-threshold $qdrant_score_threshold \
+        --transport stream-http \
+        --socket-addr 127.0.0.1:8003 > $log_dir/qdrant-mcp-server.log 2>&1 &
+
+        # start gaia-nexus
         nohup $gaianet_base_dir/bin/gaia-nexus \
+        --gaianet-dir $gaianet_base_dir \
         --rag \
         --check-health \
         --check-health-interval 60 \
         --web-ui $gaianet_base_dir/dashboard \
         --log-destination file \
         --log-file $log_dir/gaia-nexus.log \
-        --gaianet-dir $gaianet_base_dir \
-        --vdb-url http://localhost:6333 \
-        --vdb-collection-name $qdrant_collection_name \
-        --vdb-limit $qdrant_limit \
-        --vdb-score-threshold $qdrant_score_threshold \
-        --rag-prompt "'$rag_prompt'" \
-        --rag-context-window $context_window \
-        --rag-policy $rag_policy \
         --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
+
     else
+        # start gaia-nexus
         nohup $gaianet_base_dir/bin/gaia-nexus \
+        --gaianet-dir $gaianet_base_dir \
         --check-health \
         --check-health-interval 60 \
         --web-ui $gaianet_base_dir/dashboard \
         --log-destination file \
         --log-file $log_dir/gaia-nexus.log \
-        --gaianet-dir $gaianet_base_dir \
         --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
     fi
     llama_nexus_pid=$!
