@@ -17,6 +17,7 @@ ggml_bn="b6097"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 qdrant_version="v1.14.1"
+cardea_qdrant_mcp_server_version="0.8.0"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -593,8 +594,14 @@ check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version
 
 info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
+# 8. Download cardea-qdrant-mcp-server
+printf "[+] Downloading cardea-qdrant-mcp-server ...\n"
+check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$cardea_qdrant_mcp_server_version/cardea-qdrant-mcp-server $bin_dir/cardea-qdrant-mcp-server
 
-# 8. Install gaia-nexus
+info "    👍 Done! The cardea-qdrant-mcp-server is downloaded in $bin_dir"
+
+
+# 9. Install gaia-nexus
 printf "[+] Installing gaia-nexus ...\n"
 if [ "$(uname)" == "Darwin" ]; then
 
@@ -627,13 +634,14 @@ else
     exit 1
 fi
 # extract the gaia-nexus binary
-tar -xzf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus
+tar -xzvf $bin_dir/gaia-nexus.tar.gz -C $bin_dir gaia-nexus mcp_config.toml
+mv $bin_dir/mcp_config.toml $gaianet_base_dir/mcp_config.toml
 rm $bin_dir/gaia-nexus.tar.gz
 
 info "    👍 Done! The gaia-nexus is downloaded in $bin_dir"
 
 
-# 9. Download dashboard to $gaianet_base_dir
+# 10. Download dashboard to $gaianet_base_dir
 if ! command -v tar &> /dev/null; then
     echo "tar could not be found, please install it."
     exit 1
@@ -653,7 +661,7 @@ else
     warning "    ❗ Use the cached dashboard in $gaianet_base_dir"
 fi
 
-# 10. Download registry.wasm
+# 11. Download registry.wasm
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading registry.wasm ...\n"
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
@@ -662,7 +670,7 @@ else
     warning "    ❗ Use the cached registry.wasm in $gaianet_base_dir"
 fi
 
-# 11. Generate node ID
+# 12. Generate node ID
 if [ "$upgrade" -eq 1 ]; then
     printf "[+] Recovering node ID ...\n"
 
@@ -713,7 +721,7 @@ else
     info "      👍 Done!"
 fi
 
-# 12. Install gaia-frp
+# 13. Install gaia-frp
 printf "[+] Installing gaia-frp...\n"
 # Check if the directory exists, if not, create it
 if [ ! -d "$gaianet_base_dir/gaia-frp" ]; then
