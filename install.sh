@@ -612,10 +612,10 @@ if [ "$(uname)" == "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$gaia_nexus_version/cardea-mcp-servers-unknown-linux-gnu-x86_64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
+        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_qdrant_mcp_server_version/cardea-mcp-servers-unknown-linux-gnu-x86_64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
 
     # elif [ "$target" = "aarch64" ]; then
-    #     check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$gaia_nexus_version/cardea-mcp-servers-unknown-linux-gnu-aarch64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
+        # check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_qdrant_mcp_server_version/cardea-mcp-servers-unknown-linux-gnu-aarch64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
 
     else
         error " * Unsupported architecture: $target, only support x86_64 on Linux"
