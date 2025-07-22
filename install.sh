@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="test-api-server-0.22.3"
+repo_branch="main"
 version="0.5.3"
 llama_api_server_version="0.24.0"
 gaia_nexus_version="0.1.1"
