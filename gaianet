@@ -192,6 +192,83 @@ check_config_options() {
     fi
 }
 
+# Add these new functions near the top of the file, after the existing function definitions
+
+# Check if a snapshot file is valid by attempting to import it into a test collection
+validate_snapshot() {
+    local snapshot_file=$1
+    local test_collection="test_validation"
+    
+    # Start qdrant for validation (only if not already running)
+    local started_new_instance=false
+    if ! lsof -Pi :6333 -sTCP:LISTEN -t >/dev/null; then
+        cd $gaianet_base_dir/qdrant
+        nohup $gaianet_base_dir/bin/qdrant > /dev/null 2>&1 &
+        local qdrant_pid=$!
+        started_new_instance=true
+        info "    * Started new Qdrant instance with PID: $qdrant_pid"
+        sleep 5
+    fi
+
+    # Try to import the snapshot into a test collection
+    response=$(curl -s -X POST "http://localhost:6333/collections/$test_collection/snapshots/upload?priority=snapshot" \
+        -H 'Content-Type:multipart/form-data' \
+        -F "snapshot=@$snapshot_file")
+    
+    # Check if import was successful
+    if echo "$response" | grep -q '"status":"ok"'; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Get the commit hash of a remote snapshot file using HTTP HEAD request
+get_remote_snapshot_hash() {
+    local url=$1
+    local commit_hash=$(curl -sI "$url" | grep -i 'x-repo-commit' | awk '{print $2}' | tr -d '\r')
+    echo "$commit_hash"
+}
+
+# Save commit hash to a metadata file alongside the snapshot
+save_snapshot_metadata() {
+    local snapshot_file=$1
+    local commit_hash=$2
+    echo "$commit_hash" > "${snapshot_file}.meta"
+}
+
+# Check if we need to download a new snapshot
+need_snapshot_update() {
+    local url=$1
+    local snapshot_file=$2
+    
+    # If snapshot doesn't exist locally, we need to download
+    if [ ! -f "$snapshot_file" ]; then
+        return 0
+    fi
+    
+    # If no metadata file exists, we need to download
+    if [ ! -f "${snapshot_file}.meta" ]; then 
+        return 0
+    fi
+    
+    # Get remote commit hash
+    local remote_hash=$(get_remote_snapshot_hash "$url")
+    if [ -z "$remote_hash" ]; then 
+        # If we can't get remote hash, safer to download a fresh copy
+        warning "    ❗ Could not verify remote snapshot version. Will download fresh copy."
+        return 0
+    fi
+    
+    # Compare with local hash
+    local local_hash=$(cat "${snapshot_file}.meta")
+    if [ "$remote_hash" != "$local_hash" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # create or recover a qdrant collection
 create_collection() {
     qdrant_pid=0
@@ -266,16 +343,33 @@ create_collection() {
 
         # Check if $url_snapshot is a valid URL
         if [[ $url_snapshot =~ $regex ]]; then
-            printf "    * Download Qdrant collection snapshot ...⏳\n"
-            if [[ $url_snapshot == *.tar.gz ]]; then
-                filename=$(basename $url_snapshot)
-                check_curl $url_snapshot $gaianet_base_dir/$filename
-                tar -xzOf $gaianet_base_dir/$filename > $gaianet_base_dir/default.snapshot
-                rm $gaianet_base_dir/$filename
+            local snapshot_file="$gaianet_base_dir/default.snapshot"
+            
+            if need_snapshot_update "$url_snapshot" "$snapshot_file"; then
+                printf "    * Download Qdrant collection snapshot ...⏳\n"
+                if [[ $url_snapshot == *.tar.gz ]]; then
+                    filename=$(basename $url_snapshot)
+                    check_curl $url_snapshot $gaianet_base_dir/$filename
+                    tar -xzOf $gaianet_base_dir/$filename > "$snapshot_file.tmp"
+                    rm $gaianet_base_dir/$filename
+                else
+                    check_curl $url_snapshot "$snapshot_file.tmp"
+                fi
+
+                # Validate the downloaded snapshot
+                if validate_snapshot "$snapshot_file.tmp"; then
+                    mv "$snapshot_file.tmp" "$snapshot_file"
+                    # Save metadata about the downloaded version
+                    save_snapshot_metadata "$snapshot_file" "$(get_remote_snapshot_hash "$url_snapshot")"
+                    info "      👍 The snapshot is downloaded and validated in $gaianet_base_dir"
+                else
+                    rm "$snapshot_file.tmp"
+                    error "      ❌ Downloaded snapshot failed validation"
+                    exit 1
+                fi
             else
-                check_curl $url_snapshot $gaianet_base_dir/default.snapshot
+                info "      👍 Using cached snapshot - already up to date"
             fi
-            info "      👍 The snapshot is downloaded in $gaianet_base_dir"
 
         # Check if $url_snapshot is a local file
         elif [ -f "$gaianet_base_dir/$url_snapshot" ]; then
@@ -288,7 +382,8 @@ create_collection() {
             fi
 
         else
-            echo "$url_snapshot is neither a valid URL nor a local file."
+            error "      ❌ $url_snapshot is neither a valid URL nor a local file"
+            exit 1
         fi
 
         printf "    * Import the Qdrant collection snapshot ...⏳\n"
@@ -301,7 +396,8 @@ create_collection() {
         sleep 5
 
         if echo "$response" | grep -q '"status":"ok"'; then
-            rm $gaianet_base_dir/default.snapshot
+            # Don't remove the snapshot file since we want to cache it
+            info "      👍 Collection snapshot imported successfully"
         else
             error "      ❌ Failed to recover from the collection snapshot. $response"
 
