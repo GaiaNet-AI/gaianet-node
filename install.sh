@@ -10,7 +10,7 @@ cwd=$(pwd)
 
 repo_branch="main"
 version="0.5.4"
-llama_api_server_version="0.25.0"
+llama_api_server_version="0.25.1"
 gaia_nexus_version="0.1.3"
 wasmedge_version="0.14.1"
 ggml_bn="b6097"
