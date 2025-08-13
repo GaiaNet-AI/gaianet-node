@@ -36,7 +36,7 @@ docker run --name gaianet \
 
 ## Stop and re-start
 
-You can stop and re-start the node as follows. Every time you re-start, it will re-initailize the vector
+You can stop and re-start the node as follows. Every time you re-start, it will re-initialize the vector
 collection (knowledge base).
 
 ```
