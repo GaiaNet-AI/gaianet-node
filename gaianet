@@ -155,18 +155,6 @@ check_config_options() {
         exit 1
     fi
 
-    # check if the `rag_prompt` field exists or not
-    if ! grep -q '"rag_prompt":' $gaianet_base_dir/config.json; then
-        error "❌ Not found the 'rag_prompt' field in $gaianet_base_dir/config.json\n"
-        exit 1
-    fi
-
-    # check if the `rag_policy` field exists or not
-    if ! grep -q '"rag_policy":' $gaianet_base_dir/config.json; then
-        error "❌ Not found the 'rag_policy' field in $gaianet_base_dir/config.json\n"
-        exit 1
-    fi
-
     # check if the `domain` field exists or not
     if ! grep -q '"domain":' $gaianet_base_dir/config.json; then
         error "❌ Not found the 'domain' field in $gaianet_base_dir/config.json\n"
@@ -770,6 +758,41 @@ start_qdrant_instance() {
 
 }
 
+start_cardea_agentic_search_mcp_server() {
+    # check if cardea-agentic-search-mcp-server exists
+    cardea_agentic_search_mcp_server="$gaianet_base_dir/bin/cardea-agentic-search-mcp-server"
+    if [ ! -f "$cardea_agentic_search_mcp_server" ]; then
+        error "❌ Not found cardea-agentic-search-mcp-server binary at $gaianet_base_dir/bin"
+        gaianet stop
+        exit 1
+    fi
+
+    # parse qdrant collection name
+    qdrant_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
+    if [[ -z "$qdrant_collection_name" ]]; then
+        qdrant_collection_name="default"
+    fi
+
+    # parse qdrant score threshold
+    qdrant_score_threshold=$(awk -F'"' '/"qdrant_score_threshold":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse qdrant limit
+    qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' $gaianet_base_dir/config.json)
+
+    nohup $gaianet_base_dir/bin/cardea-agentic-search-mcp-server \
+        qdrant \
+        --qdrant-collection $qdrant_collection_name \
+        --score-threshold $qdrant_score_threshold \
+        --limit $qdrant_limit \
+        --qdrant-payload-field "source" \
+        --embedding-service http://localhost:$llamaedge_embedding_port/v1 > /dev/null 2>&1 &
+
+    sleep 2
+    cardea_agentic_search_mcp_server_pid=$!
+    echo $cardea_agentic_search_mcp_server_pid > $gaianet_base_dir/cardea_agentic_search_mcp.pid
+    info "\n      👍 Done! Cardea Agentic Search MCP server started with pid: $cardea_agentic_search_mcp_server_pid"
+}
+
 check_nexus_with_retry() {
     local url=$1
     local max_retries=6
@@ -832,24 +855,6 @@ start_gaia_nexus() {
     # parse qdrant limit
     qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' $gaianet_base_dir/config.json)
 
-    # parse system prompt for chat model
-    rag_prompt=$(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)
-
-    # parse context window
-    # check if context window is present in config.json
-    if grep -q '"context_window":' $gaianet_base_dir/config.json; then
-        context_window=$(awk -F'"' '/"context_window":/ {print $4}' $gaianet_base_dir/config.json)
-    else
-        context_window=1
-    fi
-
-    # parse rag policy
-    if grep -q '"rag_policy":' $gaianet_base_dir/config.json; then
-        rag_policy=$(awk -F'"' '/"rag_policy":/ {print $4}' $gaianet_base_dir/config.json)
-    else
-        rag_policy="system-message"
-    fi
-
     # parse port for LlamaEdge API Server
     llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
 
@@ -863,49 +868,58 @@ start_gaia_nexus() {
         exit 1
     fi
 
-    # start gaia-nexus
     cd $gaianet_base_dir
+
+    # enable mcp server if rag_mode is true
+    MCP_CONFIG_FILE=$gaianet_base_dir/mcp_config.toml
     if [ "$rag_mode" = true ]; then
-        # check if cardea-qdrant-mcp-server exists
-        cardea_qdrant_mcp_server="$gaianet_base_dir/bin/cardea-qdrant-mcp-server"
-        if [ ! -f "$cardea_qdrant_mcp_server" ]; then
-            error "❌ Not found cardea-qdrant-mcp-server binary at $gaianet_base_dir/bin"
+        if [ "$(uname)" == "Darwin" ]; then
+            # macOS
+            sed -i '.bak' '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+                /enable.*=.*false/ s/enable.*=.*false/enable           = true/
+            }' "$MCP_CONFIG_FILE"
+        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            # Linux
+            sed -i.bak '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+                /enable.*=.*false/ s/enable.*=.*false/enable           = true/
+            }' "$MCP_CONFIG_FILE"
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+            error "    ❌ For Windows users, please run this script in WSL."
+            exit 1
+        else
+            error "    ❌ Only support Linux, MacOS and Windows."
             exit 1
         fi
-
-        # start cardea-qdrant-mcp-server
-        nohup $gaianet_base_dir/bin/cardea-qdrant-mcp-server \
-        --collection $qdrant_collection_name \
-        --limit $qdrant_limit \
-        --score-threshold $qdrant_score_threshold \
-        --transport stream-http \
-        --socket-addr 127.0.0.1:8003 > $log_dir/qdrant-mcp-server.log 2>&1 &
-
-        # start gaia-nexus
-        nohup $gaianet_base_dir/bin/gaia-nexus \
-        --gaianet-dir $gaianet_base_dir \
-        --rag \
-        --rag-prompt "'$rag_prompt'" \
-        --rag-context-window $context_window \
-        --rag-policy $rag_policy \
-        --check-health \
-        --check-health-interval 60 \
-        --web-ui $gaianet_base_dir/dashboard \
-        --log-destination file \
-        --log-file $log_dir/gaia-nexus.log \
-        --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
-
     else
-        # start gaia-nexus
-        nohup $gaianet_base_dir/bin/gaia-nexus \
-        --gaianet-dir $gaianet_base_dir \
-        --check-health \
-        --check-health-interval 60 \
-        --web-ui $gaianet_base_dir/dashboard \
-        --log-destination file \
-        --log-file $log_dir/gaia-nexus.log \
-        --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
+        if [ "$(uname)" == "Darwin" ]; then
+            # macOS
+            sed -i '.bak' '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+                /enable.*=.*true/ s/enable.*=.*true/enable           = false/
+            }' "$MCP_CONFIG_FILE"
+        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            # Linux
+            sed -i.bak '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+                /enable.*=.*true/ s/enable.*=.*true/enable           = false/
+            }' "$MCP_CONFIG_FILE"
+        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+            error "    ❌ For Windows users, please run this script in WSL."
+            exit 1
+        else
+            error "    ❌ Only support Linux, MacOS and Windows."
+            exit 1
+        fi
     fi
+
+    # start gaia-nexus
+    nohup $gaianet_base_dir/bin/gaia-nexus \
+    --gaianet-dir $gaianet_base_dir \
+    --check-health \
+    --check-health-interval 60 \
+    --web-ui $gaianet_base_dir/dashboard \
+    --log-destination file \
+    --log-file $log_dir/gaia-nexus.log \
+    --port $llamaedge_port > $log_dir/start-gaia-nexus.log 2>&1 &
+
     llama_nexus_pid=$!
 
     # Check if the command started successfully
@@ -1072,6 +1086,9 @@ start() {
     if [ "$rag_mode" = true ]; then
         printf "    * Starting Qdrant instance ...⏳\n"
         start_qdrant_instance
+
+        printf "    * Starting Cardea Agentic Search MCP server ...⏳\n"
+        start_cardea_agentic_search_mcp_server
     fi
 
     # 3. start gaia-frp
@@ -1101,7 +1118,6 @@ start() {
     printf "    * Register embedding server ...⏳\n\n"
     register_embedding_server
 
-
     if [ "$local_only" -eq 0 ]; then
         # Extract the subdomain from frpc.toml
         subdomain=$(grep "subdomain" $gaianet_base_dir/gaia-frp/frpc.toml | cut -d'=' -f2 | tr -d ' "')
@@ -1127,6 +1143,7 @@ stop_force() {
 
     pkill -9 qdrant || true
     pkill -9 gaia-nexus || true
+    pkill -9 cardea-agentic-search-mcp-server || true
     pkill -9 wasmedge || true
     pkill -9 frpc || true
 
@@ -1148,6 +1165,11 @@ stop_force() {
     llama_nexus_pid=$gaianet_base_dir/llama_nexus.pid
     if [ -f $llama_nexus_pid ]; then
         rm $llama_nexus_pid
+    fi
+
+    cardea_agentic_search_mcp_pid=$gaianet_base_dir/cardea_agentic_search_mcp.pid
+    if [ -f $cardea_agentic_search_mcp_pid ]; then
+        rm $cardea_agentic_search_mcp_pid
     fi
 
     gaia_frp_pid=$gaianet_base_dir/gaia-frp.pid
@@ -1292,14 +1314,11 @@ case $subcommand in
         llamaedge_chat_port=""
         llamaedge_embedding_port=""
         system_prompt=""
-        rag_prompt=""
-        rag_policy=""
         reverse_prompt=""
         domain=""
         snapshot="placeholder"
         qdrant_limit=""
         qdrant_score_threshold=""
-        context_window=""
 
         while (( "$#" )); do
             case "$1" in
@@ -1381,18 +1400,6 @@ case $subcommand in
                         shift 2
                     fi
                     ;;
-                --rag-prompt)
-                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-                        rag_prompt=$2
-                        shift 2
-                    fi
-                    ;;
-                --rag-policy)
-                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-                        rag_policy=$2
-                        shift 2
-                    fi
-                    ;;
                 --reverse-prompt)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         reverse_prompt=$2
@@ -1425,12 +1432,6 @@ case $subcommand in
                 --qdrant-score-threshold)
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         qdrant_score_threshold=$2
-                        shift 2
-                    fi
-                    ;;
-                --context-window)
-                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-                        context_window=$2
                         shift 2
                     fi
                     ;;
@@ -1595,32 +1596,6 @@ case $subcommand in
             sed_in_place "s|\"system_prompt\": \".*\"|\"system_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
         fi
 
-        # update rag prompt
-        if [ -n "$rag_prompt" ]; then
-            printf "[+] Updating the rag prompt of chat model ...\n"
-            printf "    * Old port: $(awk -F'"' '/"rag_prompt":/ {print $4}' $gaianet_base_dir/config.json)\n"
-            info "    * New rag prompt: $rag_prompt"
-
-            # The new value for rag_prompt
-            new_value="$rag_prompt"
-
-            # Escape ampersands and backslashes in the new value
-            new_value_escaped=$(echo "$new_value" | sed 's/[&\\/]/\\&/g')
-
-            # Update the value of rag_prompt in config.json
-            sed_in_place "s|\"rag_prompt\": \".*\"|\"rag_prompt\": \"$new_value_escaped\"|" $gaianet_base_dir/config.json
-        fi
-
-        # update rag policy
-        if [ -n "$rag_policy" ]; then
-            printf "[+] Updating the rag policy of GaiaNet node ...\n"
-            printf "    * Old rag policy: $(awk -F'"' '/"rag_policy":/ {print $4}' $gaianet_base_dir/config.json)\n"
-            info "    * New rag policy: $rag_policy"
-
-            # update
-            update_config rag_policy $rag_policy
-        fi
-
         # update domain
         if [ -n "$domain" ]; then
             printf "[+] Updating the domain of GaiaNet node ...\n"
@@ -1659,16 +1634,6 @@ case $subcommand in
 
             # update
             update_config qdrant_score_threshold $qdrant_score_threshold
-        fi
-
-        # update context window
-        if [ -n "$context_window" ]; then
-            printf "[+] Updating the context window ...\n"
-            printf "    * Old window: $(awk -F'"' '/"context_window":/ {print $4}' $gaianet_base_dir/config.json)\n"
-            info "    * New window: $context_window"
-
-            # update
-            update_config context_window $context_window
         fi
 
         printf "✅ COMPLETED! The config.json is updated successfully.\n\n"
