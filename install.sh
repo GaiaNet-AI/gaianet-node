@@ -17,7 +17,7 @@ ggml_bn="b6097"
 vector_version="0.38.0"
 dashboard_version="v3.1"
 qdrant_version="v1.14.1"
-cardea_qdrant_mcp_server_version="0.8.0"
+cardea_agentic_search_mcp_server_version="0.9.1"
 
 # 0: do not reinstall, 1: reinstall
 reinstall=0
@@ -594,15 +594,15 @@ check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version
 
 info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
-# 8. Download cardea-qdrant-mcp-server
-printf "[+] Downloading cardea-qdrant-mcp-server ...\n"
+# 8. Download cardea-agentic-search-mcp-server
+printf "[+] Downloading cardea-agentic-search-mcp-server ...\n"
 if [ "$(uname)" == "Darwin" ]; then
 
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_qdrant_mcp_server_version/cardea-mcp-servers-apple-darwin-x86_64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
+        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_agentic_search_mcp_server_version/cardea-mcp-servers-apple-darwin-x86_64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
 
     elif [ "$target" = "arm64" ]; then
-        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_qdrant_mcp_server_version/cardea-mcp-servers-apple-darwin-aarch64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
+        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_agentic_search_mcp_server_version/cardea-mcp-servers-apple-darwin-aarch64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
 
     else
         error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
@@ -612,10 +612,10 @@ if [ "$(uname)" == "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 
     if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_qdrant_mcp_server_version/cardea-mcp-servers-unknown-linux-gnu-x86_64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
+        check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_agentic_search_mcp_server_version/cardea-mcp-servers-unknown-linux-gnu-x86_64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
 
     # elif [ "$target" = "aarch64" ]; then
-        # check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_qdrant_mcp_server_version/cardea-mcp-servers-unknown-linux-gnu-aarch64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
+        # check_curl https://github.com/cardea-mcp/cardea-mcp-servers/releases/download/$cardea_agentic_search_mcp_server_version/cardea-mcp-servers-unknown-linux-gnu-aarch64.tar.gz $bin_dir/cardea-mcp-servers.tar.gz
 
     else
         error " * Unsupported architecture: $target, only support x86_64 on Linux"
@@ -626,11 +626,11 @@ else
     error "Only support Linux, MacOS and Windows(WSL)."
     exit 1
 fi
-# extract the qdrant mcp server binary
-tar -xzvf $bin_dir/cardea-mcp-servers.tar.gz -C $bin_dir cardea-qdrant-mcp-server
+# extract the cardea-agentic-search-mcp-server binary
+tar -xzvf $bin_dir/cardea-mcp-servers.tar.gz -C $bin_dir cardea-agentic-search-mcp-server
 rm $bin_dir/cardea-mcp-servers.tar.gz
 
-info "    👍 Done! The cardea-qdrant-mcp-server is downloaded in $bin_dir"
+info "    👍 Done! The cardea-agentic-search-mcp-server is downloaded in $bin_dir"
 
 
 # 9. Install gaia-nexus
