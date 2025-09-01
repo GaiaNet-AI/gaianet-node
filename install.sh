@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="feat-new-nexus"
+repo_branch="main"
 version="0.6.0"
 llama_api_server_version="0.26.1"
 gaia_nexus_version="0.8.0"
