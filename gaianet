@@ -779,13 +779,21 @@ start_cardea_agentic_search_mcp_server() {
     # parse qdrant limit
     qdrant_limit=$(awk -F'"' '/"qdrant_limit":/ {print $4}' $gaianet_base_dir/config.json)
 
-    nohup $gaianet_base_dir/bin/cardea-agentic-search-mcp-server \
+    # check if cardea-agentic-search exists in $gaianet_base_dir/bin or not
+    cardea_agentic_search="$gaianet_base_dir/bin/cardea-agentic-search"
+    if [ ! -f "$cardea_agentic_search" ]; then
+        error "❌ Not found cardea-agentic-search binary at $gaianet_base_dir/bin"
+        gaianet stop
+        exit 1
+    fi
+
+    nohup $gaianet_base_dir/bin/cardea-agentic-search \
         qdrant \
         --qdrant-collection $qdrant_collection_name \
         --score-threshold $qdrant_score_threshold \
         --limit $qdrant_limit \
         --qdrant-payload-field "source" \
-        --embedding-service http://localhost:$llamaedge_embedding_port/v1 > /dev/null 2>&1 &
+        --embedding-service-base-url http://localhost:$llamaedge_embedding_port/v1 > /dev/null 2>&1 &
 
     sleep 2
     cardea_agentic_search_mcp_server_pid=$!
@@ -1143,7 +1151,7 @@ stop_force() {
 
     pkill -9 qdrant || true
     pkill -9 gaia-nexus || true
-    pkill -9 cardea-agentic-search-mcp-server || true
+    pkill -9 cardea-agentic-search || true
     pkill -9 wasmedge || true
     pkill -9 frpc || true
 
