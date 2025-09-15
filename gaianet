@@ -760,9 +760,9 @@ start_qdrant_instance() {
 
 start_cardea_agentic_search_mcp_server() {
     # check if cardea-agentic-search-mcp-server exists
-    cardea_agentic_search_mcp_server="$gaianet_base_dir/bin/cardea-agentic-search-mcp-server"
+    cardea_agentic_search_mcp_server="$gaianet_base_dir/bin/cardea-agentic-search"
     if [ ! -f "$cardea_agentic_search_mcp_server" ]; then
-        error "❌ Not found cardea-agentic-search-mcp-server binary at $gaianet_base_dir/bin"
+        error "❌ Not found cardea-agentic-search binary at $gaianet_base_dir/bin"
         gaianet stop
         exit 1
     fi
