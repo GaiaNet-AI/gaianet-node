@@ -1,0 +1,122 @@
+name: Test Server
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  test-chat-embeddings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone project
+        id: checkout
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
+
+      - name: Install Hurl
+        run: |
+          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/5.0.1/hurl_5.0.1_amd64.deb
+          sudo apt update && sudo apt install ./hurl_5.0.1_amd64.deb
+
+      - name: Install GaiaNode
+        run: |
+          chmod +x ./install.sh
+          ./install.sh
+          export PATH=$HOME/gaianet/bin:$PATH
+          gaianet --help
+
+      - name: Initialize GaiaNode
+        run: |
+          export PATH=$HOME/gaianet/bin:$PATH
+          gaianet init
+          sleep 10
+
+      - name: Start GaiaNode
+        run: |
+          export PATH=$HOME/gaianet/bin:$PATH
+          gaianet start
+          sleep 10
+
+      - name: Print logs
+        if: failure()
+        run: |
+          cat $HOME/gaianet/log/gaia-nexus.log
+          cat $HOME/gaianet/log/chat-server.log
+
+      - name: Run chat.hurl
+        run: |
+          hurl --test --jobs 1 ./tests/chat.hurl
+
+      - name: Run embeddings.hurl
+        run: |
+          hurl --test --jobs 1 ./tests/embeddings.hurl
+
+      - name: Stop GaiaNode
+        run: |
+          /home/runner/gaianet/bin/gaianet stop
+
+  test-rag:
+    runs-on: ubuntu-latest
+    needs: test-chat-embeddings
+
+    steps:
+      - name: Clone project
+        id: checkout
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl git jq lsof supervisor
+
+      - name: Install Hurl
+        run: |
+          curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/5.0.1/hurl_5.0.1_amd64.deb
+          sudo apt update && sudo apt install ./hurl_5.0.1_amd64.deb
+
+      - name: Install GaiaNode
+        run: |
+          chmod +x ./install.sh
+          ./install.sh
+          export PATH=$HOME/gaianet/bin:$PATH
+          gaianet --help
+
+      - name: Replace config.json for RAG test
+        run: |
+          cp ./tests/test.rag.json $HOME/gaianet/config.json
+
+      - name: Initialize GaiaNode
+        run: |
+          export PATH=$HOME/gaianet/bin:$PATH
+          gaianet init
+          sleep 10
+
+      - name: Start GaiaNode
+        run: |
+          export PATH=$HOME/gaianet/bin:$PATH
+          gaianet start
+          sleep 10
+
+      - name: Print logs
+        if: failure()
+        run: |
+          cat $HOME/gaianet/log/gaia-nexus.log
+          cat $HOME/gaianet/log/chat-server.log
+
+      - name: Run rag.hurl
+        run: |
+          hurl --test --jobs 1 --max-time 1800s ./tests/rag.hurl
+
+      - name: Print logs
+        if: failure()
+        run: |
+          cat $HOME/gaianet/log/chat-server.log
+
+      - name: Stop GaiaNode
+        run: |
+          /home/runner/gaianet/bin/gaianet stop
