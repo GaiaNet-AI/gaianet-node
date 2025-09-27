@@ -1048,6 +1048,53 @@ register_chat_server() {
     fi
 }
 
+register_chat_server_for_demo() {
+    # parse port for chat server
+    # llamaedge_chat_port=$(awk -F'"' '/"llamaedge_chat_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # parse port for gaia-nexus
+    llamaedge_port=$(awk -F'"' '/"llamaedge_port":/ {print $4}' $gaianet_base_dir/config.json)
+
+    # register chat server
+    local response
+    local status_code
+
+    # Create temporary file to store response headers
+    local headers_file=$(mktemp)
+
+    # Execute curl command, save response content to variable and get status code
+    response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:$llamaedge_port/admin/servers/register \
+    -H "Content-Type: application/json" \
+    -D $headers_file \
+    -d '{"url": "'$DEFAULT_CHAT_SERVICE'", "kind": "chat", "api_key": "'$DEFAULT_CHAT_SERVICE_API_KEY'"}')
+
+    # Extract status code from response (last line)
+    status_code=$(echo "$response" | tail -n1)
+    # Get actual response body (excluding the last line)
+    response_body=$(echo "$response" | sed '$d')
+
+    # Check if status code indicates success (2xx means success)
+    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
+        info "      👍 Successfully registered chat server"
+
+        # Delete temporary file
+        rm -f $headers_file
+
+    else
+        error "      ❌ Failed to register chat server. Status code: $status_code"
+        error "      Response: $response_body"
+        error "      Headers: $(cat $headers_file)"
+
+        # Delete temporary file
+        rm -f $headers_file
+
+        # stop
+        stop_force
+
+        exit 1
+    fi
+}
+
 # start rag-api-server and a qdrant instance
 start() {
     local_only=$1
@@ -1082,13 +1129,14 @@ start() {
     # 2. start downstream servers
     printf "[2/4] Starting downstream servers ...\n\n"
 
-    # start chat server
-    printf "    * Start chat server ...⏳\n\n"
-    start_chat_server
+    # Both environment variables are unset or empty, use normal mode
+    if [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+        printf "    * Start chat server ...⏳\n\n"
+        start_chat_server
 
-    # start embedding server
-    printf "    * Start embedding server ...⏳\n\n"
-    start_embedding_server
+        printf "    * Start embedding server ...⏳\n\n"
+        start_embedding_server
+    fi
 
     # start Qdrant instance if rag mode is true
     if [ "$rag_mode" = true ]; then
@@ -1114,7 +1162,6 @@ start() {
         printf "    The GaiaNet node is started in local mode at: http://localhost:$llamaedge_port\n\n"
     fi
 
-
     # 4. start gaia-nexus
     printf "[4/4] Starting gaia-nexus ...\n"
     printf "    ❗ The process may take a few minutes. Please wait ...\n\n"
@@ -1122,9 +1169,41 @@ start() {
 
     # register downstream servers
     printf "    * Registering chat server ...⏳\n\n"
-    register_chat_server
+    if [ -n "$DEFAULT_CHAT_SERVICE" ] && [ -n "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+        # Both environment variables are set and non-empty, use demo mode
+        register_chat_server_for_demo
+    elif [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+        # Both environment variables are unset or empty, use normal mode
+        register_chat_server
+    else
+        # One is set but the other is not, show error message
+        error "Environment variable configuration error:"
+        if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
+            error "  DEFAULT_CHAT_SERVICE is not set or empty"
+        fi
+        if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+            error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
+        fi
+        error "Both DEFAULT_CHAT_SERVICE and DEFAULT_CHAT_SERVICE_API_KEY must be set together, or both left unset"
+        exit 1
+    fi
+
     printf "    * Register embedding server ...⏳\n\n"
-    register_embedding_server
+    if [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+        # Both environment variables are unset or empty, use normal mode
+        register_embedding_server
+    elif [ -z "$DEFAULT_CHAT_SERVICE" ] || [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+        # One is set but the other is not, show error message
+        error "Environment variable configuration error:"
+        if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
+            error "  DEFAULT_CHAT_SERVICE is not set or empty"
+        fi
+        if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+            error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
+        fi
+        error "Both DEFAULT_CHAT_SERVICE and DEFAULT_CHAT_SERVICE_API_KEY must be set together, or both left unset"
+        exit 1
+    fi
 
     if [ "$local_only" -eq 0 ]; then
         # Extract the subdomain from frpc.toml
