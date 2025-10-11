@@ -367,7 +367,7 @@ bin_dir=$gaianet_base_dir/bin
 printf "[+] Installing gaianet CLI tool ...\n"
 check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
 
-if [ "$repo_branch" = "main" ]; then
+if [ "$repo_branch" = "demo" ]; then
     check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/gaianet $bin_dir/gaianet
 else
     check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/gaianet $bin_dir/gaianet
@@ -437,7 +437,7 @@ else
     printf "[+] Downloading default config.json ...\n"
 
     if [ ! -f "$gaianet_base_dir/config.json" ]; then
-        if [ "$repo_branch" = "main" ]; then
+        if [ "$repo_branch" = "demo" ]; then
             check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/config.json $gaianet_base_dir/config.json
         else
             check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/config.json $gaianet_base_dir/config.json
@@ -743,7 +743,7 @@ else
     # download the default nodeid.json
     if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
         printf "    * Download nodeid.json ...⏳\n"
-        if [ "$repo_branch" = "main" ]; then
+        if [ "$repo_branch" = "demo" ]; then
             check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
         else
             check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/refs/heads/$repo_branch/nodeid.json $gaianet_base_dir/nodeid.json
@@ -841,7 +841,7 @@ else
     printf "    * Download frpc.toml\n"
     # check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
 
-    if [ "$repo_branch" = "main" ]; then
+    if [ "$repo_branch" = "demo" ]; then
         check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
     else
         check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/raw/refs/heads/$repo_branch/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
