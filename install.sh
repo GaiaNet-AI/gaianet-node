@@ -696,7 +696,7 @@ fi
 # 11. Download registry.wasm
 if [ ! -f "$gaianet_base_dir/registry.wasm" ] || [ "$reinstall" -eq 1 ]; then
     printf "[+] Downloading registry.wasm ...\n"
-    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/main/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
+    check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/utils/registry/registry.wasm $gaianet_base_dir/registry.wasm
     info "    👍 Done! The registry.wasm is downloaded in $gaianet_base_dir"
 else
     warning "    ❗ Use the cached registry.wasm in $gaianet_base_dir"
@@ -743,7 +743,11 @@ else
     # download the default nodeid.json
     if [ ! -f "$gaianet_base_dir/nodeid.json" ]; then
         printf "    * Download nodeid.json ...⏳\n"
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+        if [ "$repo_branch" = "main" ]; then
+            check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/nodeid.json $gaianet_base_dir/nodeid.json
+        else
+            check_curl https://github.com/GaiaNet-AI/gaianet-node/raw/refs/heads/$repo_branch/nodeid.json $gaianet_base_dir/nodeid.json
+        fi
         info "      👍 Done!"
     fi
 
