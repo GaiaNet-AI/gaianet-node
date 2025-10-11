@@ -8,7 +8,7 @@ target=$(uname -m)
 # represents the directory where the script is located
 cwd=$(pwd)
 
-repo_branch="refactor-enhance-demo"
+repo_branch="demo"
 version="0.0.0"
 llama_api_server_version="0.27.0"
 gaia_nexus_version="0.0.0"
