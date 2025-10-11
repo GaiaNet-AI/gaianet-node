@@ -354,41 +354,41 @@ init() {
         exit 1
     fi
 
-    # download GGUF embedding model file to $gaianet_base_dir
-    url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
-    embedding_model=$(basename $url_embedding_model)
-    if [[ $url_embedding_model =~ ^http[s]?://.* ]]; then
-        printf "[+] Downloading $embedding_model ...\n"
-        if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-            warning "    ❗ Using the cached $embedding_model in $gaianet_base_dir"
-        else
-            check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
-            info "    👍 Done! $embedding_model is downloaded in $gaianet_base_dir"
-        fi
-    elif [[ $url_embedding_model =~ .*\.gguf$ ]]; then
-        printf "[+] Using local $embedding_model ...\n"
-        if [ -f "$gaianet_base_dir/$embedding_model" ]; then
-            warning "    ❗ Found $embedding_model in $gaianet_base_dir"
-        else
-            error "    ❌ Not found $embedding_model in $gaianet_base_dir. Exit ..."
-            exit 1
-        fi
-    else
-        error "❌ The 'embedding' field in $gaianet_base_dir/config.json should be a url or a gguf model file. Exit ..."
-        exit 1
-    fi
+    # # download GGUF embedding model file to $gaianet_base_dir
+    # url_embedding_model=$(awk -F'"' '/"embedding":/ {print $4}' $gaianet_base_dir/config.json)
+    # embedding_model=$(basename $url_embedding_model)
+    # if [[ $url_embedding_model =~ ^http[s]?://.* ]]; then
+    #     printf "[+] Downloading $embedding_model ...\n"
+    #     if [ -f "$gaianet_base_dir/$embedding_model" ]; then
+    #         warning "    ❗ Using the cached $embedding_model in $gaianet_base_dir"
+    #     else
+    #         check_curl $url_embedding_model $gaianet_base_dir/$embedding_model
+    #         info "    👍 Done! $embedding_model is downloaded in $gaianet_base_dir"
+    #     fi
+    # elif [[ $url_embedding_model =~ .*\.gguf$ ]]; then
+    #     printf "[+] Using local $embedding_model ...\n"
+    #     if [ -f "$gaianet_base_dir/$embedding_model" ]; then
+    #         warning "    ❗ Found $embedding_model in $gaianet_base_dir"
+    #     else
+    #         error "    ❌ Not found $embedding_model in $gaianet_base_dir. Exit ..."
+    #         exit 1
+    #     fi
+    # else
+    #     error "❌ The 'embedding' field in $gaianet_base_dir/config.json should be a url or a gguf model file. Exit ..."
+    #     exit 1
+    # fi
 
-    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
-    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
-    if [[ -z "$embedding_collection_name" ]]; then
-        embedding_collection_name="default"
-    fi
+    # snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    # embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
+    # if [[ -z "$embedding_collection_name" ]]; then
+    #     embedding_collection_name="default"
+    # fi
 
-    if [ -n "$snapshot" ]; then
-        # create or recover a qdrant collection
-        printf "[+] Creating '%s' collection in the Qdrant instance ...\n" "$embedding_collection_name"
-        create_collection
-    fi
+    # if [ -n "$snapshot" ]; then
+    #     # create or recover a qdrant collection
+    #     printf "[+] Creating '%s' collection in the Qdrant instance ...\n" "$embedding_collection_name"
+    #     create_collection
+    # fi
 
     # Copy config to dashboard
     if [ ! -f "$gaianet_base_dir/registry.wasm" ] ; then
@@ -878,45 +878,45 @@ start_gaia_nexus() {
 
     cd $gaianet_base_dir
 
-    # enable mcp server if rag_mode is true
-    MCP_CONFIG_FILE=$gaianet_base_dir/mcp_config.toml
-    if [ "$rag_mode" = true ]; then
-        if [ "$(uname)" == "Darwin" ]; then
-            # macOS
-            sed -i '.bak' '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
-                /enable.*=.*false/ s/enable.*=.*false/enable           = true/
-            }' "$MCP_CONFIG_FILE"
-        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            # Linux
-            sed -i.bak '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
-                /enable.*=.*false/ s/enable.*=.*false/enable           = true/
-            }' "$MCP_CONFIG_FILE"
-        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            error "    ❌ For Windows users, please run this script in WSL."
-            exit 1
-        else
-            error "    ❌ Only support Linux, MacOS and Windows."
-            exit 1
-        fi
-    else
-        if [ "$(uname)" == "Darwin" ]; then
-            # macOS
-            sed -i '.bak' '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
-                /enable.*=.*true/ s/enable.*=.*true/enable           = false/
-            }' "$MCP_CONFIG_FILE"
-        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            # Linux
-            sed -i.bak '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
-                /enable.*=.*true/ s/enable.*=.*true/enable           = false/
-            }' "$MCP_CONFIG_FILE"
-        elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-            error "    ❌ For Windows users, please run this script in WSL."
-            exit 1
-        else
-            error "    ❌ Only support Linux, MacOS and Windows."
-            exit 1
-        fi
-    fi
+    # # enable mcp server if rag_mode is true
+    # MCP_CONFIG_FILE=$gaianet_base_dir/mcp_config.toml
+    # if [ "$rag_mode" = true ]; then
+    #     if [ "$(uname)" == "Darwin" ]; then
+    #         # macOS
+    #         sed -i '.bak' '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+    #             /enable.*=.*false/ s/enable.*=.*false/enable           = true/
+    #         }' "$MCP_CONFIG_FILE"
+    #     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    #         # Linux
+    #         sed -i.bak '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+    #             /enable.*=.*false/ s/enable.*=.*false/enable           = true/
+    #         }' "$MCP_CONFIG_FILE"
+    #     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    #         error "    ❌ For Windows users, please run this script in WSL."
+    #         exit 1
+    #     else
+    #         error "    ❌ Only support Linux, MacOS and Windows."
+    #         exit 1
+    #     fi
+    # else
+    #     if [ "$(uname)" == "Darwin" ]; then
+    #         # macOS
+    #         sed -i '.bak' '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+    #             /enable.*=.*true/ s/enable.*=.*true/enable           = false/
+    #         }' "$MCP_CONFIG_FILE"
+    #     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    #         # Linux
+    #         sed -i.bak '/name.*=.*"cardea-agentic-search"/,/fallback_message.*=/ {
+    #             /enable.*=.*true/ s/enable.*=.*true/enable           = false/
+    #         }' "$MCP_CONFIG_FILE"
+    #     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    #         error "    ❌ For Windows users, please run this script in WSL."
+    #         exit 1
+    #     else
+    #         error "    ❌ Only support Linux, MacOS and Windows."
+    #         exit 1
+    #     fi
+    # fi
 
     # start gaia-nexus
     nohup $gaianet_base_dir/bin/gaia-nexus \
@@ -1097,6 +1097,22 @@ register_chat_server_for_demo() {
 
 # start rag-api-server and a qdrant instance
 start() {
+    # check if DEFAULT_CHAT_SERVICE, DEFAULT_CHAT_SERVICE_API_KEY, and DEMO_CHAT_MODEL are set or not
+    if [ -z "$DEFAULT_CHAT_SERVICE" ] || [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ] || [ -z "$DEMO_CHAT_MODEL" ]; then
+        error "Environment variable configuration error:"
+        if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
+            error "  DEFAULT_CHAT_SERVICE is not set or empty"
+        fi
+        if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+            error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
+        fi
+        if [ -z "$DEMO_CHAT_MODEL" ]; then
+            error "  DEMO_CHAT_MODEL is not set or empty"
+        fi
+        error "All three environment variables must be set together"
+        exit 1
+    fi
+
     local_only=$1
     force_rag=$2
     log_dir=$gaianet_base_dir/log
@@ -1104,17 +1120,17 @@ start() {
         mkdir -p -m777 $log_dir
     fi
 
-    snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
-    embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
-    if [[ -z "$embedding_collection_name" ]]; then
-        embedding_collection_name="default"
-    fi
+    # snapshot=$(awk -F'"' '/"snapshot":/ {print $4}' $gaianet_base_dir/config.json)
+    # embedding_collection_name=$(awk -F'"' '/"embedding_collection_name":/ {print $4}' $gaianet_base_dir/config.json)
+    # if [[ -z "$embedding_collection_name" ]]; then
+    #     embedding_collection_name="default"
+    # fi
 
-    if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
-        rag_mode=true
-    else
-        rag_mode=false
-    fi
+    # if [ -n "$snapshot" ] || [ "$force_rag" = true ]; then
+    #     rag_mode=true
+    # else
+    #     rag_mode=false
+    # fi
 
     # 1. check if config.json exists or not
     printf "[1/4] Checking the config.json file ...\n"
@@ -1138,14 +1154,14 @@ start() {
         start_embedding_server
     fi
 
-    # start Qdrant instance if rag mode is true
-    if [ "$rag_mode" = true ]; then
-        printf "    * Starting Qdrant instance ...⏳\n"
-        start_qdrant_instance
+    # # start Qdrant instance if rag mode is true
+    # if [ "$rag_mode" = true ]; then
+    #     printf "    * Starting Qdrant instance ...⏳\n"
+    #     start_qdrant_instance
 
-        printf "    * Starting Cardea Agentic Search MCP server ...⏳\n"
-        start_cardea_agentic_search_mcp_server
-    fi
+    #     printf "    * Starting Cardea Agentic Search MCP server ...⏳\n"
+    #     start_cardea_agentic_search_mcp_server
+    # fi
 
     # 3. start gaia-frp
     if [ "$local_only" -eq 0 ]; then
@@ -1169,41 +1185,43 @@ start() {
 
     # register downstream servers
     printf "    * Registering chat server ...⏳\n\n"
-    if [ -n "$DEFAULT_CHAT_SERVICE" ] && [ -n "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
-        # Both environment variables are set and non-empty, use demo mode
-        register_chat_server_for_demo
-    elif [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
-        # Both environment variables are unset or empty, use normal mode
-        register_chat_server
-    else
-        # One is set but the other is not, show error message
-        error "Environment variable configuration error:"
-        if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
-            error "  DEFAULT_CHAT_SERVICE is not set or empty"
-        fi
-        if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
-            error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
-        fi
-        error "Both DEFAULT_CHAT_SERVICE and DEFAULT_CHAT_SERVICE_API_KEY must be set together, or both left unset"
-        exit 1
-    fi
+    register_chat_server_for_demo
 
-    printf "    * Register embedding server ...⏳\n\n"
-    if [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
-        # Both environment variables are unset or empty, use normal mode
-        register_embedding_server
-    elif [ -z "$DEFAULT_CHAT_SERVICE" ] || [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
-        # One is set but the other is not, show error message
-        error "Environment variable configuration error:"
-        if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
-            error "  DEFAULT_CHAT_SERVICE is not set or empty"
-        fi
-        if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
-            error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
-        fi
-        error "Both DEFAULT_CHAT_SERVICE and DEFAULT_CHAT_SERVICE_API_KEY must be set together, or both left unset"
-        exit 1
-    fi
+    # if [ -n "$DEFAULT_CHAT_SERVICE" ] && [ -n "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+    #     # Both environment variables are set and non-empty, use demo mode
+    #     register_chat_server_for_demo
+    # elif [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+    #     # Both environment variables are unset or empty, use normal mode
+    #     register_chat_server
+    # else
+    #     # One is set but the other is not, show error message
+    #     error "Environment variable configuration error:"
+    #     if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
+    #         error "  DEFAULT_CHAT_SERVICE is not set or empty"
+    #     fi
+    #     if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+    #         error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
+    #     fi
+    #     error "Both DEFAULT_CHAT_SERVICE and DEFAULT_CHAT_SERVICE_API_KEY must be set together, or both left unset"
+    #     exit 1
+    # fi
+
+    # printf "    * Register embedding server ...⏳\n\n"
+    # if [ -z "$DEFAULT_CHAT_SERVICE" ] && [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+    #     # Both environment variables are unset or empty, use normal mode
+    #     register_embedding_server
+    # elif [ -z "$DEFAULT_CHAT_SERVICE" ] || [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+    #     # One is set but the other is not, show error message
+    #     error "Environment variable configuration error:"
+    #     if [ -z "$DEFAULT_CHAT_SERVICE" ]; then
+    #         error "  DEFAULT_CHAT_SERVICE is not set or empty"
+    #     fi
+    #     if [ -z "$DEFAULT_CHAT_SERVICE_API_KEY" ]; then
+    #         error "  DEFAULT_CHAT_SERVICE_API_KEY is not set or empty"
+    #     fi
+    #     error "Both DEFAULT_CHAT_SERVICE and DEFAULT_CHAT_SERVICE_API_KEY must be set together, or both left unset"
+    #     exit 1
+    # fi
 
     if [ "$local_only" -eq 0 ]; then
         # Extract the subdomain from frpc.toml

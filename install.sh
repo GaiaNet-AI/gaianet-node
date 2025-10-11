@@ -449,27 +449,27 @@ else
     fi
 fi
 
-# 4. Install vector and download vector config file
-if [ "$enable_vector" -eq 1 ]; then
-    # Check if vector is installed
-    if ! command -v vector &> /dev/null; then
-        printf "[+] Installing vector ...\n"
-        if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=$vector_version bash -s -- -y; then
-            info "    * The vector is installed."
-        else
-            error "    * Failed to install vector"
-            exit 1
-        fi
-    fi
-    # Check if vector.toml exists
-    if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
-        printf "[+] Downloading vector config file ...\n"
+# # 4. Install vector and download vector config file
+# if [ "$enable_vector" -eq 1 ]; then
+#     # Check if vector is installed
+#     if ! command -v vector &> /dev/null; then
+#         printf "[+] Installing vector ...\n"
+#         if curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | VECTOR_VERSION=$vector_version bash -s -- -y; then
+#             info "    * The vector is installed."
+#         else
+#             error "    * Failed to install vector"
+#             exit 1
+#         fi
+#     fi
+#     # Check if vector.toml exists
+#     if [ ! -f "$gaianet_base_dir/vector.toml" ]; then
+#         printf "[+] Downloading vector config file ...\n"
 
-        check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/vector.toml $gaianet_base_dir/vector.toml
+#         check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/vector.toml $gaianet_base_dir/vector.toml
 
-        info "    * The vector.toml is downloaded in $gaianet_base_dir"
-    fi
-fi
+#         info "    * The vector.toml is downloaded in $gaianet_base_dir"
+#     fi
+# fi
 
 # 5. Install WasmEdge and ggml plugin
 printf "[+] Installing WasmEdge with wasi-nn_ggml plugin ...\n"
@@ -498,93 +498,93 @@ else
     fi
 fi
 
-# 6. Install Qdrant binary and prepare directories
+# # 6. Install Qdrant binary and prepare directories
 
-# 6.1 Inatall Qdrant binary
-printf "[+] Installing Qdrant binary...\n"
-if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
-    printf "    * Download Qdrant binary\n"
-    if [ "$(uname)" == "Darwin" ]; then
-        # download qdrant binary
-        if [ "$target" = "x86_64" ]; then
-            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
+# # 6.1 Inatall Qdrant binary
+# printf "[+] Installing Qdrant binary...\n"
+# if [ ! -f "$gaianet_base_dir/bin/qdrant" ] || [ "$reinstall" -eq 1 ]; then
+#     printf "    * Download Qdrant binary\n"
+#     if [ "$(uname)" == "Darwin" ]; then
+#         # download qdrant binary
+#         if [ "$target" = "x86_64" ]; then
+#             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz -C $bin_dir
-            rm $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
+#             tar -xzf $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz -C $bin_dir
+#             rm $gaianet_base_dir/qdrant-x86_64-apple-darwin.tar.gz
 
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+#             info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
 
-        elif [ "$target" = "arm64" ]; then
-            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
+#         elif [ "$target" = "arm64" ]; then
+#             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-apple-darwin.tar.gz $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $bin_dir
-            rm $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
-        else
-            error "      ❌ Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
-            exit 1
-        fi
+#             tar -xzf $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz -C $bin_dir
+#             rm $gaianet_base_dir/qdrant-aarch64-apple-darwin.tar.gz
+#             info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+#         else
+#             error "      ❌ Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+#             exit 1
+#         fi
 
-    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        # download qdrant statically linked binary
-        if [ "$target" = "x86_64" ]; then
-            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
+#     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+#         # download qdrant statically linked binary
+#         if [ "$target" = "x86_64" ]; then
+#             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-x86_64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz -C $bin_dir
-            rm $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
+#             tar -xzf $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz -C $bin_dir
+#             rm $gaianet_base_dir/qdrant-x86_64-unknown-linux-musl.tar.gz
 
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+#             info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
 
-        elif [ "$target" = "aarch64" ]; then
-            check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
+#         elif [ "$target" = "aarch64" ]; then
+#             check_curl https://github.com/qdrant/qdrant/releases/download/$qdrant_version/qdrant-aarch64-unknown-linux-musl.tar.gz $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
 
-            tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $bin_dir
-            rm $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
-            info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
-        else
-            error "      ❌ Unsupported architecture: $target, only support x86_64 and aarch64 on Linux"
-            exit 1
-        fi
+#             tar -xzf $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz -C $bin_dir
+#             rm $gaianet_base_dir/qdrant-aarch64-unknown-linux-musl.tar.gz
+#             info "      👍 Done! The Qdrant binary is downloaded in $bin_dir"
+#         else
+#             error "      ❌ Unsupported architecture: $target, only support x86_64 and aarch64 on Linux"
+#             exit 1
+#         fi
 
-    elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        error "      ❌ For Windows users, please run this script in WSL."
-        exit 1
-    else
-        error "      ❌ Only support Linux, MacOS and Windows."
-        exit 1
-    fi
+#     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+#         error "      ❌ For Windows users, please run this script in WSL."
+#         exit 1
+#     else
+#         error "      ❌ Only support Linux, MacOS and Windows."
+#         exit 1
+#     fi
 
-else
-    warning "      ❗ Use the cached Qdrant binary in $gaianet_base_dir/bin"
-fi
+# else
+#     warning "      ❗ Use the cached Qdrant binary in $gaianet_base_dir/bin"
+# fi
 
-# 6.2 Init qdrant directory
-if [ ! -d "$gaianet_base_dir/qdrant" ]; then
-    printf "    * Initialize Qdrant directory\n"
-    mkdir -p -m777 $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
+# # 6.2 Init qdrant directory
+# if [ ! -d "$gaianet_base_dir/qdrant" ]; then
+#     printf "    * Initialize Qdrant directory\n"
+#     mkdir -p -m777 $gaianet_base_dir/qdrant && cd $gaianet_base_dir/qdrant
 
-    # download qdrant binary
-    check_curl_silent https://github.com/qdrant/qdrant/archive/refs/tags/$qdrant_version.tar.gz $gaianet_base_dir/qdrant/$qdrant_version.tar.gz
+#     # download qdrant binary
+#     check_curl_silent https://github.com/qdrant/qdrant/archive/refs/tags/$qdrant_version.tar.gz $gaianet_base_dir/qdrant/$qdrant_version.tar.gz
 
-    mkdir -p "$qdrant_version"
-    tar -xzf "$gaianet_base_dir/qdrant/$qdrant_version.tar.gz" -C "$qdrant_version" --strip-components 1
-    rm $gaianet_base_dir/qdrant/$qdrant_version.tar.gz
+#     mkdir -p "$qdrant_version"
+#     tar -xzf "$gaianet_base_dir/qdrant/$qdrant_version.tar.gz" -C "$qdrant_version" --strip-components 1
+#     rm $gaianet_base_dir/qdrant/$qdrant_version.tar.gz
 
-    cp -r $qdrant_version/config .
-    rm -rf $qdrant_version
+#     cp -r $qdrant_version/config .
+#     rm -rf $qdrant_version
 
-    info "      👍 Done!"
+#     info "      👍 Done!"
 
-    # disable telemetry in the `config.yaml` file
-    printf "    * Disable telemetry\n"
-    config_file="$gaianet_base_dir/qdrant/config/config.yaml"
+#     # disable telemetry in the `config.yaml` file
+#     printf "    * Disable telemetry\n"
+#     config_file="$gaianet_base_dir/qdrant/config/config.yaml"
 
-    if [ -f "$config_file" ]; then
-        sed_in_place 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
-    fi
+#     if [ -f "$config_file" ]; then
+#         sed_in_place 's/telemetry_disabled: false/telemetry_disabled: true/' "$config_file"
+#     fi
 
-    info "      👍 Done!"
-fi
+#     info "      👍 Done!"
+# fi
 
 # 7. Download LlamaEdge API server
 printf "[+] Downloading LlamaEdge API server ...\n"
@@ -594,43 +594,43 @@ check_curl https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version
 
 info "    👍 Done! The llama-api-server.wasm is downloaded in $gaianet_base_dir"
 
-# 8. Download cardea-agentic-search mcp server
-printf "[+] Downloading cardea-agentic-search-mcp-server ...\n"
-if [ "$(uname)" == "Darwin" ]; then
+# # 8. Download cardea-agentic-search mcp server
+# printf "[+] Downloading cardea-agentic-search-mcp-server ...\n"
+# if [ "$(uname)" == "Darwin" ]; then
 
-    if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-apple-darwin-x86_64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
+#     if [ "$target" = "x86_64" ]; then
+#         check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-apple-darwin-x86_64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
 
-    elif [ "$target" = "arm64" ]; then
-        check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-apple-darwin-aarch64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
+#     elif [ "$target" = "arm64" ]; then
+#         check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-apple-darwin-aarch64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
 
-    else
-        error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
-        exit 1
-    fi
+#     else
+#         error " * Unsupported architecture: $target, only support x86_64 and arm64 on MacOS"
+#         exit 1
+#     fi
 
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+# elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 
-    if [ "$target" = "x86_64" ]; then
-        check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-unknown-linux-gnu-x86_64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
+#     if [ "$target" = "x86_64" ]; then
+#         check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-unknown-linux-gnu-x86_64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
 
-    # elif [ "$target" = "aarch64" ]; then
-        # check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-unknown-linux-gnu-aarch64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
+#     # elif [ "$target" = "aarch64" ]; then
+#         # check_curl https://github.com/cardea-mcp/agentic-search/releases/download/$cardea_agentic_search_mcp_server_version/cardea-agentic-search-unknown-linux-gnu-aarch64.tar.gz $bin_dir/cardea-agentic-search.tar.gz
 
-    else
-        error " * Unsupported architecture: $target, only support x86_64 on Linux"
-        exit 1
-    fi
+#     else
+#         error " * Unsupported architecture: $target, only support x86_64 on Linux"
+#         exit 1
+#     fi
 
-else
-    error "Only support Linux, MacOS and Windows(WSL)."
-    exit 1
-fi
-# extract the cardea-agentic-search-mcp-server binary
-tar -xzvf $bin_dir/cardea-agentic-search.tar.gz -C $bin_dir cardea-agentic-search
-rm $bin_dir/cardea-agentic-search.tar.gz
+# else
+#     error "Only support Linux, MacOS and Windows(WSL)."
+#     exit 1
+# fi
+# # extract the cardea-agentic-search-mcp-server binary
+# tar -xzvf $bin_dir/cardea-agentic-search.tar.gz -C $bin_dir cardea-agentic-search
+# rm $bin_dir/cardea-agentic-search.tar.gz
 
-info "    👍 Done! The cardea-agentic-search mcp server is downloaded in $bin_dir"
+# info "    👍 Done! The cardea-agentic-search mcp server is downloaded in $bin_dir"
 
 
 # 9. Install gaia-nexus
