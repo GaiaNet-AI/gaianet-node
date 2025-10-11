@@ -9,9 +9,9 @@ target=$(uname -m)
 cwd=$(pwd)
 
 repo_branch="refactor-enhance-demo"
-version="0.6.0"
+version="0.0.0"
 llama_api_server_version="0.27.0"
-gaia_nexus_version="0.8.3"
+gaia_nexus_version="0.0.0"
 wasmedge_version="0.14.1"
 ggml_bn="b6399"
 vector_version="0.38.0"
