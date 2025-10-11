@@ -5,7 +5,7 @@ set -e
 # path to the default gaianet base directory. It could be changed by the --base option
 gaianet_base_dir="$HOME/gaianet"
 
-version="0.6.0"
+version="0.0.0"
 
 # print in red color
 RED=$'\e[0;31m'
