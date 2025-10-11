@@ -2,9 +2,10 @@ name: Test Server
 
 on:
   push:
-    branches: [ '*' ]
+    # branches: [ '*' ]
+    branches-ignore: [ 'demo' ]
   pull_request:
-    branches: [ '*' ]
+    branches: [ 'main' ]
 
 jobs:
   test-chat-embeddings:

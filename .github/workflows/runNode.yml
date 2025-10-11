@@ -4,9 +4,10 @@ on:
   schedule:
     - cron: "0 0 * * *"
   push:
-    branches: [ '*' ]
+    # branches: [ '*' ]
+    branches-ignore: [ 'demo' ]
   pull_request:
-    branches: [ '*' ]
+    branches: [ 'main' ]
 
 jobs:
   run-node-and-test:
