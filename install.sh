@@ -839,7 +839,13 @@ elif [ -f "$migrated_from_file" ] && ( tar -tf "$migrated_from_file" | grep -q "
     fi
 else
     printf "    * Download frpc.toml\n"
-    check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
+    # check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
+
+    if [ "$repo_branch" = "main" ]; then
+        check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
+    else
+        check_curl_silent https://github.com/GaiaNet-AI/gaianet-node/raw/refs/heads/$repo_branch/frpc.toml $gaianet_base_dir/gaia-frp/frpc.toml
+    fi
     info "      👍 Done! frpc.toml is downloaded in $gaianet_base_dir/gaia-frp"
 fi
 
