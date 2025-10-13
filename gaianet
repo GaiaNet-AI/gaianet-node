@@ -1244,13 +1244,11 @@ start() {
 
 # force stop the Qdrant instance, rag-api-server, and gaia-frp
 stop_force() {
-    printf "[+] Stopping WasmEdge, Qdrant and frpc ...\n"
+    printf "[+] Stopping gaia-nexus, WasmEdge, and frpc ...\n"
 
-    pkill -9 qdrant || true
-    pkill -9 gaia-nexus || true
-    pkill -9 cardea-agentic-search || true
-    pkill -9 wasmedge || true
-    pkill -9 frpc || true
+    pkill -9 -f gaia-nexus || true
+    pkill -9 -f wasmedge || true
+    pkill -9 -f frpc || true
 
     qdrant_pid=$gaianet_base_dir/qdrant.pid
     if [ -f $qdrant_pid ]; then
