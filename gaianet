@@ -440,6 +440,25 @@ update_config() {
 
 # * start subcommand
 
+# Added by Aboyeji Isaac:
+# stop_force() and store_force() were missing but called inside start_chat_server().
+# These helper functions prevent crashes by force-stopping processes and saving logs.
+
+stop_force() {
+    echo "🛑 Forcing stop of chat server..."
+    pkill -9 wasmedge || true   # kill any leftover chat server process
+    rm -f "$gaianet_base_dir/chat_server.pid"
+}
+
+store_force() {
+    echo "💾 Forcing store of chat server logs/state..."
+    # For now, just move logs so they are preserved
+    timestamp=$(date +"%Y%m%d_%H%M%S")
+    if [ -f "$log_dir/chat-server.log" ]; then
+        cp "$log_dir/chat-server.log" "$log_dir/chat-server_$timestamp.log"
+    fi
+}
+
 start_chat_server() {
     # parse cli options for chat model
     url_chat_model=$(awk -F'"' '/"chat":/ {print $4}' $gaianet_base_dir/config.json)
