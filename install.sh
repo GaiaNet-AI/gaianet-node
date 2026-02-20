@@ -3,7 +3,7 @@
 set -e
 
 # target name
-target=$(uname -m)
+target=${TARGET_ARCH:-$(uname -m)}
 
 # represents the directory where the script is located
 cwd=$(pwd)
@@ -49,6 +49,19 @@ GREEN=$'\e[0;32m'
 YELLOW=$'\e[0;33m'
 # No Color
 NC=$'\e[0m'
+
+function check_dependencies {
+    local dependencies=("curl" "tar" "awk" "grep" "openssl")
+    for cmd in "${dependencies[@]}"; do
+        if ! command -v "$cmd" &> /dev/null; then
+            error "Error: '$cmd' is not installed. Please install it and try again."
+            exit 1
+        fi
+    done
+}
+
+# Check dependencies before proceeding
+check_dependencies
 
 function print_usage {
     printf "Usage:\n"
@@ -346,20 +359,20 @@ fi
 
 # Check if $gaianet_base_dir directory exists
 if [ ! -d $gaianet_base_dir ]; then
-    mkdir -p -m777 $gaianet_base_dir
+    mkdir -p -m755 $gaianet_base_dir
 fi
 cd $gaianet_base_dir
 
 # check if `log` directory exists or not. It needs to allow `gaianet` to write into it
 if [ ! -d "$gaianet_base_dir/log" ]; then
-    mkdir -p -m777 $gaianet_base_dir/log
+    mkdir -p -m755 $gaianet_base_dir/log
 fi
 log_dir=$gaianet_base_dir/log
 
 # Check if "$gaianet_base_dir/bin" directory exists
 if [ ! -d "$gaianet_base_dir/bin" ]; then
     # If not, create it
-    mkdir -p -m777 $gaianet_base_dir/bin
+    mkdir -p -m755 $gaianet_base_dir/bin
 fi
 bin_dir=$gaianet_base_dir/bin
 
