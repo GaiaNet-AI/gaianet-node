@@ -223,7 +223,7 @@ gaianet stop --base $HOME/gaianet.alt
 
 ### Update configuration
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuration.
 
 To update the `chat` field, for example, use the following command:
 
