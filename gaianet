@@ -438,6 +438,215 @@ update_config() {
     fi
 }
 
+parallel_search_mcp_helper_path() {
+    local helper_path
+    local script_dir
+
+    helper_path="$gaianet_base_dir/bin/parallel_search_mcp.py"
+    if [ -f "$helper_path" ]; then
+        printf "%s/%s" "$(cd "$(dirname "$helper_path")" && pwd -P)" "$(basename "$helper_path")"
+        return 0
+    fi
+
+    script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P)
+    helper_path="$script_dir/utils/parallel_search_mcp.py"
+    if [ -f "$helper_path" ]; then
+        printf "%s" "$helper_path"
+        return 0
+    fi
+
+    return 1
+}
+
+set_web_search_provider() {
+    local helper_path
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        error "Python 3 is required to update the web search provider."
+        return 1
+    fi
+    helper_path=$(parallel_search_mcp_helper_path) || {
+        error "❌ Search MCP helper is missing. Reinstall GaiaNet Node and try again."
+        return 1
+    }
+    if [ ! -f "$gaianet_base_dir/mcp_config.toml" ]; then
+        error "❌ Not found mcp_config.toml in $gaianet_base_dir"
+        return 1
+    fi
+
+    if ! python3 "$helper_path" set-provider \
+        --config-file "$gaianet_base_dir/config.json" \
+        --mcp-config "$gaianet_base_dir/mcp_config.toml" \
+        --provider "$1"; then
+        error "❌ Failed to update the web search provider."
+        return 1
+    fi
+}
+
+mcp_server_enabled() {
+    local mcp_config_path=$1
+    local server_name=$2
+
+    [ -f "$mcp_config_path" ] || return 1
+    awk -v target="$server_name" '
+        function finish_block() {
+            if (name == target && enabled) active = 1
+        }
+        /^\[\[mcp\.server\.tool\]\][[:space:]]*$/ {
+            finish_block()
+            name = ""
+            enabled = 0
+            in_tool = 1
+            next
+        }
+        /^[[:space:]]*\[/ {
+            finish_block()
+            name = ""
+            enabled = 0
+            in_tool = 0
+        }
+        in_tool && /^[[:space:]]*name[[:space:]]*=/ {
+            value = $0
+            sub(/^[[:space:]]*name[[:space:]]*=[[:space:]]*"/, "", value)
+            sub(/".*$/, "", value)
+            name = value
+        }
+        in_tool && /^[[:space:]]*enable[[:space:]]*=/ {
+            value = $0
+            sub(/^[[:space:]]*enable[[:space:]]*=[[:space:]]*/, "", value)
+            if (value ~ /^true([[:space:]]*#.*)?$/) enabled = 1
+        }
+        END {
+            finish_block()
+            exit active ? 0 : 1
+        }
+    ' "$mcp_config_path"
+}
+
+start_parallel_search_mcp_proxy() {
+    local helper_path
+    local base_path
+    local pid_file
+    local proxy_pid
+    local attempt
+    local running_pid
+    local health_response
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        error "❌ Python 3 is required for the Parallel Search provider."
+        exit 1
+    fi
+    helper_path=$(parallel_search_mcp_helper_path) || {
+        error "❌ Search MCP helper is missing. Reinstall GaiaNet Node and try again."
+        exit 1
+    }
+    base_path=$(cd "$gaianet_base_dir" 2>/dev/null && pwd -P)
+    if [ -z "$base_path" ]; then
+        error "❌ Cannot resolve GaiaNet base directory: $gaianet_base_dir"
+        exit 1
+    fi
+    pid_file="$base_path/parallel_search_mcp.pid"
+
+    python3 "$helper_path" stop --pid-file "$pid_file" >/dev/null 2>&1 || true
+    nohup python3 "$helper_path" serve \
+        --node-version "$version" \
+        --pid-file "$pid_file" \
+        > "$log_dir/parallel-search-mcp.log" 2>&1 &
+    proxy_pid=$!
+
+    for attempt in {1..10}; do
+        if ! kill -0 "$proxy_pid" >/dev/null 2>&1; then
+            error "❌ Failed to start the Parallel Search MCP adapter. Check $log_dir/parallel-search-mcp.log"
+            exit 1
+        fi
+        running_pid=$(cat "$pid_file" 2>/dev/null || true)
+        health_response=$(curl -fsS http://127.0.0.1:8012/healthz 2>/dev/null || true)
+        if [ "$running_pid" = "$proxy_pid" ] && [ "$health_response" = "ok" ]; then
+            info "      👍 Parallel Search MCP adapter started with pid: $proxy_pid"
+            return 0
+        fi
+        sleep 1
+    done
+
+    python3 "$helper_path" stop --pid-file "$pid_file" >/dev/null 2>&1 || true
+    error "❌ The Parallel Search MCP adapter did not become ready. Check $log_dir/parallel-search-mcp.log"
+    exit 1
+}
+
+configure_web_search_provider() {
+    local mcp_config_path=$1
+    local provider
+    local helper_path
+    local config_file="$gaianet_base_dir/config.json"
+
+    if grep -q '"web_search_provider"[[:space:]]*:' "$config_file"; then
+        provider=$(awk -F'"' '/"web_search_provider"[[:space:]]*:/ {print $4; exit}' "$config_file")
+        case "$provider" in
+            none|parallel)
+                ;;
+            *)
+                error "❌ The web_search_provider value must be 'none' or 'parallel'."
+                exit 1
+                ;;
+        esac
+    else
+        provider=legacy
+    fi
+
+    if [ "$provider" = "parallel" ]; then
+        if ! command -v python3 >/dev/null 2>&1; then
+            error "❌ Python 3 is required for the Parallel Search provider."
+            exit 1
+        fi
+        helper_path=$(parallel_search_mcp_helper_path) || {
+            error "❌ Search MCP helper is missing. Reinstall GaiaNet Node and try again."
+            exit 1
+        }
+        if ! python3 "$helper_path" configure \
+            --config-file "$config_file" \
+            --mcp-config "$mcp_config_path" >/dev/null; then
+            error "❌ Failed to configure the Parallel Search MCP server."
+            exit 1
+        fi
+        start_parallel_search_mcp_proxy
+    elif [ "$provider" = "none" ]; then
+        if mcp_server_enabled "$mcp_config_path" "parallel-search" ||
+            mcp_server_enabled "$mcp_config_path" "cardea-web-search"; then
+            if ! command -v python3 >/dev/null 2>&1; then
+                error "❌ Python 3 is required to disable an existing web search MCP server."
+                exit 1
+            fi
+            helper_path=$(parallel_search_mcp_helper_path) || {
+                error "❌ Search MCP helper is missing. Reinstall GaiaNet Node and try again."
+                exit 1
+            }
+            if ! python3 "$helper_path" configure \
+                --config-file "$config_file" \
+                --mcp-config "$mcp_config_path" >/dev/null; then
+                error "❌ Failed to disable the existing web search MCP server."
+                exit 1
+            fi
+        fi
+        stop_parallel_search_mcp_proxy
+    fi
+}
+
+stop_parallel_search_mcp_proxy() {
+    local helper_path
+    local base_path
+    local pid_file
+
+    base_path=$(cd "$gaianet_base_dir" 2>/dev/null && pwd -P)
+    [ -n "$base_path" ] || return 0
+    pid_file="$base_path/parallel_search_mcp.pid"
+    [ -f "$pid_file" ] || return 0
+
+    helper_path=$(parallel_search_mcp_helper_path) || return 0
+    if command -v python3 >/dev/null 2>&1; then
+        python3 "$helper_path" stop --pid-file "$pid_file" >/dev/null 2>&1 || true
+    fi
+}
+
 # * start subcommand
 
 start_chat_server() {
@@ -1074,6 +1283,8 @@ start() {
     check_config_options
     info "\n    👍 Done!"
 
+    configure_web_search_provider "$gaianet_base_dir/mcp_config.toml"
+
     # sync the config.json to dashboard/config_pub.json
     cd $gaianet_base_dir
     wasmedge --dir .:. registry.wasm
@@ -1147,7 +1358,9 @@ start() {
 
 # force stop the Qdrant instance, rag-api-server, and gaia-frp
 stop_force() {
-    printf "[+] Stopping WasmEdge, Qdrant, gaia-nexus, and frpc ...\n"
+    printf "[+] Stopping WasmEdge, Qdrant, gaia-nexus, Parallel Search MCP, and frpc ...\n"
+
+    stop_parallel_search_mcp_proxy
 
     pkill -9 -f qdrant || true
     pkill -9 -f gaia-nexus || true
@@ -1257,6 +1470,7 @@ show_config_help() {
     printf "  --snapshot <url>               Update the Qdrant snapshot.\n"
     printf "  --qdrant-limit <val>           Update the max number of result to return.\n"
     printf "  --qdrant-score-threshold <val> Update the minimal score threshold for the result.\n"
+    printf "  --web-search-provider <val>    Select the web search provider [Possible values: none, parallel].\n"
     printf "  --context-window <val>         Update the context window.\n"
     printf "  --base <path>                  The base directory of GaiaNet node.\n"
     printf "  --help                         Show this help message\n\n"
@@ -1327,6 +1541,7 @@ case $subcommand in
         snapshot="placeholder"
         qdrant_limit=""
         qdrant_score_threshold=""
+        web_search_provider=""
 
         while (( "$#" )); do
             case "$1" in
@@ -1441,6 +1656,15 @@ case $subcommand in
                     if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                         qdrant_score_threshold=$2
                         shift 2
+                    fi
+                    ;;
+                --web-search-provider)
+                    if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                        web_search_provider=$2
+                        shift 2
+                    else
+                        show_config_help
+                        exit 1
                     fi
                     ;;
                 --base)
@@ -1642,6 +1866,19 @@ case $subcommand in
 
             # update
             update_config qdrant_score_threshold $qdrant_score_threshold
+        fi
+
+        if [ -n "$web_search_provider" ]; then
+            case "$web_search_provider" in
+                none|parallel)
+                    printf "[+] Updating the web search provider ...\n"
+                    set_web_search_provider "$web_search_provider" || exit 1
+                    ;;
+                *)
+                    error "❌ The web search provider must be 'none' or 'parallel'."
+                    exit 1
+                    ;;
+            esac
         fi
 
         printf "✅ COMPLETED! The config.json is updated successfully.\n\n"

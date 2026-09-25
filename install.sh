@@ -376,6 +376,19 @@ fi
 chmod u+x $bin_dir/gaianet
 info "    👍 Done! Gaianet CLI tool is installed in $bin_dir"
 
+printf "[+] Installing Parallel Search MCP helper ...\n"
+if [ -f "$cwd/utils/parallel_search_mcp.py" ]; then
+    cp "$cwd/utils/parallel_search_mcp.py" "$bin_dir/parallel_search_mcp.py"
+elif [ "$repo_branch" = "main" ]; then
+    if ! curl --retry 3 --fail --progress-bar -L "https://github.com/GaiaNet-AI/gaianet-node/releases/download/$version/parallel_search_mcp.py" -o "$bin_dir/parallel_search_mcp.py"; then
+        warning "Release helper is unavailable; downloading the main-branch helper instead."
+        curl --retry 3 --fail --progress-bar -L "https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/utils/parallel_search_mcp.py" -o "$bin_dir/parallel_search_mcp.py"
+    fi
+else
+    check_curl "https://github.com/GaiaNet-AI/gaianet-node/raw/$repo_branch/utils/parallel_search_mcp.py" "$bin_dir/parallel_search_mcp.py"
+fi
+info "    👍 Parallel Search MCP helper is installed in $bin_dir"
+
 # 2. Download default `config.json`
 if [ "$upgrade" -eq 1 ]; then
     printf "[+] Recovering config.json ...\n"
