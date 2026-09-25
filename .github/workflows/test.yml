@@ -7,6 +7,24 @@ on:
     branches: [ '*' ]
 
 jobs:
+  test-parallel-search-adapter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone project
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run adapter tests
+        run: python -m unittest discover -s tests -p 'test_parallel_search_mcp.py' -v
+
+      - name: Check shell syntax
+        run: bash -n gaianet install.sh
+
   test-chat-embeddings:
     runs-on: ubuntu-latest
 

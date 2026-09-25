@@ -1,3 +1,9 @@
+# Changes on GaiaNode 0.6.0
+
+## Optional Parallel Search MCP
+
+Select keyless Parallel web search with `gaianet config --web-search-provider parallel`. The default remains `none`, and local Cardea RAG search is unchanged.
+
 # Changes on GaiaNode 0.5.0
 
 ## Log Files

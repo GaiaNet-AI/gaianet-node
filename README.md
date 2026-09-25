@@ -223,7 +223,7 @@ gaianet stop --base $HOME/gaianet.alt
 
 ### Update configuration
 
-Using `gaianet config` subcommand can update the key fields defined in the `config.json` file. You MUST run `gaianet init` again after you update the configuartion.
+Using `gaianet config` updates fields in `$HOME/gaianet/config.json`. Run `gaianet init` again after changing model, embedding, or snapshot settings. A web search provider change takes effect after restarting the node.
 
 To update the `chat` field, for example, use the following command:
 
@@ -236,6 +236,16 @@ To update the `chat_ctx_size` field, for example, use the following command:
 ```bash
 gaianet config --chat-ctx-size 5120
 ```
+
+To opt in to keyless Parallel web search through Gaia Nexus, run:
+
+```bash
+gaianet config --web-search-provider parallel
+gaianet stop
+gaianet start
+```
+
+Use `none` to turn off remote web search. Parallel's keyless Search MCP endpoint receives the queries, URLs, objectives or context you submit, along with request metadata. The integration uses `https://search.parallel.ai/mcp`; usage is rate limited. It does not change GaiaNet's local Cardea RAG search. The adapter sends `GaiaNet-Node/0.6.0` as its user-agent for aggregate usage measurement. It does not add a user or installation identifier. Python 3.8 or newer is needed to configure or run this provider; the default `none` selection does not start the adapter.
 
 Below are all options of the `config` subcommand.
 
@@ -258,6 +268,7 @@ Options:
   --domain <val>                 Update the domain of GaiaNet node.
   --snapshot <url>               Update the Qdrant snapshot.
   --qdrant-limit <val>           Update the max number of result to return.
+  --web-search-provider <val>    Select the web search provider [Possible values: none, parallel].
   --qdrant-score-threshold <val> Update the minimal score threshold for the result.
   --base <path>                  The base directory of GaiaNet node.
   --help                         Show this help message
