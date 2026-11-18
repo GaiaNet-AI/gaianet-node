@@ -604,7 +604,7 @@ start_embedding_server() {
 
     # parse ubatch size for embedding model
     if grep -q '"embedding_ubatch_size":' $gaianet_base_dir/config.json; then
-        embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' config.json)
+        embedding_ubatch_size=$(awk -F'"' '/"embedding_ubatch_size":/ {print $4}' $gaianet_base_dir/config.json)
     else
         embedding_ubatch_size=$embedding_batch_size
     fi
