@@ -2,4 +2,4 @@
 
 /root/gaianet/bin/gaianet init
 /root/gaianet/bin/gaianet start
-tail -f /root/gaianet/log/start-llamaedge.log
+tail -f /root/gaianet/log/gaia-nexus.log

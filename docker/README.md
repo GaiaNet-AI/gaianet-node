@@ -50,8 +50,10 @@ the logs by logging into the container as follows.
 
 ```
 docker exec -it gaianet /bin/bash
-tail -f /root/gaianet/log/start-llamaedge.log
+tail -f /root/gaianet/log/gaia-nexus.log
 ```
+
+The same directory also has `chat-server.log`, `embedding-server.log`, `start-qdrant.log`, and `start-gaia-frp.log`. `start-llamaedge.log` is no longer written. `start-gaia-nexus.log` is only a startup capture and is removed after a successful start, so follow `gaia-nexus.log` for the running node.
 
 You can also delete the node if you no longer needs it.
 
