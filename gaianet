@@ -1678,9 +1678,19 @@ case $subcommand in
             "")
                 init
                 ;;
-            paris_guide)
+            default)
                 printf "[+] Downloading config.json ...\n"
                 config_url="https://raw.githubusercontent.com/GaiaNet-AI/gaianet-node/main/config.json"
+                printf "    Url: $config_url\n"
+                curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
+                info "    👍 Done! The default config.json is downloaded in $gaianet_base_dir"
+
+                # init
+                init
+                ;;
+            paris_guide)
+                printf "[+] Downloading config.json ...\n"
+                config_url="https://raw.githubusercontent.com/GaiaNet-AI/node-configs/main/llama-3-8b-instruct_paris/config.json"
                 printf "    Url: $config_url\n"
                 curl --retry 3 --progress-bar -L $config_url -o $gaianet_base_dir/config.json
                 info "    👍 Done! The config.json of Paris Guide is downloaded in $gaianet_base_dir"
